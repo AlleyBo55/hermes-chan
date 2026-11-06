@@ -36,8 +36,8 @@ cp CATALOG_ENTRY.yaml <fork>/plugin-catalog/hermes-chan.yaml
 ```
 
 In the PR description, restate the disclosure lines (local socket server, spawns
-a built-from-source overlay, drives the screen only through cua-driver under
-approval, moves windows via System Events / Accessibility). Reviewers turn these
+a built-from-source overlay, drives the screen through its Rust native-input
+backend under Hermes approval, and moves windows via System Events / Accessibility). Reviewers turn these
 into the entry's disclosure summary.
 
 Before pushing, run the same check CI runs:

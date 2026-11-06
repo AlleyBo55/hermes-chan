@@ -1,49 +1,36 @@
 name: hermes-chan
-label: Hermechan
+label: Hermes-chan
 version: 0.1.0
+requires_hermes: ">=0.23.0"
 author: AlleyBo55
 description: >-
-  A living desktop companion for Hermes. Hermechan is an original chibi-maid
+  A living desktop companion for Hermes. Hermes-chan is an original chibi
   character who stands on your screen, faces whatever you are doing, reacts to
-  the agent's activity (thinking, running a tool, blocked, done), and can act on
-  the real desktop — she performs the agent's computer-use actions with her own
-  body (walk to a window, push it, type with a typing animation), tidies desktop
-  icons, and talks back through a speech bubble you can type into. Autonomy is
-  driven by the session heartbeat, so she comes alive on her own between turns.
-
-# This plugin registers several surfaces from one register(ctx):
-#   - a computer_use driver (ctx.register_computer_use_provider) so the character
-#     is the body behind the built-in `computer_use` tool. Select it with
-#     `computer_use.backend: hermes-chan` in config.yaml.
-#   - expressive tools (say / emote / point / grab_window / glitch / tidy_desktop)
-#   - lifecycle hooks that map agent activity to animation states
-#   - a /hermeschan slash command and a chat-bubble bridge (inject_message)
+  agent activity, and acts on the real desktop through the public computer-use
+  provider API. Click, drag, scroll, key and type operations synchronize with
+  her sprite contact frames. Desktop cleanup is confirmation-gated, journaled,
+  and reversible. Opt-in idle autonomy is limited to bounded visual reactions.
 
 optional_env:
   - name: HERMESCHAN_SOCKET
-    description: "Unix socket the Rust overlay listens on (default ~/.hermes/hermes-chan.sock)"
+    description: "Unix socket the Python bridge listens on (default ~/.hermes/hermes-chan.sock)"
     prompt: "Overlay socket path"
     password: false
-  - name: HERMESCHAN_TTS
-    description: "Enable speaking replies out loud through Hermes TTS (true/false)"
-    prompt: "Speak out loud?"
-    password: false
 
-capabilities:
-  provides_tools:
-    - hermeschan_say
-    - hermeschan_emote
-    - hermeschan_point_at
-    - hermeschan_grab_window
-    - hermeschan_glitch_window
-    - hermeschan_tidy_desktop
-  provides_hooks:
-    - on_session_start
-    - on_session_end
-    - pre_llm_call
-    - post_llm_call
-    - pre_tool_call
-    - post_tool_call
-    - on_blocked
-  provides_middleware: []
-  requires_env: []
+provides_tools:
+  - hermeschan_say
+  - hermeschan_emote
+  - hermeschan_point_at
+  - hermeschan_grab_window
+  - hermeschan_glitch_window
+  - hermeschan_tidy_desktop
+  - hermeschan_undo_tidy
+provides_hooks:
+  - on_session_start
+  - on_session_end
+  - pre_llm_call
+  - post_llm_call
+  - pre_tool_call
+  - post_tool_call
+  - on_blocked
+provides_middleware: []

@@ -1,16 +1,14 @@
-"""Computer-use provider factory for Hermechan's body."""
+"""Computer-use provider factory for Hermechan's animated real actions."""
 from __future__ import annotations
-
-import sys
 
 from tools.computer_use.backend import ComputerUseBackend, ComputerUseProvider
 
-from .backend import HermechanBackend
+from .backend import HermechanBackend, real_driver_available
 
 
 class HermechanProvider(ComputerUseProvider):
     name = "hermes-chan"
-    display_name = "Hermechan (animated body)"
+    display_name = "Hermes-chan (animated body)"
 
     def __init__(self, bridge) -> None:
         self._bridge = bridge
@@ -19,16 +17,15 @@ class HermechanProvider(ComputerUseProvider):
         return HermechanBackend(self._bridge, permission_mode=permission_mode)
 
     def is_available(self) -> bool:
-        # The character runs anywhere; real control is best on macOS/Windows/Linux.
-        return sys.platform in ("darwin", "win32", "linux")
+        # Expressive tools register independently; this provider promises real input.
+        return real_driver_available()
 
     def doctor(self):
-        connected = self._bridge._client is not None  # noqa: SLF001
-        print(f"hermes-chan: overlay {'connected' if connected else 'not connected'} "
-              f"(socket {self._bridge._path})")
-        try:
-            from tools.computer_use.cua_backend import CuaDriverBackend  # noqa: F401
-            print("hermes-chan: cua-driver present — real screen control available")
-        except Exception:  # noqa: BLE001
-            print("hermes-chan: cua-driver missing — body animates only (install it to act)")
-        return 0
+        print(f"hermes-chan: overlay {'connected' if self._bridge.is_connected else 'not connected'} "
+              f"(socket {self._bridge.path})")
+        available = real_driver_available()
+        if available:
+            print("hermes-chan: native macOS input available — real screen control enabled")
+        else:
+            print("hermes-chan: native input unavailable on this platform — animations still work")
+        return 0 if available else 1

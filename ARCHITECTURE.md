@@ -33,13 +33,12 @@ Two processes, one duplex socket.
 
 Hermes' `computer_use` tool talks to exactly one backend through the
 `ComputerUseBackend` ABC. By registering ours, **the agent's own decisions flow
-through Hermechan's body**: `click/drag/type/scroll/key/focus_app` each (1)
-animate the character approaching and performing the gesture, then (2) delegate
-the real OS action to the built-in **cua-driver** backend. We get the robust,
-cross-OS, background-input driver for free, the character visibly owns every
-action, and approval gating / screenshot dedup / vision routing stay in the tool
-*above* us. If cua-driver is absent, actions return `unsupported_action` and the
-body still plays the gesture (demo-friendly).
+through Hermes-chan's body**: `click/drag/type/scroll/key/focus_app` waits
+for the matching sprite contact frame, then sends one native-input request to
+the Rust overlay. The overlay uses macOS CoreGraphics/System Events and returns
+a structured result. Approval gating, screenshot dedup and vision routing stay
+in Hermes' public `computer_use` tool *above* us; no private Hermes driver is
+imported. If the body is absent, actions fail cleanly as `body_disconnected`.
 
 ## The socket protocol
 
@@ -61,7 +60,8 @@ Newline-delimited JSON over `AF_UNIX`. Plugin is the server.
 - Plugin: all four surfaces wired (done, compiles against hermes-agent).
 - Overlay: transparent always-on-top sprite; states from hooks; speech bubble
   with text input → inject_message; faces active window.
-- Backend: delegates to cua-driver for real click/type; body animates.
+- Backend: public `ComputerUseBackend` + Rust native macOS input, synchronized
+  to manifest contact events.
 - One flagship demo chore end-to-end (type into the active app, or switch a
   video) performed visibly by the character.
 

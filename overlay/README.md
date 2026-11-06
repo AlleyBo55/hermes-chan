@@ -1,7 +1,7 @@
-# overlay — Hermechan's body (Rust / Tauri)
+# overlay — Hermes-chan's body (Rust / Tauri)
 
 The visible character. A transparent, always-on-top, click-through-except-sprite
-window that renders Hermechan and connects to the plugin over the duplex socket.
+window that renders Hermes-chan and connects to the plugin over the duplex socket.
 
 ## Why Tauri
 

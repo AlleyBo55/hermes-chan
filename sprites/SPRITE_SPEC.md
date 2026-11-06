@@ -1,15 +1,19 @@
 # Sprite spec
 
-Hermechan's art is **original**. The placeholder in this folder
-(`hermeschan-placeholder.svg`) is an original, simple chibi-maid design drawn
-from basic shapes — she is **not** the Nous Research logo mascot and **not** any
-existing anime character. Final art can be hand-drawn to this spec or generated
-with Hermes' own `/hatch` pipeline, which already emits a compatible atlas.
+Hermes-chan's final art follows the user-supplied Nous Girl portrait: a cute
+colored chibi with blunt glossy black bangs, outward-curled black hair, white
+headphones, large blue eyes, a white collared shirt, black tie and straps,
+black skirt, and little shoes. The older geometric chibi-maid SVG remains a
+placeholder only. Sakurasou's Maid-chan is a behavior reference for the desktop
+companion, not a costume reference. See `production-plan/README.md` for the
+250-frame allocation and `hermeschan-v1/` for final exports.
 
 ## Atlas format (petdex / Codex compatible)
 
-- One PNG atlas, **8 columns × 9 rows**, each cell **192 × 208 px** (matches the
-  format Hermes' `/hatch` produces, so a generated sheet drops straight in).
+- Core PNG atlas: **8 columns × 9 rows**, each cell **192 × 208 px** (matches the
+  format Hermes' `/hatch` produces). Additional back, movement, action and
+  emotion atlases are packaged separately. The current Codex UI avatar size
+  was not independently measured.
 - One **row per animation state**; columns are frames (left→right, loop).
 - Transparent background. Trim-safe margin inside each cell.
 
@@ -39,15 +43,15 @@ is used while walking between windows.
 `hermeschan_emote` sets one of:
 `neutral, happy, shy, surprised, sulk, sleepy, proud, panic, love`.
 
-Implement emotions either as:
-- separate face-only overlay frames composited on the body, **or**
-- dedicated columns appended to the `idle`/`speaking` rows.
+The current 250-frame collection uses full-body emotion variants. These play
+as front-facing expressive idle clips. A future face rig would be needed for
+arbitrary emotions during every action and facing.
 
 ## Hand anchors (for carrying / pointing / grabbing)
 
 For `point`, `grab_window`, and `tidy_desktop`, the body needs a **hand anchor
 point** per frame so a carried icon or a window handle sticks to her hand.
-Provide `hermeschan-anchors.json`:
+Provide `hermeschan-anchors.json` after measuring final pixels:
 
 ```json
 { "working": [{"frame":0,"hand":[150,120]}, ...],
@@ -56,7 +60,7 @@ Provide `hermeschan-anchors.json`:
 
 ## Drop-in checklist
 
-1. Export `hermeschan.png` (front atlas), `hermeschan-back.png`, optional
-   `hermeschan-anchors.json` into this folder.
+1. Export `hermeschan.png` (front atlas), `hermeschan-back.png`, other atlases,
+   250 individual PNGs, and the runtime manifest into `hermeschan-v1/`.
 2. Keep the 192×208 cell size and row order above.
 3. The overlay reads row index by state name from `states.py`.

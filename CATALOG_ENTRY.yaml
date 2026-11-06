@@ -12,7 +12,7 @@ maintainer: AlleyBo55
 tier: community
 category: desktop
 version: "0.1.0"
-title: "Hermechan"
+title: "Hermes-chan"
 requires_hermes: ">=0.23.0"
 docs_url: https://github.com/AlleyBo55/hermes-chan#readme
 platforms: [macos]
@@ -23,18 +23,18 @@ description: >-
   every click/type/drag the agent makes is performed by her, while approval
   gating stays in Hermes above her — and she perches on, shakes and nudges the
   active window. You can type into her speech bubble to talk to the agent, and a
-  session heartbeat lets her idle, peek and react on her own between turns.
+  bounded heartbeat-style idle loop lets her peek and react between turns.
   Disclosure — runs a local AF_UNIX socket server (~/.hermes/hermes-chan.sock)
   and spawns a Rust/Tauri overlay process it builds from source on first run
   (needs a Rust toolchain; set HERMESCHAN_AUTOSTART=0 to disable). As the
-  computer_use backend it drives the screen only through the built-in cua-driver
-  and only under Hermes' approval system — it adds no bypass. The body reads the
-  frontmost window's frame and moves windows via macOS System Events
-  (Accessibility permission); the glitch effect is a harmless overlay drawn on
-  top of a window and never touches the target app; tidy_desktop plans/animates
-  and real moves go through approved file tools. No network calls of its own, no
-  telemetry, no credential reads. macOS only for now; unattended runs do not
-  spawn the body.
+  computer_use backend, it drives the screen through its source-built Rust
+  macOS native-input implementation and only under Hermes' approval system — it
+  adds no bypass. The body reads the frontmost window's frame and moves windows
+  via macOS System Events (Accessibility permission); the glitch effect is a
+  harmless overlay and never touches the target app; tidy_desktop requires a
+  short-lived plan token plus explicit confirmation and journals every move for
+  undo. No network calls of its own, no telemetry, no credential reads. macOS
+  only for now; unattended runs do not spawn the body.
 known_issues:
   - "macOS only; Windows/Linux bodies are not implemented yet."
   - "Window move/track uses osascript/System Events (tens of ms per call), so dragging is gesture-cadence, not per-frame smooth."
@@ -47,6 +47,7 @@ capabilities:
     - hermeschan_grab_window
     - hermeschan_glitch_window
     - hermeschan_tidy_desktop
+    - hermeschan_undo_tidy
   provides_hooks:
     - on_session_start
     - on_session_end

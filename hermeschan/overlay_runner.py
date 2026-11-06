@@ -106,10 +106,36 @@ class OverlayRunner:
             _SRC_TAURI / "target/release/hermes-chan-overlay",
             _SRC_TAURI / "target/debug/hermes-chan-overlay",
         ]
-        for c in candidates:
-            if c.exists():
-                return c
+        for candidate in candidates:
+            if candidate.exists() and self._binary_is_fresh(candidate):
+                return candidate
         return None
+
+    @staticmethod
+    def _binary_is_fresh(binary: Path) -> bool:
+        """Reject embedded frontends older than any canonical runtime source."""
+        try:
+            built_at = binary.stat().st_mtime_ns
+        except OSError:
+            return False
+        roots = [
+            _OVERLAY_DIR / "src",
+            _SRC_TAURI / "src",
+            _PLUGIN_ROOT / "sprites" / "hermeschan-v1" / "atlases",
+        ]
+        files = [
+            _SRC_TAURI / "Cargo.toml",
+            _SRC_TAURI / "build.rs",
+            _SRC_TAURI / "tauri.conf.json",
+            _PLUGIN_ROOT / "sprites" / "hermeschan-v1" / "manifest.json",
+        ]
+        for root in roots:
+            if root.exists():
+                files.extend(path for path in root.rglob("*") if path.is_file())
+        try:
+            return all(path.stat().st_mtime_ns <= built_at for path in files if path.exists())
+        except OSError:
+            return False
 
     def _try_build(self) -> Optional[Path]:
         if shutil.which("cargo") is None:

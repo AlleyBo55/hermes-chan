@@ -41,14 +41,14 @@ fn socket_path() -> String {
 }
 
 #[cfg(unix)]
-pub fn spawn(handle: AppHandle) {
+pub fn spawn(handle: AppHandle, controller: crate::overlay::OverlayController) {
     thread::spawn(move || {
         let path = socket_path();
         loop {
             if let Ok(stream) = UnixStream::connect(&path) {
                 if let Ok(reader_stream) = stream.try_clone() {
                     *WRITER.lock().unwrap() = Some(stream);
-                    read_loop(&handle, reader_stream);
+                    read_loop(&handle, &controller, reader_stream);
                 }
                 *WRITER.lock().unwrap() = None;
             }
@@ -58,67 +58,78 @@ pub fn spawn(handle: AppHandle) {
 }
 
 #[cfg(unix)]
-fn read_loop(handle: &AppHandle, stream: UnixStream) {
+fn read_loop(
+    handle: &AppHandle,
+    controller: &crate::overlay::OverlayController,
+    stream: UnixStream,
+) {
     let reader = BufReader::new(stream);
     for line in reader.lines() {
         match line {
-            Ok(text) if !text.trim().is_empty() => handle_line(handle, text),
+            Ok(text) if !text.trim().is_empty() => handle_line(handle, controller, text),
             Ok(_) => {}
             Err(_) => break,
         }
     }
 }
 
-/// Forward every line to the webview, then act natively on window-affecting ones.
+/// Forward every line to the webview, then safely handle native window effects.
 #[cfg(unix)]
-fn handle_line(handle: &AppHandle, text: String) {
+fn handle_line(handle: &AppHandle, controller: &crate::overlay::OverlayController, text: String) {
     use tauri::Emitter;
     let _ = handle.emit("from-plugin", text.clone());
 
-    let v: serde_json::Value = match serde_json::from_str(&text) {
-        Ok(v) => v,
+    let value: serde_json::Value = match serde_json::from_str(&text) {
+        Ok(value) => value,
         Err(_) => return,
     };
-    let kind = v.get("type").and_then(|x| x.as_str()).unwrap_or("");
-    let needs_native = match kind {
-        "point" => true,
-        "action" => true,
-        "state" => v.get("state").and_then(|s| s.as_str()) == Some("peek"),
+    if value.get("type").and_then(|item| item.as_str()) == Some("native_input") {
+        thread::spawn(move || {
+            let response = crate::input::execute(&value);
+            if let Ok(line) = serde_json::to_string(&response) {
+                let _ = send_line(&line);
+            }
+        });
+        return;
+    }
+    if value.get("type").and_then(|item| item.as_str()) == Some("active_window_request") {
+        let request_id = value
+            .get("request_id")
+            .and_then(|item| item.as_str())
+            .filter(|item| !item.is_empty() && item.len() <= 64)
+            .unwrap_or("");
+        if !request_id.is_empty() {
+            let response = controller.active_window_response(
+                handle,
+                request_id,
+                value
+                    .get("include_screenshot")
+                    .and_then(|item| item.as_bool())
+                    .unwrap_or(false),
+            );
+            if let Ok(line) = serde_json::to_string(&response) {
+                let _ = send_line(&line);
+            }
+        }
+        return;
+    }
+    let needs_native = match value.get("type").and_then(|item| item.as_str()) {
+        Some("point") => true,
+        Some("action" | "native_action") => matches!(
+            value.get("verb").and_then(|item| item.as_str()),
+            Some("glitch" | "grab_window")
+        ),
+        Some("state") => value.get("state").and_then(|item| item.as_str()) == Some("peek"),
         _ => false,
     };
     if !needs_native {
         return;
     }
-    // osascript blocks for tens of ms; do it off the socket-read thread.
+
+    // System Events calls block; serialize them off the socket-read thread.
     let handle = handle.clone();
-    thread::spawn(move || native_action(&handle, &v));
-}
-
-#[cfg(unix)]
-fn native_action(handle: &AppHandle, v: &serde_json::Value) {
-    if v.get("type").and_then(|x| x.as_str()) == Some("action") {
-        if v.get("verb").and_then(|s| s.as_str()) == Some("grab_window") {
-            match v.get("gesture").and_then(|s| s.as_str()).unwrap_or("drag") {
-                "shake" => crate::winctl::shake_frontmost(),
-                "throw" => crate::winctl::nudge_frontmost(220, 140),
-                _ => crate::winctl::nudge_frontmost(40, 0),
-            }
-        }
-    }
-    perch_on_active(handle);
-}
-
-/// Move the overlay window so she stands at the active window's top-right edge.
-#[cfg(unix)]
-fn perch_on_active(handle: &AppHandle) {
-    use tauri::Manager;
-    if let Some((x, y, w, _h)) = crate::winctl::frontmost_frame() {
-        if let Some(win) = handle.get_webview_window("hermeschan") {
-            let ox = (x + w - 150).max(0) as f64;
-            let oy = (y - 60).max(0) as f64;
-            let _ = win.set_position(tauri::Position::Logical(tauri::LogicalPosition::new(ox, oy)));
-        }
-    }
+    let controller = controller.clone();
+    thread::spawn(move || controller.handle_plugin_message(&handle, &value));
 }
 
 #[cfg(unix)]
@@ -139,7 +150,7 @@ pub fn send_line(msg: &str) -> std::io::Result<()> {
 
 // --- non-unix stubs so the crate still compiles elsewhere -----------------
 #[cfg(not(unix))]
-pub fn spawn(_handle: AppHandle) {}
+pub fn spawn(_handle: AppHandle, _controller: crate::overlay::OverlayController) {}
 
 #[cfg(not(unix))]
 pub fn send_line(_msg: &str) -> std::io::Result<()> {

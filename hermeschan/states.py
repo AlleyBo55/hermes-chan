@@ -1,9 +1,9 @@
-"""Map Hermes agent activity to Hermechan animation states.
+"""Map Hermes agent activity to Hermes-chan animation states.
 
 The overlay owns the sprite sheet; this module only decides which named state to
 request. States intentionally mirror the vocabulary a Hermes *pet* already uses
 (idle / review / run / wave / failed / waiting) plus a few expressive extras
-Hermechan adds (listening / speaking / peek / mischief).
+Hermes-chan adds (listening / speaking / peek / mischief).
 """
 from __future__ import annotations
 

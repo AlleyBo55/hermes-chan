@@ -1,4 +1,4 @@
-# Install & run Hermechan (end to end)
+# Install & run Hermes-chan (end to end)
 
 A walkthrough from nothing to a living companion on your screen. macOS.
 
@@ -37,8 +37,8 @@ computer_use:
   backend: hermes-chan
 ```
 
-Now every `computer_use` action the agent takes is performed by Hermechan
-(delegated to cua-driver underneath), with Hermes' approval gating intact.
+Now every `computer_use` action the agent takes is performed by Hermes-chan
+through her Rust macOS input driver, with Hermes' approval gating intact.
 
 ## 3. Start Hermes and wake her
 

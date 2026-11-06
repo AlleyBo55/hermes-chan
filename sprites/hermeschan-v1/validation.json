@@ -1,0 +1,21 @@
+{
+  "frame_count": 250,
+  "clip_count": 44,
+  "size_px": [
+    192,
+    208
+  ],
+  "all_rgba": true,
+  "all_have_transparency": true,
+  "unique_pixel_hashes": 250,
+  "clipped_frames": 0,
+  "group_counts": {
+    "core": 72,
+    "back": 32,
+    "movement": 48,
+    "action": 62,
+    "emotion": 36
+  },
+  "hand_anchors": "Estimates only; not suitable for exact OS targeting without review",
+  "visual_review": "passed: core, back, movement, action, and emotion contact sheets reviewed; character identity, transparency, facing, and clip intent are coherent"
+}

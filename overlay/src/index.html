@@ -8,13 +8,16 @@
 </head>
 <body data-state="idle" data-emotion="neutral">
   <div id="stage">
-    <div id="bubble" class="hidden"><span id="bubble-text"></span></div>
-    <img id="chara" src="hermeschan.svg" alt="Hermechan" draggable="false" />
+    <button id="follow-toggle" type="button" aria-pressed="false" title="Restore active-window follow">○</button>
+    <div id="bubble" class="hidden" data-speaker="assistant"><span id="bubble-text"></span></div>
+    <canvas id="chara" width="192" height="208" role="img" aria-label="Hermes-chan desktop companion"></canvas>
     <div id="state-tag">idle</div>
   </div>
   <form id="chatbar" autocomplete="off">
-    <input id="chatinput" type="text" placeholder="talk to Hermechan…" />
+    <div id="status-message" class="hidden" role="status" aria-live="polite"></div>
+    <input id="chatinput" type="text" placeholder="talk to Hermes-chan…" />
   </form>
+  <script src="sprite-player.js"></script>
   <script src="main.js"></script>
 </body>
 </html>

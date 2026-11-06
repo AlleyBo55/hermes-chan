@@ -1,0 +1,968 @@
+{
+  "core/working/00": {
+    "screen_left": [
+      106,
+      178
+    ],
+    "screen_right": [
+      118,
+      145
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "core/working/01": {
+    "screen_left": [
+      75,
+      145
+    ],
+    "screen_right": [
+      110,
+      178
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "core/working/02": {
+    "screen_left": [
+      106,
+      178
+    ],
+    "screen_right": [
+      124,
+      145
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "core/working/03": {
+    "screen_left": [
+      106,
+      179
+    ],
+    "screen_right": [
+      116,
+      143
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "core/working/04": {
+    "screen_left": [
+      85,
+      91
+    ],
+    "screen_right": [
+      109,
+      177
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "core/working/05": {
+    "screen_left": [
+      82,
+      179
+    ],
+    "screen_right": [
+      106,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "core/working/06": {
+    "screen_left": [
+      82,
+      178
+    ],
+    "screen_right": [
+      106,
+      178
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "core/working/07": {
+    "screen_left": [
+      106,
+      178
+    ],
+    "screen_right": [
+      118,
+      145
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/working/00": {
+    "screen_left": [
+      87,
+      179
+    ],
+    "screen_right": [
+      121,
+      141
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/working/01": {
+    "screen_left": [
+      70,
+      154
+    ],
+    "screen_right": [
+      87,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/working/02": {
+    "screen_left": [
+      73,
+      154
+    ],
+    "screen_right": [
+      87,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/working/03": {
+    "screen_left": [
+      70,
+      139
+    ],
+    "screen_right": [
+      104,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/working/04": {
+    "screen_left": [
+      87,
+      179
+    ],
+    "screen_right": [
+      121,
+      147
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/working/05": {
+    "screen_left": [
+      86,
+      178
+    ],
+    "screen_right": [
+      103,
+      178
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/working/06": {
+    "screen_left": [
+      76,
+      146
+    ],
+    "screen_right": [
+      87,
+      178
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/working/07": {
+    "screen_left": [
+      70,
+      154
+    ],
+    "screen_right": [
+      104,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/point/00": {
+    "screen_left": [
+      87,
+      179
+    ],
+    "screen_right": [
+      104,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/point/01": {
+    "screen_left": [
+      87,
+      179
+    ],
+    "screen_right": [
+      104,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/point/02": {
+    "screen_left": [
+      87,
+      179
+    ],
+    "screen_right": [
+      104,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/point/03": {
+    "screen_left": [
+      87,
+      178
+    ],
+    "screen_right": [
+      104,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/point/04": {
+    "screen_left": [
+      83,
+      178
+    ],
+    "screen_right": [
+      99,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/point/05": {
+    "screen_left": [
+      87,
+      179
+    ],
+    "screen_right": [
+      104,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/point/06": {
+    "screen_left": [
+      104,
+      179
+    ],
+    "screen_right": [
+      119,
+      153
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "back/point/07": {
+    "screen_left": [
+      70,
+      154
+    ],
+    "screen_right": [
+      87,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_left/00": {
+    "screen_left": [
+      55,
+      74
+    ],
+    "screen_right": [
+      82,
+      67
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_left/01": {
+    "screen_left": [
+      55,
+      76
+    ],
+    "screen_right": [
+      64,
+      168
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_left/02": {
+    "screen_left": [
+      32,
+      99
+    ],
+    "screen_right": [
+      55,
+      76
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_left/03": {
+    "screen_left": [
+      69,
+      68
+    ],
+    "screen_right": [
+      82,
+      70
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_left/04": {
+    "screen_left": [
+      67,
+      121
+    ],
+    "screen_right": [
+      82,
+      69
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_left/05": {
+    "screen_left": [
+      55,
+      75
+    ],
+    "screen_right": [
+      82,
+      68
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_left/06": {
+    "screen_left": [
+      71,
+      67
+    ],
+    "screen_right": [
+      84,
+      67
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_left/07": {
+    "screen_left": [
+      55,
+      74
+    ],
+    "screen_right": [
+      82,
+      68
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_right/00": {
+    "screen_left": [
+      84,
+      89
+    ],
+    "screen_right": [
+      112,
+      120
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_right/01": {
+    "screen_left": [
+      103,
+      120
+    ],
+    "screen_right": [
+      129,
+      66
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_right/02": {
+    "screen_left": [
+      82,
+      90
+    ],
+    "screen_right": [
+      95,
+      84
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_right/03": {
+    "screen_left": [
+      100,
+      68
+    ],
+    "screen_right": [
+      105,
+      120
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_right/04": {
+    "screen_left": [
+      80,
+      174
+    ],
+    "screen_right": [
+      103,
+      124
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_right/05": {
+    "screen_left": [
+      100,
+      70
+    ],
+    "screen_right": [
+      103,
+      123
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_right/06": {
+    "screen_left": [
+      81,
+      88
+    ],
+    "screen_right": [
+      88,
+      81
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "movement/climb_right/07": {
+    "screen_left": [
+      75,
+      176
+    ],
+    "screen_right": [
+      103,
+      126
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/click/00": {
+    "screen_left": [
+      77,
+      149
+    ],
+    "screen_right": [
+      91,
+      177
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/click/01": {
+    "screen_left": [
+      70,
+      150
+    ],
+    "screen_right": [
+      103,
+      178
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/click/02": {
+    "screen_left": [
+      70,
+      147
+    ],
+    "screen_right": [
+      131,
+      83
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/drag/00": {
+    "screen_left": [
+      127,
+      77
+    ],
+    "screen_right": [
+      130,
+      64
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/drag/01": {
+    "screen_left": [
+      81,
+      178
+    ],
+    "screen_right": [
+      102,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/drag/02": {
+    "screen_left": [
+      103,
+      90
+    ],
+    "screen_right": [
+      141,
+      73
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/drag/03": {
+    "screen_left": [
+      87,
+      178
+    ],
+    "screen_right": [
+      104,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/type/00": {
+    "screen_left": [
+      122,
+      124
+    ],
+    "screen_right": null,
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/type/01": {
+    "screen_left": [
+      121,
+      67
+    ],
+    "screen_right": null,
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/type/02": {
+    "screen_left": [
+      88,
+      177
+    ],
+    "screen_right": [
+      120,
+      122
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/type/03": {
+    "screen_left": [
+      116,
+      84
+    ],
+    "screen_right": [
+      126,
+      123
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/key/00": {
+    "screen_left": null,
+    "screen_right": null,
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/key/01": {
+    "screen_left": [
+      72,
+      148
+    ],
+    "screen_right": [
+      127,
+      82
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/key/02": {
+    "screen_left": [
+      70,
+      148
+    ],
+    "screen_right": [
+      131,
+      77
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/scroll/00": {
+    "screen_left": [
+      69,
+      149
+    ],
+    "screen_right": [
+      130,
+      79
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/scroll/01": {
+    "screen_left": [
+      68,
+      150
+    ],
+    "screen_right": [
+      84,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/scroll/02": {
+    "screen_left": [
+      70,
+      148
+    ],
+    "screen_right": [
+      129,
+      142
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/scroll/03": {
+    "screen_left": [
+      72,
+      147
+    ],
+    "screen_right": [
+      132,
+      76
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/point/00": {
+    "screen_left": [
+      89,
+      179
+    ],
+    "screen_right": [
+      107,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/point/01": {
+    "screen_left": [
+      76,
+      147
+    ],
+    "screen_right": [
+      128,
+      78
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/point/02": {
+    "screen_left": [
+      73,
+      147
+    ],
+    "screen_right": null,
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/point/03": {
+    "screen_left": [
+      71,
+      152
+    ],
+    "screen_right": [
+      86,
+      180
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_drag/00": {
+    "screen_left": [
+      121,
+      85
+    ],
+    "screen_right": [
+      155,
+      96
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_drag/01": {
+    "screen_left": [
+      113,
+      86
+    ],
+    "screen_right": [
+      143,
+      106
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_drag/02": {
+    "screen_left": [
+      104,
+      88
+    ],
+    "screen_right": [
+      142,
+      107
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_drag/03": {
+    "screen_left": [
+      97,
+      83
+    ],
+    "screen_right": [
+      127,
+      130
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_shake/00": {
+    "screen_left": null,
+    "screen_right": null,
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_shake/01": {
+    "screen_left": [
+      123,
+      87
+    ],
+    "screen_right": [
+      128,
+      79
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_shake/02": {
+    "screen_left": [
+      138,
+      86
+    ],
+    "screen_right": [
+      160,
+      102
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_shake/03": {
+    "screen_left": [
+      118,
+      70
+    ],
+    "screen_right": [
+      136,
+      107
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_throw/00": {
+    "screen_left": [
+      107,
+      86
+    ],
+    "screen_right": [
+      112,
+      76
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_throw/01": {
+    "screen_left": [
+      127,
+      126
+    ],
+    "screen_right": [
+      129,
+      82
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_throw/02": {
+    "screen_left": [
+      136,
+      73
+    ],
+    "screen_right": [
+      147,
+      96
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_throw/03": {
+    "screen_left": [
+      111,
+      178
+    ],
+    "screen_right": [
+      139,
+      74
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_bend/00": {
+    "screen_left": [
+      135,
+      112
+    ],
+    "screen_right": [
+      143,
+      74
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_bend/01": {
+    "screen_left": [
+      128,
+      88
+    ],
+    "screen_right": [
+      135,
+      123
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_bend/02": {
+    "screen_left": [
+      141,
+      85
+    ],
+    "screen_right": [
+      149,
+      116
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/grab_window_bend/03": {
+    "screen_left": [
+      63,
+      133
+    ],
+    "screen_right": null,
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/glitch/00": {
+    "screen_left": [
+      88,
+      178
+    ],
+    "screen_right": [
+      108,
+      179
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/glitch/01": {
+    "screen_left": [
+      122,
+      75
+    ],
+    "screen_right": [
+      127,
+      64
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/glitch/02": {
+    "screen_left": [
+      76,
+      146
+    ],
+    "screen_right": [
+      103,
+      85
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/glitch/03": {
+    "screen_left": [
+      72,
+      148
+    ],
+    "screen_right": [
+      86,
+      176
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/tidy_desktop/00": {
+    "screen_left": [
+      58,
+      151
+    ],
+    "screen_right": [
+      138,
+      103
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/tidy_desktop/01": {
+    "screen_left": [
+      87,
+      178
+    ],
+    "screen_right": [
+      103,
+      178
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/tidy_desktop/02": {
+    "screen_left": [
+      86,
+      176
+    ],
+    "screen_right": [
+      135,
+      85
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/tidy_desktop/03": {
+    "screen_left": [
+      116,
+      150
+    ],
+    "screen_right": [
+      127,
+      143
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/sit/00": {
+    "screen_left": [
+      70,
+      154
+    ],
+    "screen_right": [
+      121,
+      154
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/sit/01": {
+    "screen_left": [
+      72,
+      158
+    ],
+    "screen_right": [
+      119,
+      157
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/sit/02": {
+    "screen_left": [
+      71,
+      160
+    ],
+    "screen_right": [
+      119,
+      160
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  },
+  "action/sit/03": {
+    "screen_left": [
+      62,
+      116
+    ],
+    "screen_right": [
+      107,
+      161
+    ],
+    "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
+  }
+}

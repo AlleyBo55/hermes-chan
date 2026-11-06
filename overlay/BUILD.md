@@ -1,4 +1,4 @@
-# Building Hermechan's body
+# Building Hermes-chan's body
 
 The overlay is built **from source on your machine** — no binary ships in the
 repo. That keeps every file reviewable source for the catalog and avoids

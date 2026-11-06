@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hermeschan-effect</title>
+  <link rel="stylesheet" href="effect.css" />
+</head>
+<body>
+  <!-- Transparent, click-through-by-design overlay. Purely visual: it never
+       reads from, writes to, or dispatches input at any target application. -->
+  <div id="fx-root" aria-hidden="true">
+    <div id="fx-scanlines"></div>
+    <div id="fx-rgb"></div>
+    <div id="fx-blocks"></div>
+    <div id="fx-bend"></div>
+  </div>
+  <script src="effect.js"></script>
+</body>
+</html>

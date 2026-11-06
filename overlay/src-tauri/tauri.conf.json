@@ -22,6 +22,22 @@
         "skipTaskbar": true,
         "shadow": false,
         "focus": false
+      },
+      {
+        "label": "effect",
+        "title": "hermes-chan effect",
+        "url": "effect.html",
+        "width": 1,
+        "height": 1,
+        "visible": false,
+        "transparent": true,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "resizable": false,
+        "skipTaskbar": true,
+        "shadow": false,
+        "focus": false,
+        "focusable": false
       }
     ],
     "security": {

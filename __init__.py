@@ -28,9 +28,25 @@ def register(ctx):
     from .hermeschan import tools as _tools
     from .hermeschan import hooks as _hooks
     from .hermeschan import command as _command
+    from .hermeschan.autonomy import AutonomyController
     from .hermeschan.bridge import Bridge
+    from .hermeschan.settings import SettingsStore
 
     bridge = Bridge.shared(ctx)
+    settings = SettingsStore()
+    current = settings.snapshot()
+    bridge.update_config(
+        mischief=current["mischief"],
+        watch=current["watch"],
+        sleeping=current["sleeping"],
+        heartbeat_enabled=current["heartbeat_enabled"],
+        heartbeat_interval=current["heartbeat_interval"],
+    )
+    previous_controller = getattr(bridge, "autonomy_controller", None)
+    if previous_controller is not None:
+        previous_controller.stop()
+    autonomy = AutonomyController(ctx, bridge, settings)
+    bridge.autonomy_controller = autonomy
 
     # 1. Computer-use driver: the character's body performs real actions.
     try:
@@ -40,14 +56,14 @@ def register(ctx):
     except Exception as exc:  # noqa: BLE001 - optional surface, never fatal
         log.warning("hermes-chan: computer_use provider unavailable (%s)", exc)
 
-    # 2. Expressive tools.
+    # 2. Expressive and confirmation-gated cleanup tools.
     _tools.register(ctx, bridge)
 
-    # 3. Lifecycle hooks -> animation states.
-    _hooks.register(ctx, bridge)
+    # 3. Lifecycle hooks -> animation states and final-response bubble.
+    _hooks.register(ctx, bridge, settings)
 
     # 4. Slash command + chat-bubble bridge (overlay -> inject_message).
-    _command.register(ctx, bridge)
+    _command.register(ctx, bridge, settings, autonomy)
     bridge.start_inbound(ctx)
 
     # 5. Launch and supervise the visible body (safe no-op if unavailable).
@@ -58,3 +74,10 @@ def register(ctx):
         runner.maybe_start(ctx)
     except Exception as exc:  # noqa: BLE001 - the body is optional, never fatal
         log.warning("hermes-chan: overlay runner unavailable (%s)", exc)
+
+    # PluginContext currently has no public heartbeat callback, so use the
+    # persisted, opt-in daemon controller and stop it on plugin unload.
+    autonomy.start_from_settings()
+    on_unload = getattr(ctx, "on_unload", None)
+    if callable(on_unload):
+        on_unload(autonomy.stop)

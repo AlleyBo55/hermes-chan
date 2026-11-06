@@ -8,3 +8,6 @@ __pycache__/
 overlay/dist/
 # local sockets / scratch
 *.sock
+# image-generation working files; the final reviewed pack lives in sprites/hermeschan-v1/
+output/
+tmp/
