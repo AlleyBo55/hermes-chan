@@ -23,6 +23,7 @@ import stat
 import sys
 import tempfile
 import threading
+import types
 import uuid
 from collections import OrderedDict
 from pathlib import Path
@@ -49,6 +50,25 @@ def _default_socket_path() -> str:
     if env:
         return env
     return str(hermes_home() / "hermes-chan.sock")
+
+
+# Hermes imports this plugin twice in one process when it is also the computer-use backend (the
+# general loader and the computer-use loader, under different module names), so each import has
+# its own Bridge class. The one that talks to her body is published here for the other to find.
+_SHARED_MODULE = "hermes_chan_shared"
+
+
+def _publish(bridge: "Bridge") -> None:
+    holder = sys.modules.get(_SHARED_MODULE)
+    if holder is None:
+        holder = types.ModuleType(_SHARED_MODULE)
+        sys.modules[_SHARED_MODULE] = holder
+    holder.bridge = bridge
+
+
+def live_bridge() -> Optional["Bridge"]:
+    """The bridge the general plugin load started, from whichever import of the plugin asks."""
+    return getattr(sys.modules.get(_SHARED_MODULE), "bridge", None)
 
 
 def _close_socket(sock: socket.socket) -> None:
@@ -173,6 +193,7 @@ class Bridge:
         with cls._instance_lock:
             if cls._instance is None:
                 cls._instance = cls(ctx)
+                _publish(cls._instance)
             elif ctx is not None:
                 cls._instance._ctx = ctx
             return cls._instance

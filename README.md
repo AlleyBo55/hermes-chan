@@ -234,7 +234,9 @@ stands), `build.log`, `overlay.log`, the tidy journal, and on Windows `bridge.js
 | Windows | nothing | apps running as administrator are off limits (Windows UIPI) |
 | Linux | nothing; an X11 display (XWayland counts) | native Wayland apps are invisible to her |
 
-If anything is missing she fails cleanly and keeps animating.
+If anything is missing she fails cleanly and keeps animating. On macOS the entry to turn on is
+usually **`osascript`**, because Hermes starts its background gateway through `/usr/bin/osascript`
+and she runs inside that gateway ([details](INSTALL.md#5-grant-permissions-macos-only)).
 
 ## Safety and privacy
 

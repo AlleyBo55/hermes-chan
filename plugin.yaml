@@ -1,6 +1,9 @@
 name: hermes-chan
 label: Hermes-chan
 version: 0.2.0
+# A general plugin that also offers a computer-use provider. Without an explicit kind, Hermes
+# sees register_computer_use_provider in __init__.py and loads it only as that provider.
+kind: standalone
 requires_hermes: ">=0.23.0"
 author: AlleyBo55
 license: MIT

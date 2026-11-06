@@ -34,7 +34,19 @@ def _shutdown_at_exit() -> None:
         body.shutdown()
 
 
+def _register_provider_only(ctx) -> None:
+    """With ``computer_use.backend: hermes-chan``, Hermes' computer-use loader imports this plugin a
+    second time with a context that only collects the provider. Hand it a provider that drives the
+    body the general load started; start nothing here."""
+    from .hermeschan.provider import HermechanProvider
+
+    ctx.register_computer_use_provider(HermechanProvider())
+
+
 def register(ctx):
+    if not callable(getattr(ctx, "register_command", None)):
+        _register_provider_only(ctx)
+        return
     # Local imports keep module import cheap for `hermes plugins validate`,
     # and let the tool/hook surfaces register even when the computer-use
     # infrastructure is unavailable in a given context.
@@ -70,13 +82,15 @@ def register(ctx):
     bridge.body = body
     bridge.deactivate_handler = body.switched_off_from_overlay
 
-    # 1. Computer-use driver: the character's body performs real actions.
-    try:
-        from .hermeschan.provider import HermechanProvider
-        ctx.register_computer_use_provider(HermechanProvider(bridge))
-        log.info("hermes-chan: registered computer_use provider")
-    except Exception as exc:  # noqa: BLE001 - optional surface, never fatal
-        log.warning("hermes-chan: computer_use provider unavailable (%s)", exc)
+    # 1. Computer-use driver: the character's body performs real actions. Current Hermes loads it
+    #    through _register_provider_only; older releases offered the registrar here.
+    if callable(getattr(ctx, "register_computer_use_provider", None)):
+        try:
+            from .hermeschan.provider import HermechanProvider
+            ctx.register_computer_use_provider(HermechanProvider(bridge))
+            log.info("hermes-chan: registered computer_use provider")
+        except Exception as exc:  # noqa: BLE001 - optional surface, never fatal
+            log.warning("hermes-chan: computer_use provider unavailable (%s)", exc)
 
     # 2. Expressive and confirmation-gated cleanup tools.
     _tools.register(ctx, bridge)
