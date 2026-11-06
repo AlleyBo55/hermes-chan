@@ -10,6 +10,14 @@ use std::process::Command;
 
 const FIELD_SEPARATOR: char = '\u{1f}';
 
+// AppleScript's own wording ("100:121: execution error: …") would land verbatim in her status
+// bubble. macOS checks these grants against whatever launched the Hermes gateway: `osascript`
+// for the background gateway (Hermes starts it through /usr/bin/osascript), else the terminal.
+const ACCESSIBILITY_HELP: &str = "Turn on Accessibility for osascript (Hermes' gateway) or your \
+     terminal: System Settings ▸ Privacy & Security.";
+const AUTOMATION_HELP: &str = "Allow osascript (Hermes' gateway) or your terminal to control \
+     System Events: System Settings ▸ Privacy & Security ▸ Automation.";
+
 fn osascript(script: &str) -> Result<String, WindowControlError> {
     let output = Command::new("osascript")
         .arg("-e")
@@ -25,22 +33,25 @@ fn osascript(script: &str) -> Result<String, WindowControlError> {
 
     let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
     let lower = stderr.to_ascii_lowercase();
-    let kind = if lower.contains("not authorized")
-        || lower.contains("not allowed assistive access")
+    let help = if lower.contains("not authorized") || lower.contains("-1743") {
+        Some(AUTOMATION_HELP)
+    } else if lower.contains("not allowed assistive access")
         || lower.contains("accessibility")
-        || lower.contains("-1743")
         || lower.contains("-1719")
     {
-        ErrorKind::Permission
+        Some(ACCESSIBILITY_HELP)
     } else {
-        ErrorKind::Other
+        None
     };
-    Err(WindowControlError {
-        kind,
-        message: if stderr.is_empty() {
-            format!("System Events failed with status {}", output.status)
-        } else {
-            stderr
+    Err(match help {
+        Some(help) => WindowControlError { kind: ErrorKind::Permission, message: help.to_string() },
+        None => WindowControlError {
+            kind: ErrorKind::Other,
+            message: if stderr.is_empty() {
+                format!("System Events failed with status {}", output.status)
+            } else {
+                stderr
+            },
         },
     })
 }

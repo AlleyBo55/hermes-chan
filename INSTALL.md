@@ -84,9 +84,16 @@ bring her back.
 ## 5. Grant permissions (macOS only)
 
 - **Accessibility** (perch, follow, window pranks, native input): System Settings ▸ Privacy &
-  Security ▸ Accessibility ▸ enable the app that runs Hermes (your terminal or Hermes Desktop).
+  Security ▸ Accessibility.
 - **Screen Recording** (the collapse snapshot and the heartbeat's optional glance).
 - **Automation ▸ System Events / Finder** (window titles; real `tidy_desktop` moves).
+
+macOS grants these to whatever launched the Hermes gateway, because she runs inside it. For the
+background gateway Hermes starts by itself that is **`osascript`**: Hermes launches its gateway
+through `/usr/bin/osascript`, so the entry to turn on is named `osascript`, not your terminal.
+That grant also covers the rest of the gateway (and anything else launched the same way), so only
+turn it on if you want her window features. If you run `hermes gateway run` in a terminal, grant
+that terminal instead.
 
 Windows and Linux ask for nothing. On Windows she cannot touch apps running as administrator; on
 Linux she needs an X11 display, and on Wayland she only sees X11/XWayland apps.
