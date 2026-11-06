@@ -1,46 +1,39 @@
 # overlay — Hermes-chan's body (Rust / Tauri)
 
-The visible character. A transparent, always-on-top, click-through-except-sprite
-window that renders Hermes-chan and connects to the plugin over the duplex socket.
+The visible character. A transparent, always-on-top window that only takes clicks on her
+sprite, bubble and buttons, renders Hermes-chan, and connects to the plugin over the duplex
+bridge. Runs on macOS, Windows and Linux (X11, or XWayland on Wayland).
 
 ## Why Tauri
 
-Tauri 2 gives the three window properties we need for free — transparency,
-always-on-top, and per-pixel click-through — which `winit` alone does not on
-macOS. The renderer is a small canvas; all world/physics logic is Rust.
+Tauri 2 gives the three window properties we need on every desktop — transparency,
+always-on-top, and click-through — which `winit` alone does not. The renderer is a small
+canvas in the system webview (WebKit on macOS, WebView2 on Windows, WebKitGTK on Linux).
 
-## Modules (to build)
+## Modules
 
-- `bridge`   — `AF_UNIX` client to `HERMESCHAN_SOCKET`; newline JSON both ways
-  (see `../ARCHITECTURE.md` for the message table).
-- `world`    — desktop snapshot: windows (macOS Accessibility + CGWindowList),
-  desktop icons (Finder / NSWorkspace), monitors with scale factors. Refresh
-  before each action and ~10 Hz during one. Convert Cocoa / AX / CG coordinate
-  systems at this boundary only.
-- `body`     — sprite state machine (rows from `sprites/SPRITE_SPEC.md`), 2D
-  kinematics (gravity, surfaces = screen bottom + window top edges), facing
-  (front / back / left / right), hand anchors.
-- `render`   — canvas draw loop; faces the active window (back to the user)
-  while peeking.
-- `bubble`   — speech bubble + a text input; typed text → `{"type":"chat"}`.
+- `src-tauri/src/bridge.rs` — client of the plugin's bridge: an AF_UNIX socket on macOS and
+  Linux, `127.0.0.1` plus a per-run token on Windows; newline JSON both ways (see
+  `../ARCHITECTURE.md` for the message table).
+- `src-tauri/src/winctl/` — her view of the desktop, one file per OS: the active window, the
+  on-screen window list (her ledges), window pranks, idle time, snapshots.
+- `src-tauri/src/input/` — native input for the `computer_use` backend, one file per OS.
+- `src-tauri/src/overlay.rs` — window setup, follow/perch, hit testing, effects, and the
+  Ctrl+Shift+click `deactivate` command.
+- `src-tauri/src/watchdog.rs` — she leaves when the Hermes process that started her exits.
+- `src/` — the webview: `sprite-player.js`, `wander.js` (roaming brain), `main.js` (states,
+  bubble, chat, gestures), `effect*.js` (prank effects).
 
-## macOS permissions (request at first run; never hang)
+## Gestures
 
-- **Accessibility** — read/move windows. Stand holding a "grant me access" sign
-  until granted; do not block the agent.
-- **Screen Recording** — active-window screenshots for watching and computer
-  use. Crack, portal, glitch and bend draw directly in the transparent overlay.
-- **Automation (Finder)** — only for `tidy_desktop` real icon moves.
+| Gesture | Does |
+| --- | --- |
+| drag | pick her up; let go and she falls |
+| Ctrl+click / right-click | open or close the chat box |
+| Ctrl+Shift+click | switch her off: the plugin remembers it and her process ends |
+| 📌 button | follow the active window, or roam |
 
-## Build & attestation (catalog rule 17)
+## Build
 
-Do **not** commit a compiled binary. The release binary is built by this repo's
-public GitHub Actions and carries an `actions/attest-build-provenance`
-attestation the catalog verifies against the pinned commit. `cargo tauri dev`
-for local iteration.
-
-## Status
-
-Not started — this is the next build step after the plugin scaffold. Start with
-the Tauri shell + `bridge` + rendering one sprite whose state is driven by the
-live plugin hooks.
+See [BUILD.md](BUILD.md). Do **not** commit a compiled binary: the body is built from this
+source on the user's machine (catalog rule 17).

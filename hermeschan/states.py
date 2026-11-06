@@ -32,6 +32,8 @@ HOOK_STATE = {
     "post_llm_call": SPEAKING,
     "pre_tool_call": WORKING,
     "post_tool_call": WORKING,
-    "on_blocked": BLOCKED,
+    # Waiting on you: an approval prompt or a clarifying question.
+    "pre_approval_request": BLOCKED,
+    "on_human_input_request": BLOCKED,
     "on_session_end": IDLE,
 }

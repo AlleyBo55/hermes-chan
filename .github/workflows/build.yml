@@ -1,0 +1,39 @@
+# Builds her body from source on all three desktop systems and byte-compiles the plugin.
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  overlay:
+    name: overlay (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev
+
+      - name: Rust stable (1.90+)
+        run: rustup update stable && rustup default stable
+
+      - name: Build her body
+        working-directory: overlay/src-tauri
+        run: cargo build --release --locked
+
+      - name: Plugin byte-compiles
+        run: python3 -m compileall -q __init__.py hermeschan || python -m compileall -q __init__.py hermeschan
+        shell: bash

@@ -2,8 +2,9 @@
 
 Hermes keeps approval gating, vision routing, and the model-facing schema above
 this backend. Each mutation waits for the matching sprite contact frame, asks
-the Rust overlay to perform one native macOS input event, relays the structured
-result, then lets the animation finish. No Hermes private driver is imported.
+the Rust overlay to perform one native input event (CoreGraphics on macOS,
+SendInput on Windows, XTest on Linux/X11), relays the structured result, then
+lets the animation finish. No Hermes private driver is imported.
 """
 from __future__ import annotations
 
@@ -22,8 +23,11 @@ log = logging.getLogger("hermes-chan.backend")
 
 
 def real_driver_available() -> bool:
-    """The source implementation currently supports native input on macOS."""
-    return sys.platform == "darwin"
+    """Native input exists on macOS, Windows, and Linux sessions with an X11 display
+    (Wayland sessions qualify through XWayland, for X11 apps)."""
+    if sys.platform in ("darwin", "win32"):
+        return True
+    return sys.platform.startswith("linux") and bool(os.environ.get("DISPLAY"))
 
 
 def _png_size(data: bytes) -> tuple[int, int]:
@@ -77,7 +81,7 @@ class HermechanBackend(ComputerUseBackend):
                 window_title=str(sample.get("title") or ""),
                 png_bytes_len=len(image),
                 image_mime_type=str(sample.get("mime_type") or "image/png"),
-                note=("Hermes-chan supplies a window image but no AX element map; "
+                note=("Hermes-chan supplies a window image but no accessibility element map; "
                       "use screen coordinates for actions."),
             )
         return self._fallback_capture(mode)
@@ -117,8 +121,10 @@ class HermechanBackend(ComputerUseBackend):
             elements=[],
             png_bytes_len=len(image),
             image_mime_type="image/png" if image else None,
-            note=("Full-screen fallback; grant Screen Recording and run the Hermes-chan body. "
-                  "No AX element map is available."),
+            note=(("Full-screen fallback; grant Screen Recording and run the Hermes-chan body. "
+                   if sys.platform == "darwin" else
+                   "Hermes-chan's body is not connected, so no screenshot is available. ")
+                  + "No element map is available."),
         )
 
     # -- synchronized native actions -----------------------------------

@@ -1,95 +1,122 @@
 # Install & run Hermes-chan (end to end)
 
-A walkthrough from nothing to a living companion on your screen. macOS.
+A walkthrough from nothing to a living companion on your screen, on macOS, Windows or Linux.
+The [README](README.md#install-in-one-message) has a one-message prompt that makes Hermes do all
+of this for you.
 
 ## 0. Prerequisites
 
-- **Hermes Agent** installed (`hermes --version`). Get it from
-  https://hermes-agent.nousresearch.com/ if missing.
-- **Rust** toolchain for the visible body — https://rustup.rs (`cargo` on PATH).
-  Without it the plugin still runs headless (tools, hooks, chat), just no sprite.
-- **Xcode Command Line Tools** — `xcode-select --install`.
-- Optional, for the best-looking body: Node + `@tauri-apps/cli`
-  (`npm i -D @tauri-apps/cli` inside `overlay/`).
+- **Hermes Agent** 0.23 or newer (`hermes --version`), from https://hermes-agent.nousresearch.com/.
+- **Rust** 1.90 or newer for her body, from https://rustup.rs (`cargo --version`; `rustup update`
+  if older). Without it the plugin still runs headless: tools, hooks and chat work, there is just
+  no sprite.
+- Your system's build tools:
+
+| System | Install |
+| --- | --- |
+| macOS | `xcode-select --install` |
+| Windows | Visual Studio C++ Build Tools ("Desktop development with C++"); WebView2 is already on Windows 11 and updated Windows 10 |
+| Debian / Ubuntu | `sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev` |
+| Fedora | `sudo dnf install webkit2gtk4.1-devel openssl-devel curl wget file libappindicator-gtk3-devel librsvg2-devel libxdo-devel` and `sudo dnf group install c-development` |
+| Arch | `sudo pacman -S --needed webkit2gtk-4.1 base-devel curl wget file openssl appmenu-gtk-module libappindicator-gtk3 librsvg xdotool` |
 
 ## 1. Install the plugin
 
-The fast path (symlink for dev, builds the body):
+```bash
+hermes plugins install https://github.com/AlleyBo55/hermes-chan --enable
+```
+
+`--enable` switches it on right away; Hermes plugins are off until enabled. Without it, run
+`hermes plugins enable hermes-chan` later, or use the Plugins switch in Hermes Desktop.
+
+Working from a clone instead? `./run.sh` (macOS, Linux) links the checkout into your Hermes
+profile, enables it and builds her body.
+
+## 2. Build her body
 
 ```bash
-cd /Users/gilang/ngoding/hermes-chan
-./run.sh
+# macOS / Linux
+cd ~/.hermes/plugins/hermes-chan/overlay/src-tauri
+# Windows (PowerShell)
+cd $env:LOCALAPPDATA\hermes\plugins\hermes-chan\overlay\src-tauri
+
+cargo build --release --locked
 ```
 
-Or with `just`:
+If you skip this, she builds herself in the background the first time the plugin loads and
+`cargo` is on the PATH; progress goes to `<Hermes home>/hermes-chan/build.log`.
+
+## 3. Make her the acting body (optional, recommended)
 
 ```bash
-just install      # link into ~/.hermes/plugins
-just build        # build the overlay binary
+hermes config set computer_use.backend hermes-chan
 ```
 
-## 2. Make her the acting body (optional but recommended)
+Every `computer_use` action the agent takes is then performed by Hermes-chan through her native
+input driver (CoreGraphics on macOS, SendInput on Windows, XTest on Linux), with Hermes' approval
+gating intact.
 
-Add to `~/.hermes/config.yaml`:
-
-```yaml
-computer_use:
-  backend: hermes-chan
-```
-
-Now every `computer_use` action the agent takes is performed by Hermes-chan
-through her Rust macOS input driver, with Hermes' approval gating intact.
-
-## 3. Start Hermes and wake her
+To talk to the agent through her chat bubble, also allow plugin chat (plugins run inside Hermes'
+gateway, which serves the CLI, the TUI and the Desktop app) and run any `/hermeschan` command
+once in the chat you want her to talk to:
 
 ```bash
-hermes            # or the desktop app / TUI
+hermes config set plugins.entries.hermes-chan.allow_gateway_injection true
 ```
 
-In the session:
+## 4. Start Hermes and say hi
+
+```bash
+hermes            # or the TUI / Desktop app
+```
+
+She appears a couple of seconds after the session starts. In the session:
 
 ```
-/hermeschan wake            # she fades in and perches on the active window
+/hermeschan status          # body, bridge and driver state, and why she is missing if she is
 /hermeschan say hello       # speech bubble
-/hermeschan mischief on     # allow autonomous idle antics
+/hermeschan mischief on     # allow her own pranks
 ```
 
-Type directly into her bubble to talk to the agent — it becomes a normal user
-turn.
+Ctrl+click her to open the chat box, Ctrl+Shift+click her to switch her off, `/hermeschan on` to
+bring her back.
 
-## 4. Grant macOS permissions on first run
+## 5. Grant permissions (macOS only)
 
-- **Accessibility** (required for perch/grab/track): System Settings ▸ Privacy &
-  Security ▸ Accessibility ▸ enable the Hermes app / your terminal.
-- **Screen Recording** (only for the `glitch`/`bend` snapshot effect).
-- **Automation ▸ Finder** (only for real `tidy_desktop` icon moves).
+- **Accessibility** (perch, follow, window pranks, native input): System Settings ▸ Privacy &
+  Security ▸ Accessibility ▸ enable the app that runs Hermes (your terminal or Hermes Desktop).
+- **Screen Recording** (the collapse snapshot and the heartbeat's optional glance).
+- **Automation ▸ System Events / Finder** (window titles; real `tidy_desktop` moves).
 
-If a permission is missing she fails cleanly and keeps animating; she never
-hangs the agent.
+Windows and Linux ask for nothing. On Windows she cannot touch apps running as administrator; on
+Linux she needs an X11 display, and on Wayland she only sees X11/XWayland apps.
 
-## 5. Make her come alive on her own
+If a permission is missing she fails cleanly and keeps animating; she never hangs the agent.
 
-Give the session a heartbeat so she reacts between turns without you prompting:
+## 6. Make her come alive on her own
 
 ```
-/heartbeat every 2m (idle) glance at what I'm doing and react in one short line
+/hermeschan heartbeat on 2m
 ```
 
-The tick uses a cheap `ctx.llm` call, not a full agent turn, so it is nearly
-free. See `hermeschan/autonomy.py`.
+Each tick is one cheap structured `ctx.llm` call, not a full agent turn, capped at 10 an hour.
+It needs `mischief` or `watch` on. See `hermeschan/autonomy.py`.
 
-## 6. Troubleshooting
+## 7. Troubleshooting
 
 | Symptom | Fix |
 | --- | --- |
-| No sprite appears | `cargo` missing or build failed — run `just build` and read errors; or `HERMESCHAN_AUTOSTART=0` to silence |
-| She appears but doesn't move windows | grant Accessibility (step 4) |
-| `/hermeschan status` says "not connected" | the overlay isn't running — `/hermeschan wake`, or check the socket path it prints |
-| Runs on a server/cron and spawns nothing | by design — unattended contexts don't launch a GUI |
+| No sprite appears | `/hermeschan status`; then `build.log` / `overlay.log` in `<Hermes home>/hermes-chan/` |
+| Status says she is off | `/hermeschan on` |
+| She appears but doesn't move windows (macOS) | grant Accessibility (step 5) |
+| Linux: black box around her | run a compositor; on some GPU drivers set `WEBKIT_DISABLE_DMABUF_RENDERER=1` |
+| Linux: "no graphical display" | the gateway runs without your session's display (a systemd service): `systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XAUTHORITY`, then `hermes gateway restart` |
+| Runs on a server, CI or kanban worker and spawns nothing | by design: unattended runs don't start a GUI |
 
-## 7. Uninstall
+## 8. Uninstall
 
 ```bash
-just uninstall        # unlink the plugin
-just clean            # remove build artifacts
+hermes plugins remove hermes-chan
 ```
+
+Her settings and logs stay in `<Hermes home>/hermes-chan/` until you delete that folder.

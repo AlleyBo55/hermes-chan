@@ -77,9 +77,10 @@
     prank: { clip: "action/mischief", ms: [2600, 3600] },
   };
   // What the active window is for, read from its app name and title.
+  // App names differ per OS: "Code" (VS Code), "WindowsTerminal", "gnome-terminal-server".
   const ACTIVITIES = [
-    { kind: "video", pattern: /youtube|netflix|twitch|prime video|disney\+|vimeo|bilibili|crunchyroll|\b(iina|vlc|quicktime player|infuse|mpv|movist|tv)\b/i },
-    { kind: "code", pattern: /visual studio code|\b(code|cursor|xcode|zed|intellij idea|pycharm|webstorm|goland|terminal|iterm2?|warp|ghostty|kitty|wezterm|alacritty)\b/i },
+    { kind: "video", pattern: /youtube|netflix|twitch|prime video|disney\+|vimeo|bilibili|crunchyroll|movies & tv|films & tv|media player|\b(iina|vlc|quicktime player|infuse|mpv|movist|tv|mpc-hc|mpc-be|potplayer|totem|celluloid|smplayer|haruna)\b/i },
+    { kind: "code", pattern: /visual studio code|sublime text|android studio|\b(kiro|code|cursor|windsurf|xcode|zed|intellij idea|pycharm|webstorm|goland|clion|rider|rustrover|terminal|iterm2?|warp|ghostty|kitty|wezterm|alacritty|windowsterminal|powershell|pwsh|konsole|gnome-terminal(-server)?|xterm|tilix)\b/i },
   ];
   const BEATS = [
     { kind: "walk", weight: 28, ms: [3000, 7000] },

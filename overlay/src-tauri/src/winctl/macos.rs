@@ -1,41 +1,14 @@
-//! Minimal macOS window observation/control via `osascript` and System Events.
+//! macOS window observation/control via `osascript` and System Events, plus the
+//! CoreGraphics window list and `screencapture` snapshots.
 //!
 //! All target selection stays in Rust. AppleScript receives only validated
 //! numeric process IDs and coordinates, so plugin-provided target text is never
 //! interpolated into a script.
 
-use std::{fmt, process::Command};
+use super::{ActiveWindow, ErrorKind, WindowControlError, WindowFrame};
+use std::process::Command;
 
 const FIELD_SEPARATOR: char = '\u{1f}';
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct ActiveWindow {
-    pub pid: u32,
-    pub app: String,
-    pub title: String,
-    pub x: i32,
-    pub y: i32,
-    pub w: i32,
-    pub h: i32,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ErrorKind {
-    Permission,
-    Other,
-}
-
-#[derive(Clone, Debug)]
-pub struct WindowControlError {
-    pub kind: ErrorKind,
-    pub message: String,
-}
-
-impl fmt::Display for WindowControlError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str(&self.message)
-    }
-}
 
 fn osascript(script: &str) -> Result<String, WindowControlError> {
     let output = Command::new("osascript")
@@ -73,7 +46,7 @@ fn osascript(script: &str) -> Result<String, WindowControlError> {
 }
 
 /// Frontmost application window in global logical screen coordinates.
-pub fn frontmost_window() -> Result<Option<ActiveWindow>, WindowControlError> {
+pub(super) fn frontmost_window() -> Result<Option<ActiveWindow>, WindowControlError> {
     let output = osascript(
         r#"tell application "System Events"
   set p to first application process whose frontmost is true
@@ -92,7 +65,7 @@ end tell"#,
 }
 
 /// Current front window for a process ID previously observed as active.
-pub fn window_for_pid(pid: u32) -> Result<Option<ActiveWindow>, WindowControlError> {
+pub(super) fn window_for_pid(pid: u32) -> Result<Option<ActiveWindow>, WindowControlError> {
     let output = osascript(&format!(
         r#"tell application "System Events"
   set matches to every application process whose unix id is {pid}
@@ -110,6 +83,11 @@ pub fn window_for_pid(pid: u32) -> Result<Option<ActiveWindow>, WindowControlErr
 end tell"#
     ))?;
     parse_window(&output)
+}
+
+/// Where the target's window is now (its process's front window).
+pub(super) fn current_frame(target: &ActiveWindow) -> Result<Option<ActiveWindow>, WindowControlError> {
+    window_for_pid(target.pid)
 }
 
 fn parse_window(output: &str) -> Result<Option<ActiveWindow>, WindowControlError> {
@@ -144,6 +122,7 @@ fn parse_window(output: &str) -> Result<Option<ActiveWindow>, WindowControlError
         y: parse_i32(fields[4], "window y coordinate")?,
         w: parse_i32(fields[5], "window width")?,
         h: parse_i32(fields[6], "window height")?,
+        handle: 0,
     };
     if window.w <= 0 || window.h <= 0 {
         return Err(WindowControlError {
@@ -154,7 +133,13 @@ fn parse_window(output: &str) -> Result<Option<ActiveWindow>, WindowControlError
     Ok(Some(window))
 }
 
-fn move_window(pid: u32, x: i32, y: i32, overlay_pid: u32) -> Result<(), WindowControlError> {
+pub(super) fn move_window(
+    target: &ActiveWindow,
+    x: i32,
+    y: i32,
+    overlay_pid: u32,
+) -> Result<(), WindowControlError> {
+    let pid = target.pid;
     osascript(&format!(
         r#"tell application "System Events"
   set matches to every application process whose unix id is {pid}
@@ -170,64 +155,8 @@ end tell"#
     Ok(())
 }
 
-/// Nudge the validated active window by a relative logical offset.
-pub fn nudge_window(
-    target: &ActiveWindow,
-    dx: i32,
-    dy: i32,
-    overlay_pid: u32,
-) -> Result<(), WindowControlError> {
-    move_window(
-        target.pid,
-        target.x.saturating_add(dx),
-        target.y.saturating_add(dy),
-        overlay_pid,
-    )
-}
-
-/// Shake the validated active window and restore its original position.
-pub fn shake_window(target: &ActiveWindow, overlay_pid: u32) -> Result<(), WindowControlError> {
-    for dx in [-18, 18, -14, 14, -8, 8, 0] {
-        if let Err(error) = move_window(
-            target.pid,
-            target.x.saturating_add(dx),
-            target.y,
-            overlay_pid,
-        ) {
-            let _ = move_window(target.pid, target.x, target.y, overlay_pid);
-            return Err(error);
-        }
-        std::thread::sleep(std::time::Duration::from_millis(45));
-    }
-    Ok(())
-}
-
-/// Pull the validated active window down by `dy` in a few steps, as if she drags it.
-pub fn pull_window(target: &ActiveWindow, dy: i32, overlay_pid: u32) -> Result<(), WindowControlError> {
-    for step in 1..=4 {
-        move_window(target.pid, target.x, target.y.saturating_add(dy * step / 4), overlay_pid)?;
-        std::thread::sleep(std::time::Duration::from_millis(30));
-    }
-    Ok(())
-}
-
-/// Put the window back where it was, unless someone has moved it since.
-pub fn restore_window(
-    target: &ActiveWindow,
-    moved_to: (i32, i32),
-    overlay_pid: u32,
-) -> Result<(), WindowControlError> {
-    match window_for_pid(target.pid)? {
-        Some(now) if (now.x - moved_to.0).abs() <= 2 && (now.y - moved_to.1).abs() <= 2 => {
-            move_window(target.pid, target.x, target.y, overlay_pid)
-        }
-        _ => Ok(()),
-    }
-}
-
 /// Seconds since the last keyboard, mouse or trackpad input.
-#[cfg(target_os = "macos")]
-pub fn user_idle_seconds() -> f64 {
+pub(super) fn user_idle_seconds() -> f64 {
     #[link(name = "CoreGraphics", kind = "framework")]
     extern "C" {
         fn CGEventSourceSecondsSinceLastEventType(state: i32, event_type: u32) -> f64;
@@ -236,14 +165,9 @@ pub fn user_idle_seconds() -> f64 {
     unsafe { CGEventSourceSecondsSinceLastEventType(0, u32::MAX) }
 }
 
-#[cfg(not(target_os = "macos"))]
-pub fn user_idle_seconds() -> f64 {
-    0.0
-}
-
 /// Capture one validated window rectangle for an opt-in autonomy sample.
 /// Returns PNG base64. Screen Recording denial is reported as a permission error.
-pub fn capture_window(target: &ActiveWindow) -> Result<String, WindowControlError> {
+pub(super) fn capture_window(target: &ActiveWindow) -> Result<String, WindowControlError> {
     use base64::{engine::general_purpose::STANDARD, Engine as _};
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -303,7 +227,7 @@ pub fn capture_window(target: &ActiveWindow) -> Result<String, WindowControlErro
 
 /// Snapshot one window by its CGWindowID, without anything in front of it (so not her
 /// own overlay either). PNG base64; needs Screen Recording like `capture_window`.
-pub fn capture_window_id(window_id: u32) -> Result<String, WindowControlError> {
+pub(super) fn capture_window_id(window_id: u32) -> Result<String, WindowControlError> {
     use base64::{engine::general_purpose::STANDARD, Engine as _};
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -333,22 +257,9 @@ pub fn capture_window_id(window_id: u32) -> Result<String, WindowControlError> {
     }
 }
 
-/// One on-screen app window, for Hermes-chan to stand on, climb or jump to.
-#[derive(Clone, Debug, serde::Serialize)]
-pub struct WindowFrame {
-    pub id: u32,
-    pub pid: u32,
-    pub app: String,
-    pub x: f64,
-    pub y: f64,
-    pub w: f64,
-    pub h: f64,
-}
-
 /// Normal app windows on screen, front to back, in logical points. Reads only the
 /// owner, layer and bounds, which need no Screen Recording permission.
-#[cfg(target_os = "macos")]
-pub fn visible_windows(own_pid: u32) -> Vec<WindowFrame> {
+pub(super) fn visible_windows(own_pid: u32) -> Vec<WindowFrame> {
     use core_foundation::base::{CFType, TCFType};
     use core_foundation::dictionary::{CFDictionary, CFDictionaryRef};
     use core_foundation::number::{CFNumber, CFNumberRef};
@@ -417,9 +328,4 @@ pub fn visible_windows(own_pid: u32) -> Vec<WindowFrame> {
         windows.push(WindowFrame { id, pid, app, x, y, w, h });
     }
     windows
-}
-
-#[cfg(not(target_os = "macos"))]
-pub fn visible_windows(_own_pid: u32) -> Vec<WindowFrame> {
-    Vec::new()
 }

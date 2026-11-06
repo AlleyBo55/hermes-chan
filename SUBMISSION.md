@@ -35,9 +35,11 @@ cp CATALOG_ENTRY.yaml <fork>/plugin-catalog/hermes-chan.yaml
 # commit on a branch and open the PR
 ```
 
-In the PR description, restate the disclosure lines (local socket server, spawns
-a built-from-source overlay, drives the screen through its Rust native-input
-backend under Hermes approval, and moves windows via System Events / Accessibility). Reviewers turn these
+In the PR description, restate the disclosure lines (local bridge server — an
+owner-only AF_UNIX socket on macOS/Linux, a token-guarded 127.0.0.1 port on
+Windows — spawns a built-from-source overlay, drives the screen through its Rust
+native-input backend under Hermes approval, and moves the active window for
+short pranks via System Events, SetWindowPos or EWMH). Reviewers turn these
 into the entry's disclosure summary.
 
 Before pushing, run the same check CI runs:
