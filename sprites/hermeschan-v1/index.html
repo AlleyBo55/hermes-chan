@@ -23,7 +23,7 @@
 </head>
 <body>
 <main>
-  <header><div><div class="eyebrow">Desktop companion / character collection</div><h1>Hermes-chan</h1><p>The Nous Girl, brought to your desktop.</p></div><div class="badge">250 PNGs · 44 animations · 192 × 208</div></header>
+  <header><div><div class="eyebrow">Desktop companion / character collection</div><h1>Hermes-chan</h1><p>The Nous Girl, brought to your desktop.</p></div><div class="badge" id="collection-count">Loading collection…</div></header>
   <div class="workbench">
     <aside class="panel">
       <label for="animation">Animation</label><select id="animation" disabled><option>Loading sprites…</option></select>
@@ -31,7 +31,7 @@
       <div class="control"><label for="zoom">Inspect size</label><select id="zoom"><option value="0.5">Half size · 96 × 104</option><option value="1">Native · 192 × 208</option><option value="2" selected>2× · 384 × 416</option></select></div>
       <label>Background</label><div class="buttons"><button data-bg="checker" aria-pressed="true">Grid</button><button data-bg="#ffffff" aria-pressed="false">Light</button><button data-bg="#252832" aria-pressed="false">Dark</button></div>
       <div class="control"><label>Compact desktop size</label><p class="small">96 × 104 CSS px. The image keeps its full alpha canvas.</p><div class="size-view"><canvas id="actual" width="192" height="208" aria-label="Compact sprite preview"></canvas></div></div>
-      <div class="control small"><a href="preview.png">Collection overview</a> · <a href="manifest.json">Animation manifest</a></div>
+      <div class="control small"><a href="preview.png">Collection overview</a> · <a href="walk-preview.gif">Walk loop</a> · <a href="climb-preview.gif">Climb loop</a> · <a href="dragged-preview.png">Dragged sequence</a> · <a href="manifest.json">Animation manifest</a></div>
     </aside>
     <section class="panel">
       <div class="stage" id="stage"><canvas id="character" width="192" height="208" aria-label="Animated Hermes-chan"></canvas></div>
@@ -63,6 +63,9 @@ function choose(name){
 }
 canvas.addEventListener('spriteframe',e=>{actual.clearRect(0,0,192,208);actual.drawImage(canvas,0,0);scrub.value=e.detail.index;document.getElementById('counter').textContent=`Frame ${e.detail.index+1} / ${player.manifest.clips[e.detail.clip].frames.length}`;document.querySelectorAll('.frame').forEach((b,i)=>b.classList.toggle('active',i===e.detail.index))});
 player.ready.then(()=>{
+  const clips=Object.values(player.manifest.clips);
+  const count=clips.reduce((total,clip)=>total+clip.frames.length,0);
+  document.getElementById('collection-count').textContent=`${count} PNGs · ${clips.length} animations · ${player.manifest.cell.join(' × ')}`;
   select.replaceChildren();let group;
   for(const [name,clip] of Object.entries(player.manifest.clips)){
     const [category,label]=name.split('/');

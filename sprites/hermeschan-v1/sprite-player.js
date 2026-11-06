@@ -9,6 +9,8 @@ class HermesSpritePlayer {
     this.index = 0;
     this.elapsed = 0;
     this.paused = false;
+    this.holding = false;
+    this.loopOverride = undefined;
     this.ready = this.load();
   }
 
@@ -22,7 +24,12 @@ class HermesSpritePlayer {
       await image.decode();
       this.images[name] = image;
     }));
+
     [this.canvas.width, this.canvas.height] = this.manifest.cell;
+    const [displayWidth, displayHeight] = this.manifest.display || this.manifest.cell;
+    this.canvas.style.width = `${displayWidth}px`;
+    this.canvas.style.height = `${displayHeight}px`;
+
     this.play(this.clip);
     this.lastTime = performance.now();
     this.tick = this.tick.bind(this);
@@ -33,9 +40,11 @@ class HermesSpritePlayer {
   play(name, options = {}) {
     if (this.manifest && !this.manifest.clips[name]) return false;
     this.clip = name;
-    this.loopOverride = options.loop;
+    this.loopOverride = typeof options.loop === "boolean" ? options.loop : undefined;
     this.index = 0;
     this.elapsed = 0;
+    this.holding = false;
+    if (this.manifest) this.lastTime = performance.now();
     this.draw();
     return true;
   }
@@ -45,6 +54,7 @@ class HermesSpritePlayer {
     if (!clip) return;
     this.index = Math.max(0, Math.min(clip.frames.length - 1, index));
     this.elapsed = 0;
+    this.holding = false;
     this.draw();
   }
 
@@ -58,36 +68,70 @@ class HermesSpritePlayer {
     }));
   }
 
+  completeClip(clipName, clip, wasOneCycleOverride) {
+    const detail = {
+      clip: clipName,
+      index: clip.frames.length - 1,
+      after: clip.after,
+      loopOverridden: wasOneCycleOverride,
+    };
+
+    this.loopOverride = undefined;
+    if (clip.after === "hold_last") {
+      this.index = clip.frames.length - 1;
+      this.elapsed = 0;
+      this.holding = true;
+    } else {
+      const repeatAfter = clip.after === "repeat" && !wasOneCycleOverride;
+      const nextClip = repeatAfter
+        ? clipName
+        : (this.manifest.clips[clip.after] ? clip.after : "core/idle");
+      this.clip = nextClip;
+      this.index = 0;
+      this.holding = false;
+      this.draw();
+    }
+
+    this.canvas.dispatchEvent(new CustomEvent("spritecomplete", { detail }));
+  }
+
   tick(now) {
-    const delta = Math.min(now - this.lastTime, 250);
+    const delta = Math.max(0, now - this.lastTime);
     this.lastTime = now;
-    if (!this.paused) {
-      let clip = this.manifest.clips[this.clip];
+
+    if (!this.paused && !this.holding) {
       this.elapsed += delta;
-      while (this.elapsed >= clip.frames[this.index].duration) {
-        this.elapsed -= clip.frames[this.index].duration;
+      while (!this.holding) {
+        const clipName = this.clip;
+        const clip = this.manifest.clips[clipName];
+        const frame = clip.frames[this.index];
+        const duration = Math.max(1, Number(frame.duration) || 1);
+        if (this.elapsed < duration) break;
+
+        this.elapsed -= duration;
         this.index += 1;
-        if (this.index >= clip.frames.length) {
-          if (this.loopOverride ?? clip.loop) {
-            this.index = 0;
-          } else if (clip.after === "hold_last") {
-            this.index = clip.frames.length - 1;
-            this.elapsed = 0;
-            break;
-          } else {
-            this.clip = this.manifest.clips[clip.after] ? clip.after : "core/idle";
-            this.loopOverride = undefined;
-            this.index = 0;
-            clip = this.manifest.clips[this.clip];
-          }
+        if (this.index < clip.frames.length) {
+          this.draw();
+          continue;
         }
-        this.draw();
+
+        const wasOneCycleOverride = this.loopOverride === false && clip.loop;
+        if (this.loopOverride ?? clip.loop) {
+          this.index = 0;
+          this.draw();
+          continue;
+        }
+
+        this.completeClip(clipName, clip, wasOneCycleOverride);
       }
     }
+
     this.animationFrame = requestAnimationFrame(this.tick);
   }
 
-  destroy() { cancelAnimationFrame(this.animationFrame); }
+  destroy() {
+    cancelAnimationFrame(this.animationFrame);
+  }
 }
 
 window.HermesSpritePlayer = HermesSpritePlayer;

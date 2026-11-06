@@ -1,4 +1,4 @@
-"""Register generated art, pack atlases, and validate the 250-frame collection.
+"""Register generated art, pack atlases, and validate the sprite collection.
 
 Run from any directory with Python + Pillow. This does not call an image API.
 """
@@ -34,6 +34,8 @@ def contact_bottom(frame):
     if frame["clip"] == "core/celebrate":
         return [196, 196, 192, 184, 181, 184, 196, 196][frame["index"]]
     if frame["clip"] == "movement/fall":
+        return 180
+    if frame["clip"] == "movement/dragged":
         return 180
     if frame["clip"] == "movement/land" and frame["index"] == 0:
         return 186
@@ -76,7 +78,7 @@ def main():
     plan = json.loads(PLAN.read_text())
     missing = [Path(f["path"]).name for f in plan["frames"] if not (RAW / Path(f["path"]).name).is_file()]
     if missing:
-        raise SystemExit(f"Waiting for {len(missing)} / 250 source frames; first: {missing[0]}")
+        raise SystemExit(f"Waiting for {len(missing)} / {len(plan['frames'])} source frames; first: {missing[0]}")
     for directory in ("frames", "atlases", "contact-sheets"):
         (DEST / directory).mkdir(parents=True, exist_ok=True)
 
@@ -100,7 +102,9 @@ def main():
         image = clean_alpha(original)
         box = image.getchannel("A").point(lambda a: 255 if a >= 32 else 0).getbbox()
         small = image.resize((round(image.width*scale), round(image.height*scale)), Image.Resampling.LANCZOS)
-        offset = [round(96-master_x*scale), round(contact_bottom(planned)-box[3]*scale)]
+        vertical_offset = (16 - box[1] * scale if planned["clip"].startswith("movement/climb_")
+                           else contact_bottom(planned) - box[3] * scale)
+        offset = [round(96-master_x*scale), round(vertical_offset)]
         frame = Image.new("RGBA", CELL)
         frame.alpha_composite(small, tuple(offset))
         alpha = frame.getchannel("A")
@@ -164,6 +168,31 @@ def main():
         draw.text((x+5,y+134), b, font=ImageFont.load_default(size=11), fill="#263a3a")
     overview.save(DEST / "preview.png")
 
+    if "movement/dragged" in plan["animations"]:
+        dragged = Image.new("RGB", (960, 300), "#ede9e1")
+        draw = ImageDraw.Draw(dragged)
+        for index, frame_id in enumerate(plan["animations"]["movement/dragged"]["frames"]):
+            art = Image.open(DEST / indexed[frame_id]["path"]).resize((240, 260), Image.Resampling.LANCZOS)
+            dragged.paste(art, (index * 240, 6), art)
+            draw.text((index * 240 + 16, 274), f"Dragged / {index:02}", font=font, fill="#263a3a")
+        dragged.save(DEST / "dragged-preview.png")
+
+    for motion in ("walk", "climb"):
+        preview_frames = []
+        for phase in range(8):
+            preview = Image.new("RGB", (384, 238), "#ede9e1")
+            draw = ImageDraw.Draw(preview)
+            for side, x in (("left", 0), ("right", 192)):
+                frame_id = f"movement/{motion}_{side}/{phase:02}"
+                art = Image.open(DEST / indexed[frame_id]["path"])
+                preview.paste(art, (x, 0), art)
+                draw.text((x + 8, 214), f"{motion.title()} {side} / {phase:02}", font=font, fill="#263a3a")
+            preview_frames.append(preview)
+        duration = indexed[f"movement/{motion}_left/00"]["duration_ms"]
+        preview_frames[0].save(DEST / f"{motion}-preview.gif", save_all=True,
+                               append_images=preview_frames[1:], duration=duration,
+                               loop=0, disposal=2)
+
     report = {"frame_count": len(frames), "clip_count": len(runtime["clips"]),
               "size_px": list(CELL), "all_rgba": True, "all_have_transparency": True,
               "unique_pixel_hashes": len(hashes), "clipped_frames": 0,
@@ -176,6 +205,10 @@ def main():
     shutil.copy2(DEST / "manifest.json", overlay / "manifest.json")
     for file in (DEST / "atlases").glob("*.png"):
         shutil.copy2(file, overlay / "atlases" / file.name)
+    # Keep the seven hand-timed effect clips attached when the base 254-frame
+    # collection is regenerated.
+    from build_effect_sprites import main as build_effect_sprites
+    build_effect_sprites()
     print(json.dumps(report, indent=2))
 
 

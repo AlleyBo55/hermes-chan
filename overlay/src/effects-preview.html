@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hermes-chan · Window effects</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; padding: 28px; background: #101523; color: #eaf1ff; font: 15px/1.5 system-ui, sans-serif; }
+    main { max-width: 1000px; margin: auto; }
+    h1 { margin: 0 0 6px; font-size: 28px; }
+    p { margin: 0 0 18px; color: #9dabc9; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    button { padding: 10px 17px; border: 1px solid #7c8da9; border-radius: 9px; background: #252f47; color: white; font: inherit; cursor: pointer; }
+    button:hover { background: #394963; }
+    .window { position: relative; overflow: hidden; height: min(62vh, 560px); min-height: 320px; border: 1px solid #7d89a4; border-radius: 15px; background: #f8f9fc; color: #273347; box-shadow: 0 20px 65px #050a1699; }
+    .bar { height: 43px; padding: 11px 16px; border-bottom: 1px solid #d7dce8; background: #e9edf5; font-weight: 650; }
+    .dots { float: right; color: #8594ad; letter-spacing: 4px; }
+    .content { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; height: calc(100% - 43px); padding: 22px; }
+    .video { border-radius: 12px; background: radial-gradient(circle at 60% 40%, #8164cb, #263b77 55%, #111b39); }
+    .cards { display: flex; flex-direction: column; gap: 12px; }
+    .card { flex: 1; border: 1px solid #d4dded; border-radius: 10px; padding: 16px; background: white; }
+    .card strong { display: block; margin-bottom: 8px; }
+    .line { height: 8px; width: 78%; margin: 8px 0; border-radius: 8px; background: #dbe2ef; }
+    .line.short { width: 48%; }
+    iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; pointer-events: none; }
+    #chara { position: absolute; left: 22%; bottom: 4%; width: 96px; height: 104px; pointer-events: none; image-rendering: auto; }
+    #cue { display: inline-block; min-width: 180px; color: #b6ddff; }
+    @media (max-width: 640px) { .content { grid-template-columns: 1fr; }.cards { display: none; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Hermes-chan window effects</h1>
+  <p>Choose an action. Hermes-chan's impact frame starts its matching click-through window effect. <span id="cue"></span></p>
+  <div class="controls">
+    <button data-effect="crack">Crack screen</button>
+    <button data-effect="portal">Open portal</button>
+    <button data-effect="glitch">Glitch</button>
+    <button data-effect="bend">Bend</button>
+    <button data-effect="text_shatter">Break font</button>
+    <button data-effect="ripple">Ripple</button>
+    <button data-effect="pixel_dissolve">Pixel dissolve</button>
+    <button data-effect="lightning">Lightning</button>
+    <button data-effect="tear">Tear</button>
+  </div>
+  <div class="window">
+    <div class="bar">Active app preview <span class="dots">● ● ●</span></div>
+    <div class="content">
+      <div class="video"></div>
+      <div class="cards">
+        <div class="card"><strong>Now playing</strong><div class="line"></div><div class="line short"></div></div>
+        <div class="card"><strong>Up next</strong><div class="line"></div><div class="line short"></div></div>
+      </div>
+    </div>
+    <iframe id="fx" src="effect.html" title="Visual effect overlay"></iframe>
+    <canvas id="chara" aria-label="Hermes-chan sprite"></canvas>
+  </div>
+</main>
+<script src="sprite-player.js"></script>
+<script>
+const frame = document.getElementById('fx');
+const chara = document.getElementById('chara');
+const windowFrame = document.querySelector('.window');
+const cue = document.getElementById('cue');
+const sprites = new HermesSpritePlayer(chara, 'hermeschan/');
+const durations = {
+  crack: 1400, portal: 2200, glitch: 1200, bend: 1100,
+  text_shatter: 1650, ripple: 1400, pixel_dissolve: 1600,
+  lightning: 1300, tear: 1700,
+};
+const anchors = {
+  crack: [151, 105], portal: [151, 108], text_shatter: [145, 109],
+  ripple: [150, 107], pixel_dissolve: [154, 102], lightning: [153, 105],
+  tear: [148, 110], glitch: [151, 105], bend: [148, 110],
+};
+let selected = null;
+chara.addEventListener('spriteframe', (event) => {
+  if (!selected) return;
+  const impact = selected === 'bend' ? 'bend_peak' : 'effect_start';
+  if (event.detail.contact !== impact) return;
+  const spriteRect = chara.getBoundingClientRect();
+  const windowRect = windowFrame.getBoundingClientRect();
+  const [handX, handY] = anchors[selected];
+  const originX = (spriteRect.left + handX / 2 - windowRect.left) / windowRect.width;
+  const originY = (spriteRect.top + handY / 2 - windowRect.top) / windowRect.height;
+  cue.textContent = `${selected} · impact frame ${event.detail.index}`;
+  frame.contentWindow.HermesEffects.play({
+    effect: selected, intensity: 0.9, duration_ms: durations[selected],
+    origin_x: originX, origin_y: originY, title: 'ACTIVE APP',
+  });
+});
+document.querySelectorAll('[data-effect]').forEach(button => {
+  button.addEventListener('click', async () => {
+    await sprites.ready;
+    selected = button.dataset.effect;
+    cue.textContent = `${selected} · winding up`;
+    frame.contentWindow.HermesEffects.stop();
+    const clip = selected === 'bend' ? 'action/grab_window_bend' : `action/${selected}`;
+    sprites.play(clip, { loop: false });
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+Use case: stylized-concept
+Asset type: one frame of a 192×208 transparent chibi desktop-companion sprite animation
+Input image: the exact approved Hermes-chan sprite and identity reference; preserve her appearance, palette, proportions, rendering, and three-quarter back/right view.
+Primary request: Draw Hermes-chan at the instant she taps an invisible app window with her right index finger and causes a glass crack. Give her a distinct forceful tap pose: leaning toward screen-right, extended right arm, left hand bracing at her waist, slight hair and skirt follow-through. A small cyan-white impact spark touches her fingertip, with two short glass fracture strokes around the point. Keep all effect marks connected to her fingertip and inside the sprite silhouette area.
+Character: cute colored chibi Nous Girl, glossy black blunt bangs and outward-curled bob, white over-ear headphones with blue accents, large blue eye if visible, white collared shirt, black tie, black suspenders, black pleated skirt, little black shoes.
+Composition: full body, same size and ground baseline as input, right-facing three-quarter rear view, subject centered on a completely transparent canvas, no crop.
+Style: clean polished anime game sprite, crisp outlines and shading matching the input exactly.
+Constraints: one character only; genuine transparent background; no app window; no text; no extra limbs; no unrelated objects; keep exact outfit and face.

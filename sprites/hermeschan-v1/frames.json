@@ -5417,7 +5417,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "left",
     "pose": "Contact: leading foot forward, trailing heel raised, opposite arm forward",
     "atlas": {
@@ -5443,18 +5443,18 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "1b26ea838fce5d1401ffb6ef4c57036aad308d279301e06a837e5f2b2e4d76e7",
-    "source_sha256": "767f34f206e9f7b4abc6da4ed60a05d061ae298ac0f7e699aedca394416aca3a",
+    "sha256": "958d1ad1e6e60758b18cc6c3c6f01f82ea87e2ec43171b7d853f79e98373ed2f",
+    "source_sha256": "6bd8c8b191c0bcbc5e1044f378b1f7e0510a66a07921f9fbe554a34332be26a1",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        12
+        10
       ],
       "bounds_px": [
-        39,
+        38,
         17,
-        165,
+        155,
         197
       ]
     }
@@ -5469,7 +5469,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "left",
     "pose": "Down: leading knee takes weight, torso lowers slightly",
     "atlas": {
@@ -5495,18 +5495,18 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "11d3d1f90ac0313ec7fb0df38f395555bcaf761943189497161f5f6aeb201883",
-    "source_sha256": "3a57f5db7bac3473cde02fc452f3b5e9c4bf454d7106b3c494edfe44e0c45608",
+    "sha256": "8a72c5a6bd8b183828bd2c8a7322b7bc0b8e5a360ac6b5598cd566d62a8a314b",
+    "source_sha256": "cfcec5706056e4a03d18830d30386b1fef529cc5ce748e2606391a8bffda386d",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        15
+        10
       ],
       "bounds_px": [
-        37,
-        21,
-        163,
+        38,
+        17,
+        154,
         197
       ]
     }
@@ -5521,7 +5521,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "left",
     "pose": "Passing: trailing foot passes beneath hips, arms approach center",
     "atlas": {
@@ -5547,19 +5547,19 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "fcde1b67c33efc661e1c6cf81f0368fdc2322ec1e8171bb32e679ca23d80fa59",
-    "source_sha256": "5cc635686b26ec4f61efe63733b27c5a2c7491e5a9346a5a26207c7257806ecc",
+    "sha256": "e41a5a32d05cf35a5f88406815808ea370ae691328cf902ecabb52dc6f6736f9",
+    "source_sha256": "34d7608a3e67d9cba3e93f24f321101f5780ddbd83ffd807c34ca39c240278ae",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        13
+        10
       ],
       "bounds_px": [
-        39,
-        17,
-        165,
-        196
+        37,
+        20,
+        155,
+        197
       ]
     }
   },
@@ -5573,7 +5573,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "left",
     "pose": "Up: support heel lifts, free knee rises, hair trails backward",
     "atlas": {
@@ -5599,18 +5599,18 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "b7302db67e197d5221df2ecde7e9ccb44631ec50e075a2cb2b842b59ea7a40fa",
-    "source_sha256": "ed96df62ef72d25268f91d2a0a2eefc96500b8d05d7c62ab48aa043925ff6d34",
+    "sha256": "93abf32122d1530ce85641ca543235b529369ce6e8a3d87e4475c31003b0e7c8",
+    "source_sha256": "4b60764a7ea29f67812bd6e809aef567eb6f6304684c639e9428c5e6a37959e2",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        12
+        10
       ],
       "bounds_px": [
-        38,
+        37,
         16,
-        174,
+        155,
         197
       ]
     }
@@ -5625,7 +5625,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "left",
     "pose": "Opposite contact: other foot forward, arms reversed",
     "atlas": {
@@ -5651,18 +5651,18 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "0ac6ebe87b8a34a884da637f13cc8829102d28943dbc4dea9c1a130275d1d94d",
-    "source_sha256": "b3a032895980b8e7947821e66bd21da1bc4669a06e964dc24cac916dcdd49e45",
+    "sha256": "324ec6a546f7324cccdb0cb88a5c8e1a209f53204815b438c527d893bbc35eba",
+    "source_sha256": "cabdb8ed0310d4f4f9698a8a017840df36934fd9a272c1f82185b08514ede89d",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        14
+        10
       ],
       "bounds_px": [
-        39,
+        37,
         18,
-        165,
+        155,
         197
       ]
     }
@@ -5677,7 +5677,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "left",
     "pose": "Opposite down: weight settles over new leading foot",
     "atlas": {
@@ -5703,19 +5703,19 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "eb36bbc09782de2e3e695f9f6e04ee3d53b4c1f3f601b0a993b1a2e8cb09aca4",
-    "source_sha256": "f8e91b84e2f5eafb1e1467f1fb6af7ec607faa1570c49a71c98955aff3fe0ad8",
+    "sha256": "47aa15ce1dafe8576c81e01d82ebd51084493c769174e5d261cd9f86803aecf8",
+    "source_sha256": "f0f9486806cd26fb2341b82f9e181bbf2fa0bee225514e23e48120b67d6c35bf",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        12
+        10
       ],
       "bounds_px": [
-        39,
-        16,
-        165,
-        196
+        37,
+        20,
+        155,
+        197
       ]
     }
   },
@@ -5729,7 +5729,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "left",
     "pose": "Opposite passing: rear foot swings beneath hips",
     "atlas": {
@@ -5755,18 +5755,18 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "ebd51c3c98cd60b2154f371c20f7f12428faa4b4cddcaac32ef733645aac5746",
-    "source_sha256": "4a65f4f65aceb5a731e98b8fef5ddaf1dc8e9c396b095e2e985f40bcf6682fa4",
+    "sha256": "0a194ec01e82bb212c618847849abc76f74cb4bb23aa9e6023fbf5a82e52ef02",
+    "source_sha256": "84c160717f4eb06e8b595534f9bbe55d0e21c28c3a173d1dc20b5a05791a1d96",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        13
+        10
       ],
       "bounds_px": [
-        39,
-        17,
-        165,
+        36,
+        23,
+        156,
         197
       ]
     }
@@ -5781,7 +5781,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "left",
     "pose": "Opposite up: free knee rises, silhouette approaches first contact",
     "atlas": {
@@ -5807,18 +5807,18 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "efcb690fee5e3ff5b7d7325190bfed4507fea0a1c99078f8c5e04a3e6ba5103f",
-    "source_sha256": "ffa0be49aa8b20d8635578636403852f350045ec23e599c090c2e9b28a2805f2",
+    "sha256": "25f080c02b1ed23ddb12a633c63b010c01e46d3603a903307711658d8bfc7f69",
+    "source_sha256": "b6e5558872a6bd3c72310597dc06602915afe07c9701c508c4bd675ca1e4e474",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        14
+        10
       ],
       "bounds_px": [
-        39,
-        18,
-        165,
+        37,
+        16,
+        155,
         197
       ]
     }
@@ -5833,7 +5833,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "left",
     "pose": "Both hands gripping invisible vertical edge, knees bent",
     "atlas": {
@@ -5859,19 +5859,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "ebbc278d8f9df1f1daee86b14abf1324db8f8506c625ab8e3a5f0e062cdd0954",
-    "source_sha256": "995d104fb200037c3e62e9ab2eeb0a05d2889a507fe9aca499cb5eb2efa4f417",
+    "sha256": "674b1899b1f1dd468f1549a9bcc8eb23c1a5fb5a76b4ea8b371480ef10afa768",
+    "source_sha256": "2904dfb69d474a8497342833e0b0659ade7d204eea2aa266aab14478ce40ffd5",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        10
+        8
       ],
       "bounds_px": [
-        36,
-        14,
-        162,
-        197
+        39,
+        16,
+        153,
+        195
       ]
     }
   },
@@ -5885,7 +5885,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "left",
     "pose": "Upper hand reaches higher, lower hand maintains grip",
     "atlas": {
@@ -5911,18 +5911,18 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "6b5e7d408f881942247db92ae6b73496350963c6121efc5de8758b90550fcfe5",
-    "source_sha256": "d94529b2aacaff495ced3ddcda2e594a14cb66608a35c2cfd47dbf324494fc0f",
+    "sha256": "8ec232808856210abb1f186a3ca893fec1364ab8497c2e942c52a2ccee16b464",
+    "source_sha256": "8f9b5b811d6525de69b15b9ef551163d7dcfd2e590985a3f515e2c59079202c1",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        12
+        10
       ],
       "bounds_px": [
-        35,
+        39,
         16,
-        165,
+        153,
         197
       ]
     }
@@ -5937,7 +5937,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "left",
     "pose": "Upper fingers grip, lower knee tucks toward torso",
     "atlas": {
@@ -5963,19 +5963,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "15295442be99a782e4aedead9de52a666b99c32cb9328b8f173d6a6054228f64",
-    "source_sha256": "218bdc57e7976f682c08728f0465308292efa9682df60bf6ef11e612ee554e4a",
+    "sha256": "330bc1f9eba0984742b8d7a68fbea9a9a158927d62bf09def4f0af29cbc3fd62",
+    "source_sha256": "71f9d26af5cb85fb5f7323986b325db422be2cf3874e4c8d5b742190df48680e",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        12
+        7
       ],
       "bounds_px": [
-        30,
-        16,
-        165,
-        197
+        40,
+        15,
+        152,
+        194
       ]
     }
   },
@@ -5989,7 +5989,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "left",
     "pose": "Pull torso upward, upper elbow bends, trailing foot extends",
     "atlas": {
@@ -6015,19 +6015,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "0ea3e1e053766084460806cc8b7dbe93f7681581ecc8021bdc77d1a8c49bac80",
-    "source_sha256": "6a0682fdc14f05e77ec387aeaf8dcf28d8dc0e0d3a688c2b119efc750bdcae3e",
+    "sha256": "09485c05763d28830ae2395a153a7e6bb8649c0339ff1d0ef440aa51b3c43985",
+    "source_sha256": "9fe56a61b28d7fb8b7ada366f2e5fc4ce3f31e1a0edfc227cc49e047416b0bc5",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        17
+        -1
       ],
       "bounds_px": [
-        39,
-        19,
-        164,
-        197
+        42,
+        16,
+        151,
+        185
       ]
     }
   },
@@ -6041,7 +6041,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "left",
     "pose": "Lower hand releases and reaches above upper hand",
     "atlas": {
@@ -6067,19 +6067,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "f70587bd57bd4892a55c0d7713c9c2daa0039f1c7edd23c407ae80e7dfb9776c",
-    "source_sha256": "384588534b3e4f940d4a442299682f373e554aadfd613463cff2660b9fe934a8",
+    "sha256": "d37ba8d9f542b59c7be36ef453d31ba126376853bdfe38b7b0e0e4bc41b41dc1",
+    "source_sha256": "dc81bad49fedd8170d11849bf24f4b84d2a0fabf05c13eda7e296cdcdd6e2d7b",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        12
+        0
       ],
       "bounds_px": [
-        33,
+        40,
         16,
-        165,
-        197
+        152,
+        187
       ]
     }
   },
@@ -6093,7 +6093,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "left",
     "pose": "New upper hand grips, opposite knee tucks",
     "atlas": {
@@ -6119,19 +6119,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "afe4106f0005f3e33f963ee1e4bb9e1fca2887b2ed2d8aa972bfa917c3fb56b3",
-    "source_sha256": "12e9cf61ace95dca49838b2361ae800e2e71622abe9e5915332a9d6f84bdadd0",
+    "sha256": "a5698bb460a485fe7d57638f404c4c233995cfd248c98d12f458a15d362ab47e",
+    "source_sha256": "3988da982bc2eaf8fe0f5449ed17a07efe6481215493ca0f98075f0bb9fefeed",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        12
+        3
       ],
       "bounds_px": [
-        35,
-        17,
-        164,
-        197
+        41,
+        15,
+        150,
+        190
       ]
     }
   },
@@ -6145,7 +6145,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "left",
     "pose": "Pull upward using new upper grip, first leg extends",
     "atlas": {
@@ -6171,19 +6171,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "59c32882a832c8e40fa9d2dc2c51efb81b00feb484ca23e2800b3bef9adc2cf7",
-    "source_sha256": "3dd1c9a565647f66a47637d4740ffcceacaa2abdffa600b097a22094bf34c642",
+    "sha256": "f88666c894521311d4c08ff91507dc3d7d856431132d497226794b0c4abe7f59",
+    "source_sha256": "eb1d8f9cf0fa53b1cc8bb4a72fc56507cadbcc013ecd87b4c0a4395df287d734",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        12
+        -2
       ],
       "bounds_px": [
-        34,
+        42,
         16,
-        163,
-        197
+        150,
+        185
       ]
     }
   },
@@ -6197,7 +6197,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "left",
     "pose": "Both hands settle at staggered holds, ready for next step",
     "atlas": {
@@ -6223,19 +6223,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "8ad6bbc6e39248d2b4f83bd8c1d68afb433ec5241bc13144a86d32b2c2bca35d",
-    "source_sha256": "4a0abc39ecfd264a9c3c361ed861436308bc56309d5ee8c56f283adcfbb06477",
+    "sha256": "e7c1832a341d2e6338f05d8541ec1adaaf3a46a60c673d816c194b480048aeae",
+    "source_sha256": "698568a49e4fa650a74b5896904089cfacb52e6a2896e5023bf6c187128c067e",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        11
+        6
       ],
       "bounds_px": [
         39,
         15,
-        165,
-        197
+        154,
+        192
       ]
     }
   },
@@ -6249,7 +6249,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "right",
     "pose": "Contact: leading foot forward, trailing heel raised, opposite arm forward",
     "atlas": {
@@ -6275,18 +6275,18 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "42434dde14100c021626210884be6f8862315f291735c808ec0e67358bcd3122",
-    "source_sha256": "16132419897e3ccb9f772720d388979348460eec84291bcc93918ae0b5c6462c",
+    "sha256": "ef61ad9d8c20d87b207db7fa4533569f806bc30c52712c5c2dc1455b0c8cbf15",
+    "source_sha256": "a62e69e81b12e3bede027f0cd122f1a608b81557024553cf4b93ed3ae6cdc28f",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        11
+        10
       ],
       "bounds_px": [
-        23,
-        15,
-        160,
+        38,
+        17,
+        155,
         197
       ]
     }
@@ -6301,7 +6301,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "right",
     "pose": "Down: leading knee takes weight, torso lowers slightly",
     "atlas": {
@@ -6327,18 +6327,18 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "02b968c48b78a3cee1799dc68ec8441839e57b6fa9904e6f9d058380d2299260",
-    "source_sha256": "1adc7b840743cad91ac7a68f13613f9dab57b47a7acdcd896b9af9a4117516b3",
+    "sha256": "4eacaf195f25a10d402d18d4a39f2403253267e12cf291583c7f5a87538db0b2",
+    "source_sha256": "a8bddb9b7032d911ce2e3ff5200a123d9815a56509488e257df12ec0c623870a",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        12
+        10
       ],
       "bounds_px": [
-        22,
-        16,
-        159,
+        38,
+        17,
+        155,
         197
       ]
     }
@@ -6353,7 +6353,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "right",
     "pose": "Passing: trailing foot passes beneath hips, arms approach center",
     "atlas": {
@@ -6379,8 +6379,8 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "81080bfd4578829c6e12e96bfb92f797bf6e6e7d7df9c9fe843e2309aea56302",
-    "source_sha256": "0217ab8caf12faafba93dd8e1ee3c4f5b60cc27735e1bcd70072b1a9a30ca03f",
+    "sha256": "f64e87317bdb524a2a2df5fdc699c266bc17c69f672ddd9be18e8434ca556255",
+    "source_sha256": "5b293cd5962f890df46590b6ebeaa9651ac8cd3099c914b233e579770a1f3783",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
@@ -6388,9 +6388,9 @@
         10
       ],
       "bounds_px": [
-        23,
-        13,
-        160,
+        37,
+        20,
+        155,
         197
       ]
     }
@@ -6405,7 +6405,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "right",
     "pose": "Up: support heel lifts, free knee rises, hair trails backward",
     "atlas": {
@@ -6431,18 +6431,18 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "11d4eb41a5629a9655925c849c55491a196e70716b641ed2d6bcb491674d755a",
-    "source_sha256": "01eb9d0ddfbb42df79534d3ca290fc1239cd1bb16f7d54f5c237a82cf977eb0f",
+    "sha256": "c1c8e3ce9cc43dce0fa34f05c8f47abd552870c7884761135b13af170b0dc4a2",
+    "source_sha256": "6fccb904a7f75b7fb8d86b4fe8b75855a22e92ccedf0d6d23a510e375bdce2fa",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        12
+        10
       ],
       "bounds_px": [
-        6,
+        37,
         16,
-        153,
+        155,
         197
       ]
     }
@@ -6457,7 +6457,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "right",
     "pose": "Opposite contact: other foot forward, arms reversed",
     "atlas": {
@@ -6483,8 +6483,8 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "7eefb8f912a47947a2bf71e5b9652662f2700b35ba0a682a3e9e1464de97050c",
-    "source_sha256": "bf7eb60e99eca7f790343a7232e82964e72cec063a3356d6b793de7c9f3b7385",
+    "sha256": "436a68107a61d54558c631e5f233cf41f227f9bd075cfe1817d28ac43797584f",
+    "source_sha256": "5b5bc3e20a8359164c6cecc1819b42c35d52bb3d1d3acdbab85c5c47a9a31768",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
@@ -6492,9 +6492,9 @@
         10
       ],
       "bounds_px": [
-        23,
-        14,
-        160,
+        37,
+        18,
+        155,
         197
       ]
     }
@@ -6509,7 +6509,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "right",
     "pose": "Opposite down: weight settles over new leading foot",
     "atlas": {
@@ -6535,18 +6535,18 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "c3e47dbd102761a9cc61e9a80e7d7eff07a6dcd6484fc3d7041d08aeb2e8ff61",
-    "source_sha256": "ef2fe5281eaebee96bb0b0dac8134cd5dba6bbf9d27163955def84f7da337270",
+    "sha256": "a39440cb345ea2c4857f15e17981af7b6a839f18b0ff6d4b78541820f8e76686",
+    "source_sha256": "d8ea8772af8edf72dc7f413521126a921a5c833921fc9c52f8faf67a3a1be296",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        11
+        10
       ],
       "bounds_px": [
-        22,
-        14,
-        158,
+        37,
+        20,
+        155,
         197
       ]
     }
@@ -6561,7 +6561,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "right",
     "pose": "Opposite passing: rear foot swings beneath hips",
     "atlas": {
@@ -6587,18 +6587,18 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "78bd542e4d4c7aabe1ad21c8303c9b7103fa2c937d8c74f8d3760201cfccf285",
-    "source_sha256": "1c4f0f3e0c72d6bdc6f22f45850428f3919adf2fac75bb19003439b4762c25bc",
+    "sha256": "0e7e68ea20ffcf3f29113c29150bab5fe031aee56c7971703e0bebbab5f81f3a",
+    "source_sha256": "0c2a99384ec53776371c73124060b2db7fbbc60298284afa7b1b208b111cf02f",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        11
+        10
       ],
       "bounds_px": [
+        36,
         23,
-        15,
-        160,
+        156,
         197
       ]
     }
@@ -6613,7 +6613,7 @@
       192,
       208
     ],
-    "duration_ms": 100,
+    "duration_ms": 90,
     "facing": "right",
     "pose": "Opposite up: free knee rises, silhouette approaches first contact",
     "atlas": {
@@ -6639,18 +6639,18 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "9fbe6985ae1e64d0bc5a1cc4a75b4b5c50a2cbebf3905f7b6ea59740be6c2bb8",
-    "source_sha256": "729504f6578a42790944207ec7a63a67160da492ae3232f6d2dc58f264b383eb",
+    "sha256": "7901097d44c0c1986baeac61c0d08a3d63522cfa55f0d83ede546fd6f760c825",
+    "source_sha256": "9345a0995a91df902cfd0c7883df2654ea8b9c439d3cf353ed14726b54c199f3",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        11
+        10
       ],
       "bounds_px": [
-        23,
-        15,
-        160,
+        37,
+        16,
+        155,
         197
       ]
     }
@@ -6665,7 +6665,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "right",
     "pose": "Both hands gripping invisible vertical edge, knees bent",
     "atlas": {
@@ -6691,19 +6691,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "728ccebeb0e8e336f50243fae513351daf0ebc43f57b97a649e78cdf0f58c6b6",
-    "source_sha256": "e2982fba55422492fa2dc4003f7765340f37a40f20d64e6dc57726b78a4e240e",
+    "sha256": "dea6765427f93af559da08148f1041c7df3949deb3aad6b0454b6b7cef597954",
+    "source_sha256": "1ef82935161f441d9da9b04acd3c61272af1fddd40b27a7b81f27cc60dffd991",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        9
+        8
       ],
       "bounds_px": [
-        27,
-        13,
-        159,
-        197
+        39,
+        16,
+        153,
+        195
       ]
     }
   },
@@ -6717,7 +6717,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "right",
     "pose": "Upper hand reaches higher, lower hand maintains grip",
     "atlas": {
@@ -6743,18 +6743,18 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "4d0e1be80f9742342a2b53ebf9841c4b21f21639eeab2571e844f6565e558d77",
-    "source_sha256": "7dcafccdba07e5846e220a64a15bfb89b5aa99fda464c04e3745e6564099bd09",
+    "sha256": "87543534f05f56aaaf169612d5a4c699ce0ca85ca0364e1380ae301ca6e33e18",
+    "source_sha256": "624f893b9df4a293a7c04153e27b5c344798e8d0271be0becafe809c8baee7f5",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        9
+        10
       ],
       "bounds_px": [
-        22,
-        11,
-        157,
+        39,
+        16,
+        153,
         197
       ]
     }
@@ -6769,7 +6769,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "right",
     "pose": "Upper fingers grip, lower knee tucks toward torso",
     "atlas": {
@@ -6795,19 +6795,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "9f552512a263ad4b5f33f37ca9a8469ed5f6892172b25b50c43b191d6920acd3",
-    "source_sha256": "da40052e7c93586f71189c218dc744e5c6c6b4ecfedb6820adf2cf600fb63f59",
+    "sha256": "c648bce210e6efc18d9de8d171989eb4b9514c6a006e4996a8ec3d85e1cb5043",
+    "source_sha256": "a2decf83b2ea10d75d952aa9253fb968e2f057fe20b77157ffcde7e2078fb750",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        10
+        7
       ],
       "bounds_px": [
-        22,
-        14,
-        161,
-        197
+        40,
+        15,
+        152,
+        194
       ]
     }
   },
@@ -6821,7 +6821,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "right",
     "pose": "Pull torso upward, upper elbow bends, trailing foot extends",
     "atlas": {
@@ -6847,19 +6847,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "f33d4ac21830c133c903f8a10b4d4dbf0e83cb1937d94d8702ff95a0d001ae2b",
-    "source_sha256": "7076b14f72c873061d9cae8f4ea4f8a7120dc87bc6be2159e2b2c3d003631d88",
+    "sha256": "5b122593a92394eeb7c8322bf613d65e85af0ffbcd6136900a8baef80d0bc08b",
+    "source_sha256": "9fb4cdf1ab96402e728d951d9370b0927567acee018d00ecbe2e77ad0c097eae",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        10
+        -1
       ],
       "bounds_px": [
-        23,
-        12,
-        161,
-        197
+        41,
+        16,
+        150,
+        185
       ]
     }
   },
@@ -6873,7 +6873,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "right",
     "pose": "Lower hand releases and reaches above upper hand",
     "atlas": {
@@ -6899,19 +6899,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "e2f242ca8567efa37341e07adb4b4e48322ac2e9d0b04b275cc5d6c825749523",
-    "source_sha256": "d3aba76181f47064c89b4026d64d6d311c2c81cf1dacae7d4139fa8a6a493127",
+    "sha256": "0ddda626a2d3de8667837fd75e399d643522782b169d685affab05b99e303218",
+    "source_sha256": "45cfee8c5ecbbfe92f40361c8a5b13d67a6c0d378bd1c94df0be05fe4c045192",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        10
+        0
       ],
       "bounds_px": [
-        23,
-        14,
-        161,
-        197
+        40,
+        16,
+        152,
+        187
       ]
     }
   },
@@ -6925,7 +6925,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "right",
     "pose": "New upper hand grips, opposite knee tucks",
     "atlas": {
@@ -6951,19 +6951,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "1f84c3e26660bccbc909cb1f54bff4801279db4b64d2eba04ec458dbcb523a2b",
-    "source_sha256": "ea3197323c792990cc79a4b5967ec09a7ec81a00fc24e553d7299af6e8030006",
+    "sha256": "f3f2f32cbfa826e913830ef94d582e784aa24e82dc90c56e5647848cef39953f",
+    "source_sha256": "9a080743ebd28abccf46c789d6db69caee351e8eec633026ad72f598e3e9eb9c",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        10
+        3
       ],
       "bounds_px": [
-        22,
-        14,
-        155,
-        197
+        42,
+        15,
+        151,
+        190
       ]
     }
   },
@@ -6977,7 +6977,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "right",
     "pose": "Pull upward using new upper grip, first leg extends",
     "atlas": {
@@ -7003,19 +7003,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "a833bad687e409f2472249285385bb264cdc21023a19529918d5fd743395bd08",
-    "source_sha256": "a52702f44eccb35b206456478e0617ff251661a0aba0a58a792b32e7c6d361f7",
+    "sha256": "df9cfd79562c86b31c44b12bce3c68fae9370c831b638d95cfacaa76992830d2",
+    "source_sha256": "94ac1e331314867070abd78eaff427df8c646f3d6ad17ef7f3c9edf0c25a3a2f",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        11
+        -2
       ],
       "bounds_px": [
-        20,
-        13,
-        154,
-        197
+        42,
+        16,
+        150,
+        185
       ]
     }
   },
@@ -7029,7 +7029,7 @@
       192,
       208
     ],
-    "duration_ms": 130,
+    "duration_ms": 110,
     "facing": "right",
     "pose": "Both hands settle at staggered holds, ready for next step",
     "atlas": {
@@ -7055,19 +7055,19 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "419fa3bd314b6d6247eef6fbd9426eb7b9ac93324a447e5c6f327d48509440bc",
-    "source_sha256": "875affdf024dac4e3955cdca494ed8d8e280a4196e058dbd7c1470e138aacc8b",
+    "sha256": "3fda5d263d081c6c6326d21576465958cdfcb31940b2eb17644cd5ac40f9eb5b",
+    "source_sha256": "ef15e213967e09e07a0692ce1ac91e05ce9da6b8ccbaec059c71c562c11114bf",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        12
+        6
       ],
       "bounds_px": [
-        22,
-        16,
-        158,
-        197
+        39,
+        15,
+        153,
+        192
       ]
     }
   },
@@ -8199,8 +8199,8 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "7fd7b14e149fe16bda8c12546baf42ce143e574194d828b7be7c3ac403e1e1d0",
-    "source_sha256": "4570f60b8ab388da245d3d62150d54baa628fe8a4d90daa1d072235128000842",
+    "sha256": "c6df8fcdb3ffc6952997588a35304d6574bf049cde3a2b8952ff3c0e3f36749d",
+    "source_sha256": "909d49ff3ed25a0ae88f29b661cecfd772eadfaeb2120f091d0cbba18961190e",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
@@ -8208,9 +8208,9 @@
         10
       ],
       "bounds_px": [
-        22,
-        11,
-        166,
+        23,
+        12,
+        157,
         197
       ]
     }
@@ -9239,8 +9239,8 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "673ad33b11d87e742957a4b2e108e4b15ae72410d841a67706e03b48a9eb499e",
-    "source_sha256": "faae5c323c16e555cc2ff5799d39397ea5b8ddc0f67fa640782f4115813ff9d7",
+    "sha256": "43fb03cccbfeca80a22613488d4bded88d9866e90f4f3f4637184f370ca40589",
+    "source_sha256": "3d68fdfc05063da22e866a90834f1ba819a3b02c06af6a84472500811a170b9d",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
@@ -9248,9 +9248,9 @@
         9
       ],
       "bounds_px": [
-        32,
+        31,
         11,
-        149,
+        150,
         197
       ]
     }
@@ -9655,18 +9655,18 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "a7596bb0543a2053705937437a349b502fafdec9ef7bb28ae3a73fb705e17ffb",
-    "source_sha256": "d12c7cc525b4046bc71e25244ddc0cc52dd0a5c6e5ea5f44df9cafc7ec48a156",
+    "sha256": "56cf210da5392de52c91d34de0416e5bbfec4a2faef1aeb909bff9200d577ac9",
+    "source_sha256": "9b2031b3b4a4cdca8b54fddf66642a60caa8409ce8e614615c3122d9fb756f44",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
         1,
-        13
+        14
       ],
       "bounds_px": [
-        30,
-        19,
-        157,
+        31,
+        20,
+        163,
         197
       ]
     }
@@ -10019,8 +10019,8 @@
     },
     "requires_measured_hand_anchors": true,
     "status": "generated",
-    "sha256": "b12b43ae4b5d4a3044230b7ffc8df3d06dbdd108c42b03c6242c7badfe389e54",
-    "source_sha256": "e3d32e88fcadfe67a202378ff94d6eb52c7fedde4d59343f93a56a35b2ebb735",
+    "sha256": "16025e725decec8de2f564417ab499bfc9341a026e22fcb3ca9e97333f69268b",
+    "source_sha256": "e18f1714f7798d3e70a11ba62a5f79449b6809ec23c2b5eaac659929173b093a",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
@@ -10028,9 +10028,9 @@
         11
       ],
       "bounds_px": [
-        27,
-        12,
-        158,
+        20,
+        15,
+        186,
         197
       ]
     }
@@ -11215,8 +11215,8 @@
     },
     "requires_measured_hand_anchors": false,
     "status": "generated",
-    "sha256": "ff90e846c7c317563c3cba8bfca59d9946d8c18acbca6944a20f05f9977335dd",
-    "source_sha256": "d7d87398b1b101f6e3c8f50200b78030be533d9f837f2f5b56e02c234203e602",
+    "sha256": "8669e4d316ec579fe7a17ceb83e5356658387224decc8b1c559dbf96302d0df0",
+    "source_sha256": "83c9e2cdf11b035815434cb952813157a7b9b973aca27181824e4b0dcc4b4359",
     "registration": {
       "uniform_scale": 0.18506834910620398,
       "offset_px": [
@@ -12996,6 +12996,214 @@
         19,
         169,
         197
+      ]
+    }
+  },
+  {
+    "number": 251,
+    "id": "movement/dragged/00",
+    "clip": "movement/dragged",
+    "index": 0,
+    "path": "frames/movement__dragged__00.png",
+    "size_px": [
+      192,
+      208
+    ],
+    "duration_ms": 140,
+    "facing": "front",
+    "pose": "Just picked up by an invisible grip at the top of her headphone band; feet rise, arms react, surprised face",
+    "atlas": {
+      "group": "movement",
+      "row": 6,
+      "column": 0,
+      "rect_px": [
+        0,
+        1248,
+        192,
+        208
+      ]
+    },
+    "contact_event": null,
+    "anchors": {
+      "ground_pivot": [
+        96,
+        196
+      ],
+      "hand_left": null,
+      "hand_right": null,
+      "seat": null
+    },
+    "requires_measured_hand_anchors": false,
+    "status": "generated",
+    "sha256": "359b9fd7ac8b62d2ffa5db76b5297b4125e0ba3983fdcecc9af5730675245b00",
+    "source_sha256": "f0220ce494da6370bcb1761facea36f538839622b353bdb384cad602b14eb212",
+    "registration": {
+      "uniform_scale": 0.18506834910620398,
+      "offset_px": [
+        1,
+        3
+      ],
+      "bounds_px": [
+        30,
+        12,
+        163,
+        181
+      ]
+    }
+  },
+  {
+    "number": 252,
+    "id": "movement/dragged/01",
+    "clip": "movement/dragged",
+    "index": 1,
+    "path": "frames/movement__dragged__01.png",
+    "size_px": [
+      192,
+      208
+    ],
+    "duration_ms": 180,
+    "facing": "front",
+    "pose": "Hanging vertically in midair from an invisible grip, both feet dangling, arms loose",
+    "atlas": {
+      "group": "movement",
+      "row": 6,
+      "column": 1,
+      "rect_px": [
+        192,
+        1248,
+        192,
+        208
+      ]
+    },
+    "contact_event": null,
+    "anchors": {
+      "ground_pivot": [
+        96,
+        196
+      ],
+      "hand_left": null,
+      "hand_right": null,
+      "seat": null
+    },
+    "requires_measured_hand_anchors": false,
+    "status": "generated",
+    "sha256": "6b89787c5121cb5083e1924e3532660f09e362cd37db5f35cf182aca716f346b",
+    "source_sha256": "f9a3b82e27baa91a66c403dd94f70db6a4873ef5dbe6e5e31cf12f4b775f8e56",
+    "registration": {
+      "uniform_scale": 0.18506834910620398,
+      "offset_px": [
+        1,
+        0
+      ],
+      "bounds_px": [
+        31,
+        7,
+        161,
+        180
+      ]
+    }
+  },
+  {
+    "number": 253,
+    "id": "movement/dragged/02",
+    "clip": "movement/dragged",
+    "index": 2,
+    "path": "frames/movement__dragged__02.png",
+    "size_px": [
+      192,
+      208
+    ],
+    "duration_ms": 180,
+    "facing": "front",
+    "pose": "Held aloft and swaying gently left under the fixed grip, feet airborne, hair and legs trail right",
+    "atlas": {
+      "group": "movement",
+      "row": 6,
+      "column": 2,
+      "rect_px": [
+        384,
+        1248,
+        192,
+        208
+      ]
+    },
+    "contact_event": null,
+    "anchors": {
+      "ground_pivot": [
+        96,
+        196
+      ],
+      "hand_left": null,
+      "hand_right": null,
+      "seat": null
+    },
+    "requires_measured_hand_anchors": false,
+    "status": "generated",
+    "sha256": "2ccf66a4b8d6efda12b2f53acaca60f9e92d8913fd3ff023d8c5318ba3175de9",
+    "source_sha256": "7bd35027d9cd9c7102e8a48a3b2c9d22313c31833077e3548bc42adfdfdd7ff7",
+    "registration": {
+      "uniform_scale": 0.18506834910620398,
+      "offset_px": [
+        1,
+        -1
+      ],
+      "bounds_px": [
+        21,
+        9,
+        164,
+        181
+      ]
+    }
+  },
+  {
+    "number": 254,
+    "id": "movement/dragged/03",
+    "clip": "movement/dragged",
+    "index": 3,
+    "path": "frames/movement__dragged__03.png",
+    "size_px": [
+      192,
+      208
+    ],
+    "duration_ms": 180,
+    "facing": "front",
+    "pose": "Held aloft and swaying gently right under the fixed grip, feet airborne, hair and legs trail left",
+    "atlas": {
+      "group": "movement",
+      "row": 6,
+      "column": 3,
+      "rect_px": [
+        576,
+        1248,
+        192,
+        208
+      ]
+    },
+    "contact_event": null,
+    "anchors": {
+      "ground_pivot": [
+        96,
+        196
+      ],
+      "hand_left": null,
+      "hand_right": null,
+      "seat": null
+    },
+    "requires_measured_hand_anchors": false,
+    "status": "generated",
+    "sha256": "ad166039eb24fa8ac4ca807a1d50e09068940893e5d69b2df95796a96408f911",
+    "source_sha256": "33a6853c46aa8765b5fdb19a44b1ca5bd5b32a6423be1a58c53a7cb35cf9cf11",
+    "registration": {
+      "uniform_scale": 0.18506834910620398,
+      "offset_px": [
+        1,
+        -2
+      ],
+      "bounds_px": [
+        24,
+        8,
+        160,
+        181
       ]
     }
   }

@@ -28,7 +28,7 @@ cat <<EOF
   2. Start a Hermes session (CLI, TUI, or desktop).
   3. In the session:  /hermeschan wake      # she appears and perches
                        /hermeschan say hi    # speech bubble
-     or just type into her bubble to talk to the agent.
+     or ctrl+click her to open the chat box and talk to the agent.
   4. First run prompts for macOS Accessibility (to move/track windows). Grant it
      in System Settings > Privacy & Security > Accessibility.
 

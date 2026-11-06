@@ -21,7 +21,8 @@
         "resizable": false,
         "skipTaskbar": true,
         "shadow": false,
-        "focus": false
+        "focus": false,
+        "acceptFirstMouse": true
       },
       {
         "label": "effect",

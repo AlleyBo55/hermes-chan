@@ -202,6 +202,45 @@ pub fn shake_window(target: &ActiveWindow, overlay_pid: u32) -> Result<(), Windo
     Ok(())
 }
 
+/// Pull the validated active window down by `dy` in a few steps, as if she drags it.
+pub fn pull_window(target: &ActiveWindow, dy: i32, overlay_pid: u32) -> Result<(), WindowControlError> {
+    for step in 1..=4 {
+        move_window(target.pid, target.x, target.y.saturating_add(dy * step / 4), overlay_pid)?;
+        std::thread::sleep(std::time::Duration::from_millis(30));
+    }
+    Ok(())
+}
+
+/// Put the window back where it was, unless someone has moved it since.
+pub fn restore_window(
+    target: &ActiveWindow,
+    moved_to: (i32, i32),
+    overlay_pid: u32,
+) -> Result<(), WindowControlError> {
+    match window_for_pid(target.pid)? {
+        Some(now) if (now.x - moved_to.0).abs() <= 2 && (now.y - moved_to.1).abs() <= 2 => {
+            move_window(target.pid, target.x, target.y, overlay_pid)
+        }
+        _ => Ok(()),
+    }
+}
+
+/// Seconds since the last keyboard, mouse or trackpad input.
+#[cfg(target_os = "macos")]
+pub fn user_idle_seconds() -> f64 {
+    #[link(name = "CoreGraphics", kind = "framework")]
+    extern "C" {
+        fn CGEventSourceSecondsSinceLastEventType(state: i32, event_type: u32) -> f64;
+    }
+    // kCGEventSourceStateCombinedSessionState and kCGAnyInputEventType.
+    unsafe { CGEventSourceSecondsSinceLastEventType(0, u32::MAX) }
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn user_idle_seconds() -> f64 {
+    0.0
+}
+
 /// Capture one validated window rectangle for an opt-in autonomy sample.
 /// Returns PNG base64. Screen Recording denial is reported as a permission error.
 pub fn capture_window(target: &ActiveWindow) -> Result<String, WindowControlError> {
@@ -260,4 +299,127 @@ pub fn capture_window(target: &ActiveWindow) -> Result<String, WindowControlErro
         });
     }
     Ok(STANDARD.encode(bytes))
+}
+
+/// Snapshot one window by its CGWindowID, without anything in front of it (so not her
+/// own overlay either). PNG base64; needs Screen Recording like `capture_window`.
+pub fn capture_window_id(window_id: u32) -> Result<String, WindowControlError> {
+    use base64::{engine::general_purpose::STANDARD, Engine as _};
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    let nonce = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    let path = std::env::temp_dir().join(format!("hermes-chan-{}-{nonce}-w.png", std::process::id()));
+    let output = Command::new("screencapture")
+        .args(["-x", "-o", "-t", "png", &format!("-l{window_id}")])
+        .arg(&path)
+        .output()
+        .map_err(|error| WindowControlError {
+            kind: ErrorKind::Other,
+            message: format!("could not launch screencapture: {error}"),
+        })?;
+    let bytes = std::fs::read(&path);
+    let _ = std::fs::remove_file(&path);
+    match bytes {
+        Ok(bytes) if output.status.success() && !bytes.is_empty() && bytes.len() <= 12 * 1024 * 1024 => {
+            Ok(STANDARD.encode(bytes))
+        }
+        _ => Err(WindowControlError {
+            kind: ErrorKind::Permission,
+            message: "window snapshot failed; Screen Recording permission may be required".to_string(),
+        }),
+    }
+}
+
+/// One on-screen app window, for Hermes-chan to stand on, climb or jump to.
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct WindowFrame {
+    pub id: u32,
+    pub pid: u32,
+    pub app: String,
+    pub x: f64,
+    pub y: f64,
+    pub w: f64,
+    pub h: f64,
+}
+
+/// Normal app windows on screen, front to back, in logical points. Reads only the
+/// owner, layer and bounds, which need no Screen Recording permission.
+#[cfg(target_os = "macos")]
+pub fn visible_windows(own_pid: u32) -> Vec<WindowFrame> {
+    use core_foundation::base::{CFType, TCFType};
+    use core_foundation::dictionary::{CFDictionary, CFDictionaryRef};
+    use core_foundation::number::{CFNumber, CFNumberRef};
+    use core_foundation::string::{CFString, CFStringRef};
+    use core_graphics::window::{
+        copy_window_info, kCGNullWindowID, kCGWindowAlpha, kCGWindowBounds, kCGWindowLayer,
+        kCGWindowListExcludeDesktopElements, kCGWindowListOptionOnScreenOnly, kCGWindowNumber,
+        kCGWindowOwnerName, kCGWindowOwnerPID,
+    };
+    use std::ffi::c_void;
+
+    let Some(list) = copy_window_info(
+        kCGWindowListOptionOnScreenOnly | kCGWindowListExcludeDesktopElements,
+        kCGNullWindowID,
+    ) else {
+        return Vec::new();
+    };
+    let key = |name: CFStringRef| unsafe { CFString::wrap_under_get_rule(name) };
+    let number = |dict: &CFDictionary<CFString, CFType>, name: CFStringRef| -> Option<f64> {
+        dict.find(key(name))
+            .and_then(|value| value.downcast::<CFNumber>())
+            .and_then(|value| value.to_f64())
+    };
+    let mut windows = Vec::new();
+    for item in list.iter() {
+        let dict: CFDictionary<CFString, CFType> =
+            unsafe { CFDictionary::wrap_under_get_rule(*item as CFDictionaryRef) };
+        let (layer, alpha, pid) = unsafe {
+            (
+                number(&dict, kCGWindowLayer),
+                number(&dict, kCGWindowAlpha),
+                number(&dict, kCGWindowOwnerPID),
+            )
+        };
+        if layer != Some(0.0) || alpha.unwrap_or(1.0) <= 0.0 {
+            continue;
+        }
+        let pid = pid.unwrap_or(0.0) as u32;
+        if pid == own_pid {
+            continue;
+        }
+        let Some(bounds) = dict
+            .find(key(unsafe { kCGWindowBounds }))
+            .and_then(|value| value.downcast::<CFDictionary>())
+        else {
+            continue;
+        };
+        let field = |name: &'static str| -> Option<f64> {
+            let name = CFString::from_static_string(name);
+            bounds
+                .find(name.as_CFTypeRef() as *const c_void)
+                .and_then(|value| unsafe { CFNumber::wrap_under_get_rule(*value as CFNumberRef) }.to_f64())
+        };
+        let (Some(x), Some(y), Some(w), Some(h)) = (field("X"), field("Y"), field("Width"), field("Height")) else {
+            continue;
+        };
+        if w < 80.0 || h < 60.0 {
+            continue;
+        }
+        let app = dict
+            .find(key(unsafe { kCGWindowOwnerName }))
+            .and_then(|value| value.downcast::<CFString>())
+            .map(|name| name.to_string())
+            .unwrap_or_default();
+        let id = unsafe { number(&dict, kCGWindowNumber) }.unwrap_or(0.0) as u32;
+        windows.push(WindowFrame { id, pid, app, x, y, w, h });
+    }
+    windows
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn visible_windows(_own_pid: u32) -> Vec<WindowFrame> {
+    Vec::new()
 }

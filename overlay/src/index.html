@@ -10,14 +10,16 @@
   <div id="stage">
     <button id="follow-toggle" type="button" aria-pressed="false" title="Restore active-window follow">○</button>
     <div id="bubble" class="hidden" data-speaker="assistant"><span id="bubble-text"></span></div>
+    <form id="chatbar" autocomplete="off">
+      <div id="status-message" class="hidden" role="status" aria-live="polite"></div>
+      <input id="chatinput" class="hidden" type="text" placeholder="talk to Hermes-chan…" />
+    </form>
     <canvas id="chara" width="192" height="208" role="img" aria-label="Hermes-chan desktop companion"></canvas>
     <div id="state-tag">idle</div>
   </div>
-  <form id="chatbar" autocomplete="off">
-    <div id="status-message" class="hidden" role="status" aria-live="polite"></div>
-    <input id="chatinput" type="text" placeholder="talk to Hermes-chan…" />
-  </form>
   <script src="sprite-player.js"></script>
+  <script src="wander.js"></script>
+  <script src="lines.js"></script>
   <script src="main.js"></script>
 </body>
 </html>

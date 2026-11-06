@@ -254,3 +254,7 @@ Approved colored chibi, screen-facing action poses.
 | 248 | `emotion__love__01.png` | Same planted feet and head scale, soft sparkling eyes, flushed cheeks, affectionate closed smile, expression reaches clear peak |
 | 249 | `emotion__love__02.png` | Same registered body, soft sparkling eyes, flushed cheeks, affectionate closed smile, a brief blink appropriate to the emotion |
 | 250 | `emotion__love__03.png` | Same registered body, soft sparkling eyes, flushed cheeks, affectionate closed smile, eyes reopen and expression eases toward first frame |
+| 251 | `movement__dragged__00.png` | Just picked up by an invisible grip at the top of her headphone band; feet rise, arms react, surprised face |
+| 252 | `movement__dragged__01.png` | Hanging vertically in midair from an invisible grip, both feet dangling, arms loose |
+| 253 | `movement__dragged__02.png` | Held aloft and swaying gently left under the fixed grip, feet airborne, hair and legs trail right |
+| 254 | `movement__dragged__03.png` | Held aloft and swaying gently right under the fixed grip, feet airborne, hair and legs trail left |

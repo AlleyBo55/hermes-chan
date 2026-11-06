@@ -14,7 +14,8 @@
     "back": "atlases/hermeschan-back.png",
     "movement": "atlases/hermeschan-movement.png",
     "action": "atlases/hermeschan-actions.png",
-    "emotion": "atlases/hermeschan-emotions.png"
+    "emotion": "atlases/hermeschan-emotions.png",
+    "effect_action": "atlases/hermeschan-effect-actions.png"
   },
   "clips": {
     "core/idle": {
@@ -1251,7 +1252,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1262,7 +1263,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1273,7 +1274,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1284,7 +1285,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1295,7 +1296,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1306,7 +1307,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1317,7 +1318,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1328,7 +1329,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         }
       ]
@@ -1345,7 +1346,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": "grip"
         },
         {
@@ -1356,7 +1357,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": null
         },
         {
@@ -1367,7 +1368,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": "grip"
         },
         {
@@ -1378,7 +1379,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": null
         },
         {
@@ -1389,7 +1390,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": null
         },
         {
@@ -1400,7 +1401,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": "grip"
         },
         {
@@ -1411,7 +1412,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": null
         },
         {
@@ -1422,7 +1423,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": null
         }
       ]
@@ -1439,7 +1440,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1450,7 +1451,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1461,7 +1462,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1472,7 +1473,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1483,7 +1484,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1494,7 +1495,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1505,7 +1506,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         },
         {
@@ -1516,7 +1517,7 @@
             192,
             208
           ],
-          "duration": 100,
+          "duration": 90,
           "event": null
         }
       ]
@@ -1533,7 +1534,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": "grip"
         },
         {
@@ -1544,7 +1545,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": null
         },
         {
@@ -1555,7 +1556,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": "grip"
         },
         {
@@ -1566,7 +1567,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": null
         },
         {
@@ -1577,7 +1578,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": null
         },
         {
@@ -1588,7 +1589,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": "grip"
         },
         {
@@ -1599,7 +1600,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": null
         },
         {
@@ -1610,7 +1611,7 @@
             192,
             208
           ],
-          "duration": 130,
+          "duration": 110,
           "event": null
         }
       ]
@@ -3027,6 +3028,483 @@
             208
           ],
           "duration": 200,
+          "event": null
+        }
+      ]
+    },
+    "movement/dragged": {
+      "loop": true,
+      "after": "repeat",
+      "frames": [
+        {
+          "atlas": "movement",
+          "rect": [
+            0,
+            1248,
+            192,
+            208
+          ],
+          "duration": 140,
+          "event": null
+        },
+        {
+          "atlas": "movement",
+          "rect": [
+            192,
+            1248,
+            192,
+            208
+          ],
+          "duration": 180,
+          "event": null
+        },
+        {
+          "atlas": "movement",
+          "rect": [
+            384,
+            1248,
+            192,
+            208
+          ],
+          "duration": 180,
+          "event": null
+        },
+        {
+          "atlas": "movement",
+          "rect": [
+            576,
+            1248,
+            192,
+            208
+          ],
+          "duration": 180,
+          "event": null
+        }
+      ]
+    },
+    "action/crack": {
+      "loop": false,
+      "after": "core/idle",
+      "frames": [
+        {
+          "atlas": "effect_action",
+          "rect": [
+            0,
+            0,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            192,
+            0,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            384,
+            0,
+            192,
+            208
+          ],
+          "duration": 630,
+          "event": "effect_start"
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            576,
+            0,
+            192,
+            208
+          ],
+          "duration": 490,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            768,
+            0,
+            192,
+            208
+          ],
+          "duration": 280,
+          "event": null
+        }
+      ]
+    },
+    "action/portal": {
+      "loop": false,
+      "after": "core/idle",
+      "frames": [
+        {
+          "atlas": "effect_action",
+          "rect": [
+            0,
+            208,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            192,
+            208,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            384,
+            208,
+            192,
+            208
+          ],
+          "duration": 990,
+          "event": "effect_start"
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            576,
+            208,
+            192,
+            208
+          ],
+          "duration": 770,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            768,
+            208,
+            192,
+            208
+          ],
+          "duration": 440,
+          "event": null
+        }
+      ]
+    },
+    "action/text_shatter": {
+      "loop": false,
+      "after": "core/idle",
+      "frames": [
+        {
+          "atlas": "effect_action",
+          "rect": [
+            0,
+            416,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            192,
+            416,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            384,
+            416,
+            192,
+            208
+          ],
+          "duration": 742,
+          "event": "effect_start"
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            576,
+            416,
+            192,
+            208
+          ],
+          "duration": 578,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            768,
+            416,
+            192,
+            208
+          ],
+          "duration": 330,
+          "event": null
+        }
+      ]
+    },
+    "action/ripple": {
+      "loop": false,
+      "after": "core/idle",
+      "frames": [
+        {
+          "atlas": "effect_action",
+          "rect": [
+            0,
+            624,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            192,
+            624,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            384,
+            624,
+            192,
+            208
+          ],
+          "duration": 630,
+          "event": "effect_start"
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            576,
+            624,
+            192,
+            208
+          ],
+          "duration": 490,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            768,
+            624,
+            192,
+            208
+          ],
+          "duration": 280,
+          "event": null
+        }
+      ]
+    },
+    "action/pixel_dissolve": {
+      "loop": false,
+      "after": "core/idle",
+      "frames": [
+        {
+          "atlas": "effect_action",
+          "rect": [
+            0,
+            832,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            192,
+            832,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            384,
+            832,
+            192,
+            208
+          ],
+          "duration": 720,
+          "event": "effect_start"
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            576,
+            832,
+            192,
+            208
+          ],
+          "duration": 560,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            768,
+            832,
+            192,
+            208
+          ],
+          "duration": 320,
+          "event": null
+        }
+      ]
+    },
+    "action/lightning": {
+      "loop": false,
+      "after": "core/idle",
+      "frames": [
+        {
+          "atlas": "effect_action",
+          "rect": [
+            0,
+            1040,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            192,
+            1040,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            384,
+            1040,
+            192,
+            208
+          ],
+          "duration": 585,
+          "event": "effect_start"
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            576,
+            1040,
+            192,
+            208
+          ],
+          "duration": 455,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            768,
+            1040,
+            192,
+            208
+          ],
+          "duration": 260,
+          "event": null
+        }
+      ]
+    },
+    "action/tear": {
+      "loop": false,
+      "after": "core/idle",
+      "frames": [
+        {
+          "atlas": "effect_action",
+          "rect": [
+            0,
+            1248,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            192,
+            1248,
+            192,
+            208
+          ],
+          "duration": 120,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            384,
+            1248,
+            192,
+            208
+          ],
+          "duration": 765,
+          "event": "effect_start"
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            576,
+            1248,
+            192,
+            208
+          ],
+          "duration": 595,
+          "event": null
+        },
+        {
+          "atlas": "effect_action",
+          "rect": [
+            768,
+            1248,
+            192,
+            208
+          ],
+          "duration": 340,
           "event": null
         }
       ]

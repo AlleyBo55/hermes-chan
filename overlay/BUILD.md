@@ -49,7 +49,8 @@ The runner prefers the `.app` bundle over the bare binary when both exist.
 ## Permissions on first run
 
 - **Accessibility** — move/track windows (System Settings ▸ Privacy ▸ Accessibility)
-- **Screen Recording** — only for the `bend`/`glitch` window-snapshot effect
+- **Screen Recording** — active-window screenshots for watching and computer
+  use; the visual effects themselves do not capture the app
 - **Automation (Finder)** — only for real `tidy_desktop` icon moves
 
 The body must prompt for these without hanging; under cron/gateway it does not

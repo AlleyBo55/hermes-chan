@@ -6,7 +6,7 @@ headphones, large blue eyes, a white collared shirt, black tie and straps,
 black skirt, and little shoes. The older geometric chibi-maid SVG remains a
 placeholder only. Sakurasou's Maid-chan is a behavior reference for the desktop
 companion, not a costume reference. See `production-plan/README.md` for the
-250-frame allocation and `hermeschan-v1/` for final exports.
+254-frame allocation and `hermeschan-v1/` for final exports.
 
 ## Atlas format (petdex / Codex compatible)
 
@@ -43,7 +43,7 @@ is used while walking between windows.
 `hermeschan_emote` sets one of:
 `neutral, happy, shy, surprised, sulk, sleepy, proud, panic, love`.
 
-The current 250-frame collection uses full-body emotion variants. These play
+The current 254-frame collection uses full-body emotion variants. These play
 as front-facing expressive idle clips. A future face rig would be needed for
 arbitrary emotions during every action and facing.
 
@@ -61,6 +61,12 @@ Provide `hermeschan-anchors.json` after measuring final pixels:
 ## Drop-in checklist
 
 1. Export `hermeschan.png` (front atlas), `hermeschan-back.png`, other atlases,
-   250 individual PNGs, and the runtime manifest into `hermeschan-v1/`.
+   254 base PNGs plus 35 effect-action PNGs, and the runtime manifest into
+   `hermeschan-v1/`.
 2. Keep the 192×208 cell size and row order above.
 3. The overlay reads row index by state name from `states.py`.
+
+The seven effect clips in `hermeschan-effect-actions.png` have five frames
+each. Frame 2 carries `effect_start`; that is when the native effect window
+appears. Their character art is composed from the approved 254-frame set, with
+hand-attached marks added by `build_effect_sprites.py`.

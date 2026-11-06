@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "planned_no_images",
-  "asset_count": 250,
+  "status": "art_generated",
+  "asset_count": 254,
   "character": "Hermes-chan: colored chibi Nous Girl",
   "cell_px": [
     192,
@@ -15,12 +15,12 @@
   "unique_frame_counts": {
     "core": 72,
     "back": 32,
-    "movement": 48,
+    "movement": 52,
     "action": 62,
     "emotion": 36
   },
   "generation": {
-    "status": "recoloring_approved_chibi_master",
+    "status": "complete",
     "mode": "CLI fallback requested",
     "requested_model": "gpt-image-2.6-sunburst",
     "model_access_verified": true,
@@ -51,10 +51,10 @@
     "movement": {
       "file": "hermeschan-movement.png",
       "columns": 8,
-      "rows": 6,
+      "rows": 7,
       "size_px": [
         1536,
-        1248
+        1456
       ]
     },
     "action": {
@@ -634,6 +634,17 @@
       "loop": true,
       "after": "repeat",
       "events_are_proposed": true
+    },
+    "movement/dragged": {
+      "frames": [
+        "movement/dragged/00",
+        "movement/dragged/01",
+        "movement/dragged/02",
+        "movement/dragged/03"
+      ],
+      "loop": true,
+      "after": "repeat",
+      "events_are_proposed": false
     }
   },
   "frames": [
@@ -4495,7 +4506,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "left",
       "pose": "Contact: leading foot forward, trailing heel raised, opposite arm forward",
       "atlas": {
@@ -4532,7 +4543,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "left",
       "pose": "Down: leading knee takes weight, torso lowers slightly",
       "atlas": {
@@ -4569,7 +4580,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "left",
       "pose": "Passing: trailing foot passes beneath hips, arms approach center",
       "atlas": {
@@ -4606,7 +4617,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "left",
       "pose": "Up: support heel lifts, free knee rises, hair trails backward",
       "atlas": {
@@ -4643,7 +4654,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "left",
       "pose": "Opposite contact: other foot forward, arms reversed",
       "atlas": {
@@ -4680,7 +4691,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "left",
       "pose": "Opposite down: weight settles over new leading foot",
       "atlas": {
@@ -4717,7 +4728,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "left",
       "pose": "Opposite passing: rear foot swings beneath hips",
       "atlas": {
@@ -4754,7 +4765,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "left",
       "pose": "Opposite up: free knee rises, silhouette approaches first contact",
       "atlas": {
@@ -4791,7 +4802,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "left",
       "pose": "Both hands gripping invisible vertical edge, knees bent",
       "atlas": {
@@ -4828,7 +4839,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "left",
       "pose": "Upper hand reaches higher, lower hand maintains grip",
       "atlas": {
@@ -4865,7 +4876,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "left",
       "pose": "Upper fingers grip, lower knee tucks toward torso",
       "atlas": {
@@ -4902,7 +4913,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "left",
       "pose": "Pull torso upward, upper elbow bends, trailing foot extends",
       "atlas": {
@@ -4939,7 +4950,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "left",
       "pose": "Lower hand releases and reaches above upper hand",
       "atlas": {
@@ -4976,7 +4987,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "left",
       "pose": "New upper hand grips, opposite knee tucks",
       "atlas": {
@@ -5013,7 +5024,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "left",
       "pose": "Pull upward using new upper grip, first leg extends",
       "atlas": {
@@ -5050,7 +5061,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "left",
       "pose": "Both hands settle at staggered holds, ready for next step",
       "atlas": {
@@ -5087,7 +5098,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "right",
       "pose": "Contact: leading foot forward, trailing heel raised, opposite arm forward",
       "atlas": {
@@ -5124,7 +5135,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "right",
       "pose": "Down: leading knee takes weight, torso lowers slightly",
       "atlas": {
@@ -5161,7 +5172,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "right",
       "pose": "Passing: trailing foot passes beneath hips, arms approach center",
       "atlas": {
@@ -5198,7 +5209,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "right",
       "pose": "Up: support heel lifts, free knee rises, hair trails backward",
       "atlas": {
@@ -5235,7 +5246,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "right",
       "pose": "Opposite contact: other foot forward, arms reversed",
       "atlas": {
@@ -5272,7 +5283,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "right",
       "pose": "Opposite down: weight settles over new leading foot",
       "atlas": {
@@ -5309,7 +5320,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "right",
       "pose": "Opposite passing: rear foot swings beneath hips",
       "atlas": {
@@ -5346,7 +5357,7 @@
         192,
         208
       ],
-      "duration_ms": 100,
+      "duration_ms": 90,
       "facing": "right",
       "pose": "Opposite up: free knee rises, silhouette approaches first contact",
       "atlas": {
@@ -5383,7 +5394,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "right",
       "pose": "Both hands gripping invisible vertical edge, knees bent",
       "atlas": {
@@ -5420,7 +5431,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "right",
       "pose": "Upper hand reaches higher, lower hand maintains grip",
       "atlas": {
@@ -5457,7 +5468,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "right",
       "pose": "Upper fingers grip, lower knee tucks toward torso",
       "atlas": {
@@ -5494,7 +5505,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "right",
       "pose": "Pull torso upward, upper elbow bends, trailing foot extends",
       "atlas": {
@@ -5531,7 +5542,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "right",
       "pose": "Lower hand releases and reaches above upper hand",
       "atlas": {
@@ -5568,7 +5579,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "right",
       "pose": "New upper hand grips, opposite knee tucks",
       "atlas": {
@@ -5605,7 +5616,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "right",
       "pose": "Pull upward using new upper grip, first leg extends",
       "atlas": {
@@ -5642,7 +5653,7 @@
         192,
         208
       ],
-      "duration_ms": 130,
+      "duration_ms": 110,
       "facing": "right",
       "pose": "Both hands settle at staggered holds, ready for next step",
       "atlas": {
@@ -9870,6 +9881,154 @@
         "rect_px": [
           576,
           1664,
+          192,
+          208
+        ]
+      },
+      "contact_event": null,
+      "anchors": {
+        "ground_pivot": [
+          96,
+          196
+        ],
+        "hand_left": null,
+        "hand_right": null,
+        "seat": null
+      },
+      "requires_measured_hand_anchors": false,
+      "status": "planned"
+    },
+    {
+      "number": 251,
+      "id": "movement/dragged/00",
+      "clip": "movement/dragged",
+      "index": 0,
+      "path": "sprites/hermeschan-v1/frames/movement__dragged__00.png",
+      "size_px": [
+        192,
+        208
+      ],
+      "duration_ms": 140,
+      "facing": "front",
+      "pose": "Just picked up by an invisible grip at the top of her headphone band; feet rise, arms react, surprised face",
+      "atlas": {
+        "group": "movement",
+        "row": 6,
+        "column": 0,
+        "rect_px": [
+          0,
+          1248,
+          192,
+          208
+        ]
+      },
+      "contact_event": null,
+      "anchors": {
+        "ground_pivot": [
+          96,
+          196
+        ],
+        "hand_left": null,
+        "hand_right": null,
+        "seat": null
+      },
+      "requires_measured_hand_anchors": false,
+      "status": "planned"
+    },
+    {
+      "number": 252,
+      "id": "movement/dragged/01",
+      "clip": "movement/dragged",
+      "index": 1,
+      "path": "sprites/hermeschan-v1/frames/movement__dragged__01.png",
+      "size_px": [
+        192,
+        208
+      ],
+      "duration_ms": 180,
+      "facing": "front",
+      "pose": "Hanging vertically in midair from an invisible grip, both feet dangling, arms loose",
+      "atlas": {
+        "group": "movement",
+        "row": 6,
+        "column": 1,
+        "rect_px": [
+          192,
+          1248,
+          192,
+          208
+        ]
+      },
+      "contact_event": null,
+      "anchors": {
+        "ground_pivot": [
+          96,
+          196
+        ],
+        "hand_left": null,
+        "hand_right": null,
+        "seat": null
+      },
+      "requires_measured_hand_anchors": false,
+      "status": "planned"
+    },
+    {
+      "number": 253,
+      "id": "movement/dragged/02",
+      "clip": "movement/dragged",
+      "index": 2,
+      "path": "sprites/hermeschan-v1/frames/movement__dragged__02.png",
+      "size_px": [
+        192,
+        208
+      ],
+      "duration_ms": 180,
+      "facing": "front",
+      "pose": "Held aloft and swaying gently left under the fixed grip, feet airborne, hair and legs trail right",
+      "atlas": {
+        "group": "movement",
+        "row": 6,
+        "column": 2,
+        "rect_px": [
+          384,
+          1248,
+          192,
+          208
+        ]
+      },
+      "contact_event": null,
+      "anchors": {
+        "ground_pivot": [
+          96,
+          196
+        ],
+        "hand_left": null,
+        "hand_right": null,
+        "seat": null
+      },
+      "requires_measured_hand_anchors": false,
+      "status": "planned"
+    },
+    {
+      "number": 254,
+      "id": "movement/dragged/03",
+      "clip": "movement/dragged",
+      "index": 3,
+      "path": "sprites/hermeschan-v1/frames/movement__dragged__03.png",
+      "size_px": [
+        192,
+        208
+      ],
+      "duration_ms": 180,
+      "facing": "front",
+      "pose": "Held aloft and swaying gently right under the fixed grip, feet airborne, hair and legs trail left",
+      "atlas": {
+        "group": "movement",
+        "row": 6,
+        "column": 3,
+        "rect_px": [
+          576,
+          1248,
           192,
           208
         ]

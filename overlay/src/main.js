@@ -23,12 +23,18 @@ let transient = null;
 let movementClip = null;
 let sleeping = false;
 let mischiefEnabled = false;
+// Her own visual mischief runs until the Hermes plugin says otherwise (/hermeschan mischief off).
+let mischiefConfigured = false;
 let followActive = false;
 let watching = false;
 let latestActiveWindow = null;
 let pendingChat = null;
 let pendingChatTimer = null;
 let hitRegionTimer = null;
+let draggingPet = false;
+let chatOpen = false;
+let chatToggledAt = 0;
+let wander = null;
 
 function errorText(error) {
   if (typeof error === "string") return error;
@@ -85,7 +91,7 @@ function clipForState(state) {
 }
 
 function renderCurrentState() {
-  if (!manifest || activeAction || transient || movementClip || sleeping) return;
+  if (!manifest || activeAction || transient || movementClip || sleeping || draggingPet || wander?.busy) return;
   const clip = clipForState(currentState);
   if (clip && (sprites.clip !== clip || sprites.holding)) sprites.play(clip);
 }
@@ -140,12 +146,16 @@ function resolveActionClip(msg) {
   if (msg.verb === "grab_window") {
     return manifest.windowGestures[msg.gesture || "drag"] || null;
   }
+  if (msg.verb === "glitch" && msg.effect) {
+    const effectClip = `action/${msg.effect}`;
+    if (manifest.clips[effectClip]) return effectClip;
+  }
   return manifest.actions[msg.verb] || null;
 }
 
 function flashAction(msg) {
   if (!manifest) return;
-  if (activeAction) {
+  if (activeAction || draggingPet) {
     pendingAction = msg;
     return;
   }
@@ -231,6 +241,7 @@ function handleStateMessage(msg) {
 function handleConfig(msg) {
   if (typeof msg.mischief === "boolean") {
     mischiefEnabled = msg.mischief;
+    mischiefConfigured = true;
     body.dataset.mischief = String(mischiefEnabled);
     if (!activeAction && !sleeping && !transient
         && !mischiefEnabled && currentState === "mischief") {
@@ -277,9 +288,39 @@ function handleChatResult(msg) {
     setStatus("");
   }
   clearPendingChat();
-  input.focus();
+  if (msg.ok === false) input.focus();
+  else setChatOpen(false);
   scheduleHitRegions();
 }
+
+// The chat box stays hidden until she is ctrl+clicked (or right-clicked, which
+// is the same gesture on macOS). Sending a message or Esc closes it again.
+function setChatOpen(open) {
+  chatOpen = Boolean(open);
+  input.classList.toggle("hidden", !chatOpen);
+  body.dataset.chat = chatOpen ? "open" : "closed";
+  if (chatOpen) input.focus();
+  else input.blur();
+  scheduleHitRegions();
+}
+
+function toggleChat() {
+  const now = performance.now();
+  if (now - chatToggledAt < 400) return; // ctrl+click can fire pointerdown and contextmenu
+  chatToggledAt = now;
+  setChatOpen(!chatOpen);
+}
+
+input.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  e.preventDefault();
+  setChatOpen(false);
+});
+
+chara.addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+  toggleChat();
+});
 
 function handle(msg) {
   if (!msg || typeof msg !== "object") return;
@@ -411,6 +452,12 @@ chara.addEventListener("spritecomplete", (e) => {
       return;
     }
     movementClip = null;
+    if (pendingAction && !activeAction) {
+      const nextAction = pendingAction;
+      pendingAction = null;
+      flashAction(nextAction);
+      return;
+    }
     renderCurrentState();
     return;
   }
@@ -424,6 +471,11 @@ chara.addEventListener("spritecomplete", (e) => {
 
 function setFollowDisplay(active) {
   followActive = Boolean(active);
+  if (!followActive) {
+    // Unpinned she roams the desktop, so she faces you instead of the active window.
+    watching = false;
+    body.dataset.watching = "false";
+  }
   body.dataset.follow = followActive ? "active" : "manual";
   followToggle.setAttribute("aria-pressed", String(followActive));
   followToggle.textContent = followActive ? "📌" : "○";
@@ -444,10 +496,40 @@ async function setFollow(active) {
 
 followToggle.addEventListener("click", () => setFollow(!followActive));
 
+function finishPetDrag() {
+  if (!draggingPet) return;
+  draggingPet = false;
+  chara.classList.remove("dragging");
+  const wasDragged = movementClip === "movement/dragged";
+  if (wasDragged) movementClip = null;
+  // Unpinned, she falls to the screen floor with gravity before landing.
+  if (!followActive && wander?.drop(wasDragged)) return;
+  if (wasDragged) {
+    movementClip = manifest?.clips["movement/land"] ? "movement/land" : null;
+    if (movementClip) sprites.play(movementClip, { loop: false });
+    else renderCurrentState();
+  } else renderCurrentState();
+}
+
+window.addEventListener("pointerup", finishPetDrag);
+window.addEventListener("mouseup", finishPetDrag);
+window.addEventListener("pointermove", (e) => {
+  if (draggingPet && e.buttons === 0) finishPetDrag();
+});
+
 chara.addEventListener("pointerdown", async (e) => {
   if (e.isPrimary === false || e.button !== 0) return;
   e.preventDefault();
+  if (e.ctrlKey) {
+    toggleChat();
+    return;
+  }
+  draggingPet = true;
   chara.classList.add("dragging");
+  if (!activeAction && !transient && !sleeping && manifest?.clips["movement/dragged"]) {
+    movementClip = "movement/dragged";
+    sprites.play(movementClip);
+  }
   try {
     await invokeNative("drag_overlay");
     await invokeNative("set_follow_active", { enabled: false });
@@ -456,8 +538,7 @@ chara.addEventListener("pointerdown", async (e) => {
     renderCurrentState();
   } catch (error) {
     setStatus(`Unable to move Hermes-chan: ${errorText(error)}`, "error");
-  } finally {
-    chara.classList.remove("dragging");
+    finishPetDrag();
   }
 });
 
@@ -479,10 +560,11 @@ function handleActiveWindow(payload) {
 
   const previousWindow = latestActiveWindow;
   latestActiveWindow = data;
+  wander?.setActiveWindow(data);
   const reportedWatching = data.watching ?? data.active;
-  watching = reportedWatching === undefined ? true : Boolean(reportedWatching);
+  watching = followActive && (reportedWatching === undefined ? true : Boolean(reportedWatching));
   body.dataset.watching = String(watching);
-  if (activeAction || transient || sleeping || !manifest) return;
+  if (activeAction || transient || sleeping || draggingPet || wander?.busy || !manifest) return;
 
   if (!data.direction && !data.move_direction && previousWindow) {
     const previousCenter = Number(previousWindow.x) + Number(previousWindow.w || 0) / 2;
@@ -506,6 +588,7 @@ function handleActiveWindow(payload) {
       clip = `movement/walk_${direction}`;
     }
     if (clip && manifest.clips[clip]) {
+      if (movementClip === clip && sprites.clip === clip) return;
       movementClip = clip;
       sprites.play(clip, { loop: false });
       return;
@@ -636,10 +719,70 @@ if (globalThis.ResizeObserver) {
 }
 window.addEventListener("resize", scheduleHitRegions);
 
+function canFall() {
+  return Boolean(manifest) && !followActive && !draggingPet && !activeAction;
+}
+
+function canRoam() {
+  return canFall() && !activeAction && !transient && !movementClip && !sleeping
+    && currentState === "idle" && !chatOpen && !pendingChat
+    && (bubble.classList.contains("hidden") || bubble.dataset.speaker === "mumble");
+}
+
+// Idle mumbles and video reactions from lines.js: local, no model call. Each list is
+// shuffled and used up before any line repeats.
+const mumbleBags = {};
+
+function nextLine(kind) {
+  const lines = window.HermesLines?.[kind];
+  if (!lines?.length) return null;
+  if (!mumbleBags[kind]?.length) {
+    const bag = [...lines];
+    for (let i = bag.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [bag[i], bag[j]] = [bag[j], bag[i]];
+    }
+    mumbleBags[kind] = bag;
+  }
+  return mumbleBags[kind].pop();
+}
+
+function canMumble() {
+  return Boolean(manifest) && currentState === "idle" && !chatOpen && !pendingChat && !sleeping
+    && !draggingPet && !activeAction && bubble.classList.contains("hidden")
+    && !["climb", "cling", "jump", "fall", "land", "drop"].includes(wander?.phase);
+}
+
+// One line every 40-120 s, or a reaction every 20-60 s while she watches a video with you.
+function scheduleMumble() {
+  const delay = wander?.watchingVideo ? 20000 + Math.random() * 40000 : 40000 + Math.random() * 80000;
+  setTimeout(() => {
+    if (canMumble()) {
+      const line = nextLine(wander?.watchingVideo ? "video" : "idle");
+      if (line) showBubble(line, currentEmotion, "mumble");
+    }
+    scheduleMumble();
+  }, delay);
+}
+
+if (window.HermesWander) {
+  wander = new window.HermesWander({
+    sprites,
+    chara,
+    canRoam,
+    canFall,
+    canMischief: () => mischiefEnabled || !mischiefConfigured,
+    invoke: invokeNative,
+    mood: () => currentEmotion,
+    onRelease: () => renderCurrentState(),
+  });
+}
+
 setStateMetadata("idle");
 setFollowDisplay(false);
 scheduleHitRegions();
 loadOverlayState();
+scheduleMumble();
 sprites.ready.then(() => {
   manifest = sprites.manifest;
   if (sleeping) {

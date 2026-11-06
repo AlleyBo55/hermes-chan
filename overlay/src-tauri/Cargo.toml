@@ -22,3 +22,7 @@ strip = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
 core-graphics = { version = "0.25", features = ["highsierra"] }
+# Already in the tree through core-graphics; used directly to read the window list.
+core-foundation = "0.10"
+# Already in the tree through tao; used to lift her window above the menu bar.
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSResponder", "NSWindow"] }

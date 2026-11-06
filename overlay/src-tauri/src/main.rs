@@ -25,7 +25,11 @@ fn main() {
             overlay::set_follow_active,
             overlay::get_overlay_state,
             overlay::set_overlay_hit_regions,
-            overlay::hide_effect
+            overlay::hide_effect,
+            overlay::list_windows,
+            overlay::play_effect,
+            overlay::self_grab,
+            overlay::prepare_break_ui
         ])
         .setup(|app| {
             // Dockless desktop companion: Accessory keeps her out of the Dock

@@ -33,7 +33,25 @@
     bend: "bend",
     "bend-border": "bend",
     border: "bend",
-    distort: "bend"
+    distort: "bend",
+    crack: "crack",
+    "screen-crack": "crack",
+    shatter: "crack",
+    portal: "portal",
+    rift: "portal",
+    text_shatter: "text_shatter",
+    "font-break": "text_shatter",
+    glyphs: "text_shatter",
+    ripple: "ripple",
+    wave: "ripple",
+    pixel_dissolve: "pixel_dissolve",
+    pixels: "pixel_dissolve",
+    lightning: "lightning",
+    electric: "lightning",
+    tear: "tear",
+    rip: "tear",
+    collapse: "collapse",
+    "ui-break": "collapse"
   };
 
   var DEFAULT_DURATION_MS = 1200;
@@ -102,14 +120,23 @@
 
     var intensity = 0.85;
     var duration = DEFAULT_DURATION_MS;
+    var origin_x = 0.5;
+    var origin_y = 0.35;
+    var title = "ACTIVE APP";
     if (data && typeof data === "object" && !Array.isArray(data)) {
       var ci = clamp(Number(data.intensity), 0, 1);
       if (ci != null) intensity = ci;
       var cd = clamp(Number(data.duration_ms), MIN_DURATION_MS, MAX_DURATION_MS);
       if (cd != null) duration = cd;
+      var cx = clamp(Number(data.origin_x), 0, 1);
+      var cy = clamp(Number(data.origin_y), 0, 1);
+      if (cx != null) origin_x = cx;
+      if (cy != null) origin_y = cy;
+      title = String(data.title || data.app || title).slice(0, 28);
     }
 
-    return { keys: keys, intensity: intensity, duration: duration };
+    return { keys: keys, intensity: intensity, duration: duration,
+             origin_x: origin_x, origin_y: origin_y, title: title };
   }
 
   function clearLayers() {
@@ -118,7 +145,9 @@
     root.removeAttribute("data-rgb");
     root.removeAttribute("data-block");
     root.removeAttribute("data-bend");
+    root.removeAttribute("data-canvas");
     root.style.setProperty("--fx-intensity", "0");
+    window.HermesEffectCanvas?.stop();
   }
 
   function endEffect() {
@@ -145,8 +174,7 @@
 
     // Nothing recognized -> still honor the contract: show nothing briefly and
     // hand control back so the window gets hidden rather than lingering.
-    var hasAny =
-      cfg.keys.scanlines || cfg.keys.rgb || cfg.keys.block || cfg.keys.bend;
+    var hasAny = Object.keys(cfg.keys).length > 0;
 
     // Cancel any in-flight run and start fresh.
     if (activeTimer) {
@@ -159,7 +187,14 @@
     if (cfg.keys.rgb) root.setAttribute("data-rgb", "1");
     if (cfg.keys.block) root.setAttribute("data-block", "1");
     if (cfg.keys.bend) root.setAttribute("data-bend", "1");
+    var canvasEffect = ["portal", "crack", "text_shatter", "ripple",
+                        "pixel_dissolve", "lightning", "tear", "collapse"]
+      .find(function (name) { return cfg.keys[name]; });
+    if (canvasEffect) root.setAttribute("data-canvas", canvasEffect);
     root.style.setProperty("--fx-intensity", String(hasAny ? cfg.intensity : 0));
+    if (canvasEffect) {
+      window.HermesEffectCanvas?.start(canvasEffect, cfg);
+    }
 
     running = true;
     var ms = hasAny ? cfg.duration : MIN_DURATION_MS;
@@ -167,6 +202,12 @@
   }
 
   if (event && typeof event.listen === "function") {
+    // The snapshot for the "collapse" prank arrives just before its effect.
+    event.listen("effect-image", function (e) {
+      if (typeof e.payload === "string" && window.HermesEffectCanvas?.setSnapshot) {
+        window.HermesEffectCanvas.setSnapshot("data:image/png;base64," + e.payload);
+      }
+    });
     event.listen("effect", function (e) {
       try {
         runEffect(e && "payload" in e ? e.payload : e);
@@ -176,4 +217,7 @@
       }
     });
   }
+
+  // Used by the local visual preview; production still receives Tauri events.
+  window.HermesEffects = { play: runEffect, stop: endEffect };
 })();

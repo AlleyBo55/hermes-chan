@@ -28,7 +28,8 @@ macOS. The renderer is a small canvas; all world/physics logic is Rust.
 
 - **Accessibility** — read/move windows. Stand holding a "grant me access" sign
   until granted; do not block the agent.
-- **Screen Recording** — only for the `bend`/`glitch` window-snapshot effect.
+- **Screen Recording** — active-window screenshots for watching and computer
+  use. Crack, portal, glitch and bend draw directly in the transparent overlay.
 - **Automation (Finder)** — only for `tidy_desktop` real icon moves.
 
 ## Build & attestation (catalog rule 17)

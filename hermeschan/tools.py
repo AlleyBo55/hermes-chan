@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 
 from .desktop_cleanup import CleanupError, DesktopTidier
 
@@ -10,6 +11,16 @@ log = logging.getLogger("hermes-chan.tools")
 
 TOOLSET = "hermeschan"
 _EMOTIONS = ["neutral", "happy", "shy", "surprised", "sulk", "sleepy", "proud", "panic", "love"]
+_VISUAL_EFFECTS = ["glitch", "crack", "portal", "bend", "text_shatter",
+                   "ripple", "pixel_dissolve", "lightning", "tear"]
+
+
+def _intensity(value, default: float) -> float:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return default
+    return max(0.0, min(1.0, number)) if math.isfinite(number) else default
 
 
 def register(ctx, bridge, tidier=None) -> None:
@@ -57,9 +68,20 @@ def register(ctx, bridge, tidier=None) -> None:
 
     def _glitch(args):
         target = {"app": args.get("app", "active")}
-        intensity = float(args.get("intensity", 0.5))
+        intensity = _intensity(args.get("intensity"), 0.5)
         _animate_native("glitch", target, "effect_start", intensity=intensity)
         return f"Hermes-chan draws a playful glitch over {args.get('app', 'active')} (visual only)."
+
+    def _visual_effect(args):
+        effect = str(args.get("effect") or "glitch").lower()
+        if effect not in _VISUAL_EFFECTS:
+            return "Choose glitch, crack, portal, bend, text_shatter, ripple, pixel_dissolve, lightning, or tear."
+        if not bridge.is_connected:
+            return "Hermes-chan's overlay is not connected."
+        target = {"app": args.get("app", "active")}
+        intensity = _intensity(args.get("intensity"), 0.75)
+        _animate_native("glitch", target, "effect_start", effect=effect, intensity=intensity)
+        return f"Hermes-chan plays a {effect} effect over {target['app']} (visual only)."
 
     def _tidy(args):
         try:
@@ -105,6 +127,12 @@ def register(ctx, bridge, tidier=None) -> None:
          {"type": "object",
           "properties": {"app": {"type": "string"},
                          "intensity": {"type": "number", "minimum": 0, "maximum": 1}}}, _glitch),
+        ("hermeschan_visual_effect", "Make Hermes-chan play a temporary visual effect over the active app window, including text shatter and portal; visual only.",
+         {"type": "object",
+          "properties": {"effect": {"type": "string", "enum": _VISUAL_EFFECTS},
+                         "app": {"type": "string"},
+                         "intensity": {"type": "number", "minimum": 0, "maximum": 1}},
+          "required": ["effect"]}, _visual_effect),
         ("hermeschan_tidy_desktop",
          "Plan desktop tidying by default. Execution needs the returned token and confirm=true.",
          {"type": "object",

@@ -16,6 +16,8 @@ const MAIN_WINDOW: &str = "hermeschan";
 const EFFECT_WINDOW: &str = "effect";
 const ACTIVE_POLL: Duration = Duration::from_millis(750);
 const HIT_TEST_POLL: Duration = Duration::from_millis(50);
+// Roaming moves the window every frame; write the remembered spot at most once a second.
+const PERSIST_INTERVAL: Duration = Duration::from_millis(1000);
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -110,6 +112,8 @@ struct EffectPayload<'a> {
     h: i32,
     intensity: f64,
     duration_ms: u64,
+    origin_x: f64,
+    origin_y: f64,
 }
 
 struct Inner {
@@ -185,6 +189,9 @@ impl OverlayController {
             .set_ignore_cursor_events(true)
             .map_err(|error| format!("could not make effect window click-through: {error}"))?;
 
+        #[cfg(target_os = "macos")]
+        lift_over_menu_bar(&main);
+
         let controller = self.clone();
         main.on_window_event(move |event| {
             if let WindowEvent::Moved(position) = event {
@@ -248,9 +255,13 @@ impl OverlayController {
         let controller = self.clone();
         thread::spawn(move || {
             let mut last_active_poll = Instant::now() - ACTIVE_POLL;
+            let mut last_flush = Instant::now() - PERSIST_INTERVAL;
             loop {
                 controller.update_hit_testing(&handle);
-                controller.flush_dirty_state(&handle);
+                if last_flush.elapsed() >= PERSIST_INTERVAL {
+                    controller.flush_dirty_state(&handle);
+                    last_flush = Instant::now();
+                }
 
                 if last_active_poll.elapsed() >= ACTIVE_POLL {
                     controller.poll_active_window(&handle);
@@ -341,7 +352,9 @@ impl OverlayController {
             "phase": "moving",
         }));
 
-        let steps = 16;
+        // Match the visible travel to one walk or climb sprite cycle.
+        let steps = 24;
+        let step_delay = Duration::from_millis(if delta_y < -45.0 { 37 } else { 30 });
         for step in 1..=steps {
             let t = step as f64 / steps as f64;
             let eased = t * t * (3.0 - 2.0 * t);
@@ -358,7 +371,7 @@ impl OverlayController {
                 );
                 return;
             }
-            thread::sleep(Duration::from_millis(18));
+            thread::sleep(step_delay);
         }
         self.emit_ready(handle, "overlay_position");
         let _ = handle.emit("active-window", serde_json::json!({
@@ -520,7 +533,22 @@ impl OverlayController {
                 .and_then(|value| value.as_f64())
                 .unwrap_or(0.75)
                 .clamp(0.0, 1.0);
-            self.show_effect(handle, "glitch", verb, None, &target, intensity, 1200);
+            let (effect, duration_ms) = match message.get("effect").and_then(|value| value.as_str()) {
+                None | Some("glitch") => ("glitch", 1200),
+                Some("crack") => ("crack", 1400),
+                Some("portal") => ("portal", 2200),
+                Some("bend") => ("bend", 1100),
+                Some("text_shatter") => ("text_shatter", 1650),
+                Some("ripple") => ("ripple", 1400),
+                Some("pixel_dissolve") => ("pixel_dissolve", 1600),
+                Some("lightning") => ("lightning", 1300),
+                Some("tear") => ("tear", 1700),
+                _ => {
+                    self.emit_status(handle, "error", "effect", "unsupported visual effect");
+                    return;
+                }
+            };
+            self.show_effect(handle, effect, verb, None, &target, intensity, duration_ms);
             return;
         }
 
@@ -600,6 +628,21 @@ impl OverlayController {
         intensity: f64,
         duration_ms: u64,
     ) {
+        self.show_effect_at(handle, effect_name, verb, gesture, target, intensity, duration_ms, None);
+    }
+
+    /// Like `show_effect`, with the exact point her hand is at when the caller knows it.
+    fn show_effect_at(
+        &self,
+        handle: &AppHandle,
+        effect_name: &str,
+        verb: &str,
+        gesture: Option<&str>,
+        target: &ActiveWindow,
+        intensity: f64,
+        duration_ms: u64,
+        hand: Option<(f64, f64)>,
+    ) {
         let Some(window) = handle.get_webview_window(EFFECT_WINDOW) else {
             self.emit_status(handle, "error", "effect", "effect window is missing");
             return;
@@ -626,6 +669,44 @@ impl OverlayController {
             return;
         }
 
+        // Anchor the effect near Hermes-chan's body within the active window.
+        let (hand_px_x, hand_px_y) = match effect_name {
+            "crack" => (151.0, 105.0),
+            "portal" => (151.0, 108.0),
+            "text_shatter" => (145.0, 109.0),
+            "ripple" => (150.0, 107.0),
+            "pixel_dissolve" => (154.0, 102.0),
+            "lightning" => (153.0, 105.0),
+            "tear" => (148.0, 110.0),
+            _ => (151.0, 105.0),
+        };
+        let exact = hand.map(|(hand_x, hand_y)| {
+            (
+                ((hand_x - target.x as f64) / target.w.max(1) as f64).clamp(0.02, 0.98),
+                ((hand_y - target.y as f64) / target.h.max(1) as f64).clamp(0.02, 0.98),
+            )
+        });
+        let (origin_x, origin_y) = exact.or_else(|| handle
+            .get_webview_window(MAIN_WINDOW)
+            .and_then(|body| {
+                let position = body.outer_position().ok()?;
+                let size = body.inner_size().ok()?;
+                let scale = body.scale_factor().ok()?;
+                let body_x = position.x as f64 / scale;
+                let body_y = position.y as f64 / scale;
+                let body_w = size.width as f64 / scale;
+                let body_h = size.height as f64 / scale;
+                // 192x208 sprite is displayed at 96x104, centered above the
+                // stage's 48px footer. Match the generated contact marks.
+                let hand_x = body_x + (body_w - 96.0) / 2.0 + hand_px_x / 2.0;
+                let hand_y = body_y + body_h - 48.0 - 104.0 + hand_px_y / 2.0;
+                Some((
+                    ((hand_x - target.x as f64) / target.w.max(1) as f64).clamp(0.08, 0.92),
+                    ((hand_y - target.y as f64) / target.h.max(1) as f64).clamp(0.08, 0.92),
+                ))
+            }))
+            .unwrap_or((0.5, 0.35));
+
         let payload = EffectPayload {
             effect: effect_name,
             verb,
@@ -638,6 +719,8 @@ impl OverlayController {
             h: target.h,
             intensity,
             duration_ms,
+            origin_x,
+            origin_y,
         };
         match window.emit("effect", payload) {
             Ok(()) => self.emit_ready(handle, "effect"),
@@ -789,6 +872,8 @@ pub fn set_follow_active(
 
 #[tauri::command]
 pub fn get_overlay_state(controller: State<'_, OverlayController>) -> OverlayState {
+    // The page asks once it is listening: forget the last window so the next poll re-sends it.
+    controller.inner.lock().unwrap().active_window = None;
     controller.snapshot()
 }
 
@@ -820,12 +905,153 @@ pub fn set_overlay_hit_regions(
     Ok(())
 }
 
+/// No keyboard or mouse input for this long before she may move a real window on her own.
+const SELF_GRAB_IDLE_SECS: f64 = 20.0;
+/// How long a moved window stays moved before she puts it back.
+const SELF_GRAB_RESTORE: Duration = Duration::from_millis(2500);
+
+/// Her own prank on the real active window: shake it, nudge it, fling it or pull it down,
+/// then put it back. Refused while you are using the computer, so she never yanks a
+/// window out from under your hands. Every move goes through the same active-window
+/// checks as the agent's grab_window tool.
+#[tauri::command]
+pub fn self_grab(
+    gesture: String,
+    direction: i32,
+    window: WebviewWindow,
+    app: AppHandle,
+    controller: State<'_, OverlayController>,
+) -> Result<(), String> {
+    require_window(&window, MAIN_WINDOW)?;
+    if !matches!(gesture.as_str(), "shake" | "nudge" | "throw" | "pull_down") {
+        return Err(format!("unknown gesture {gesture}"));
+    }
+    let idle = winctl::user_idle_seconds();
+    if idle < SELF_GRAB_IDLE_SECS {
+        return Err(format!("you were active {idle:.0}s ago"));
+    }
+    let target = controller
+        .resolve_target(&app, "self_grab")
+        .ok_or_else(|| "no active window to grab".to_string())?;
+    let side = if direction < 0 { -1 } else { 1 };
+    let lock = controller.action_lock.clone();
+    let overlay_pid = std::process::id();
+    thread::spawn(move || {
+        // One window action at a time, shared with the agent's own window actions.
+        let Ok(_guard) = lock.try_lock() else {
+            return;
+        };
+        let moved = match gesture.as_str() {
+            "shake" => winctl::shake_window(&target, overlay_pid).map(|_| None),
+            "nudge" => winctl::nudge_window(&target, 40 * side, 0, overlay_pid)
+                .map(|_| Some((target.x + 40 * side, target.y))),
+            "throw" => winctl::nudge_window(&target, 220 * side, 140, overlay_pid)
+                .map(|_| Some((target.x + 220 * side, target.y + 140))),
+            _ => winctl::pull_window(&target, 90, overlay_pid).map(|_| Some((target.x, target.y + 90))),
+        };
+        if let Ok(Some(moved_to)) = moved {
+            thread::sleep(SELF_GRAB_RESTORE);
+            let _ = winctl::restore_window(&target, moved_to, overlay_pid);
+        }
+    });
+    Ok(())
+}
+
+/// The fake "her prank broke your app" effect, step one: snapshot the window and hand the
+/// picture to the effect window. Her cast starts only after this, so the collapse can then
+/// fire on her effect frame like every other prank. The app itself is never touched.
+#[tauri::command]
+pub async fn prepare_break_ui(window_id: u32, window: WebviewWindow, app: AppHandle) -> Result<(), String> {
+    require_window(&window, MAIN_WINDOW)?;
+    let snapshot = tauri::async_runtime::spawn_blocking(move || winctl::capture_window_id(window_id))
+        .await
+        .map_err(|error| error.to_string())?
+        .map_err(|error| error.to_string())?;
+    let effect = app
+        .get_webview_window(EFFECT_WINDOW)
+        .ok_or_else(|| "effect window is missing".to_string())?;
+    effect.emit("effect-image", snapshot).map_err(|error| error.to_string())
+}
+
+/// On-screen app windows, front to back, so she can stand on, climb or jump to any of them.
+#[tauri::command]
+pub fn list_windows() -> Vec<winctl::WindowFrame> {
+    winctl::visible_windows(std::process::id())
+}
+
+/// Her own harmless mischief: draw a short visual effect over a screen rectangle.
+/// Purely decorative, on the click-through effect window; the app underneath is untouched.
+#[tauri::command]
+pub fn play_effect(
+    effect: String,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+    hand_x: Option<f64>,
+    hand_y: Option<f64>,
+    window: WebviewWindow,
+    app: AppHandle,
+    controller: State<'_, OverlayController>,
+) -> Result<(), String> {
+    require_window(&window, MAIN_WINDOW)?;
+    if !matches!(effect.as_str(), "glitch" | "bend" | "crack" | "portal"
+        | "text_shatter" | "ripple" | "pixel_dissolve" | "lightning" | "tear" | "collapse") {
+        return Err(format!("unknown effect {effect}"));
+    }
+    if ![x, y, w, h].iter().all(|value| value.is_finite()) || w < 40.0 || h < 40.0 {
+        return Err("effect area must be finite and at least 40x40".to_string());
+    }
+    let target = ActiveWindow {
+        pid: 0,
+        app: String::new(),
+        title: String::new(),
+        x: x.round() as i32,
+        y: y.round() as i32,
+        w: w.min(4000.0).round() as i32,
+        h: h.min(4000.0).round() as i32,
+    };
+    let duration_ms = match effect.as_str() {
+        "crack" | "ripple" => 1400,
+        "portal" => 2200,
+        "bend" => 1100,
+        "text_shatter" => 1650,
+        "pixel_dissolve" => 1600,
+        "lightning" => 1300,
+        "tear" => 1700,
+        "collapse" => 2600,
+        _ => 1200,
+    };
+    let hand = match (hand_x, hand_y) {
+        (Some(hx), Some(hy)) if hx.is_finite() && hy.is_finite() => Some((hx, hy)),
+        _ => None,
+    };
+    controller.show_effect_at(&app, &effect, "mischief", None, &target, 0.7, duration_ms, hand);
+    Ok(())
+}
+
 #[tauri::command]
 pub fn hide_effect(window: WebviewWindow) -> Result<(), String> {
     require_window(&window, EFFECT_WINDOW)?;
     window
         .hide()
         .map_err(|error| format!("could not hide effect window: {error}"))
+}
+
+/// Let her climb and hang over the menu bar, and follow you onto other Spaces and into
+/// full-screen apps. macOS keeps floating windows below the menu bar; status-bar ones are not.
+#[cfg(target_os = "macos")]
+fn lift_over_menu_bar(window: &WebviewWindow) {
+    use objc2_app_kit::{NSStatusWindowLevel, NSWindow, NSWindowCollectionBehavior};
+    let Ok(pointer) = window.ns_window() else {
+        return;
+    };
+    // SAFETY: Tauri hands back the live NSWindow of this webview window; setup runs on the main thread.
+    let ns_window: &NSWindow = unsafe { &*pointer.cast::<NSWindow>() };
+    ns_window.setLevel(NSStatusWindowLevel);
+    ns_window.setCollectionBehavior(
+        NSWindowCollectionBehavior::CanJoinAllSpaces | NSWindowCollectionBehavior::FullScreenAuxiliary,
+    );
 }
 
 fn require_window(window: &WebviewWindow, expected: &str) -> Result<(), String> {

@@ -265,177 +265,171 @@
   },
   "movement/climb_left/00": {
     "screen_left": [
-      55,
-      74
+      77,
+      55
     ],
     "screen_right": [
-      82,
-      67
+      86,
+      94
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_left/01": {
     "screen_left": [
-      55,
-      76
+      49,
+      70
     ],
     "screen_right": [
-      64,
-      168
+      85,
+      90
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_left/02": {
     "screen_left": [
-      32,
-      99
+      80,
+      48
     ],
     "screen_right": [
-      55,
-      76
+      84,
+      90
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_left/03": {
     "screen_left": [
-      69,
-      68
+      83,
+      87
     ],
     "screen_right": [
-      82,
-      70
+      84,
+      47
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_left/04": {
     "screen_left": [
-      67,
-      121
+      85,
+      46
     ],
     "screen_right": [
-      82,
-      69
+      85,
+      83
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_left/05": {
     "screen_left": [
-      55,
-      75
+      84,
+      84
     ],
     "screen_right": [
-      82,
-      68
+      86,
+      45
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_left/06": {
     "screen_left": [
-      71,
-      67
+      86,
+      46
     ],
-    "screen_right": [
-      84,
-      67
-    ],
+    "screen_right": null,
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_left/07": {
     "screen_left": [
-      55,
-      74
+      81,
+      50
     ],
     "screen_right": [
-      82,
-      68
+      85,
+      89
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_right/00": {
     "screen_left": [
-      84,
-      89
+      105,
+      94
     ],
     "screen_right": [
-      112,
-      120
+      115,
+      55
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_right/01": {
     "screen_left": [
-      103,
-      120
+      112,
+      51
     ],
     "screen_right": [
-      129,
-      66
+      142,
+      70
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_right/02": {
     "screen_left": [
-      82,
+      107,
       90
     ],
     "screen_right": [
-      95,
-      84
+      111,
+      48
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_right/03": {
     "screen_left": [
-      100,
-      68
+      107,
+      47
     ],
     "screen_right": [
-      105,
-      120
+      108,
+      87
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_right/04": {
     "screen_left": [
-      80,
-      174
+      106,
+      46
     ],
     "screen_right": [
-      103,
-      124
+      107,
+      86
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_right/05": {
     "screen_left": [
-      100,
-      70
+      105,
+      45
     ],
     "screen_right": [
-      103,
-      123
+      107,
+      84
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_right/06": {
     "screen_left": [
-      81,
-      88
+      105,
+      46
     ],
-    "screen_right": [
-      88,
-      81
-    ],
+    "screen_right": null,
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
   "movement/climb_right/07": {
     "screen_left": [
-      75,
-      176
+      106,
+      87
     ],
     "screen_right": [
-      103,
-      126
+      110,
+      50
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
@@ -496,12 +490,12 @@
   },
   "action/drag/02": {
     "screen_left": [
-      103,
-      90
+      132,
+      105
     ],
     "screen_right": [
-      141,
-      73
+      139,
+      83
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
@@ -701,12 +695,12 @@
   },
   "action/grab_window_drag/03": {
     "screen_left": [
-      97,
-      83
+      120,
+      117
     ],
     "screen_right": [
-      127,
-      130
+      128,
+      92
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
@@ -783,12 +777,12 @@
   },
   "action/grab_window_throw/03": {
     "screen_left": [
-      111,
-      178
+      122,
+      72
     ],
     "screen_right": [
-      139,
-      74
+      137,
+      103
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },
@@ -857,12 +851,12 @@
   },
   "action/glitch/02": {
     "screen_left": [
-      76,
-      146
+      120,
+      99
     ],
     "screen_right": [
-      103,
-      85
+      125,
+      82
     ],
     "method": "skin-region centroid estimate; not a verified fingertip/contact anchor"
   },

@@ -14,6 +14,8 @@ _USAGE = (
     "  come                           call her to the active window\n"
     "  sleep | wake                   persist sleeping/awake state\n"
     "  say <text>                     make her speak a line\n"
+    "  effect <name>                  play an effect on the active app\n"
+    "    crack portal text_shatter ripple pixel_dissolve lightning tear glitch bend\n"
     "  hide                           stop the visible body\n"
     "  mischief on|off                allow/stop autonomous antics\n"
     "  watch on|off                   allow/stop one screenshot per decision\n"
@@ -97,6 +99,24 @@ def register(ctx, bridge, settings, autonomy) -> None:
             if settings.get("sleeping", False):
                 bridge.set_state(states.IDLE, corner=True)
             return f"Hermes-chan: {rest}"
+        if sub == "effect":
+            effect = rest.strip().lower()
+            if effect not in {"glitch", "crack", "portal", "bend", "text_shatter",
+                              "ripple", "pixel_dissolve", "lightning", "tear"}:
+                return ("Usage: /hermeschan effect "
+                        "glitch|crack|portal|bend|text_shatter|ripple|pixel_dissolve|lightning|tear")
+            if not bridge.is_connected:
+                return "Hermes-chan's overlay is not connected."
+            target = {"app": "active"}
+            action_id = bridge.animate_action("glitch", target, defer_native=True,
+                                              effect=effect, intensity=0.8)
+            bridge.wait_for_action_event(action_id, "effect_start", timeout=0.7)
+            bridge.send({"type": "native_action", "action_id": action_id,
+                         "verb": "glitch", "target": target, "effect": effect,
+                         "intensity": 0.8})
+            bridge.wait_for_action_complete(action_id, timeout=0.9)
+            bridge.finish_action(action_id)
+            return f"Hermes-chan plays {effect} over the active app."
         if sub == "wake":
             settings.update(sleeping=False)
             bridge.update_config(sleeping=False)
@@ -160,6 +180,6 @@ def register(ctx, bridge, settings, autonomy) -> None:
         name="hermeschan",
         handler=_handler,
         description="Control the Hermes-chan desktop companion",
-        args_hint="status | come | sleep | wake | hide | say <text> | mischief on|off | watch on|off | react | heartbeat on|off|status [interval]",
+        args_hint="status | come | sleep | wake | hide | say <text> | effect <name> | mischief on|off | watch on|off | react | heartbeat on|off|status [interval]",
     )
     log.info("hermes-chan: registered /hermeschan command")

@@ -1,21 +1,21 @@
 {
-  "frame_count": 250,
-  "clip_count": 44,
+  "frame_count": 254,
+  "clip_count": 45,
   "size_px": [
     192,
     208
   ],
   "all_rgba": true,
   "all_have_transparency": true,
-  "unique_pixel_hashes": 250,
+  "unique_pixel_hashes": 254,
   "clipped_frames": 0,
   "group_counts": {
     "core": 72,
     "back": 32,
-    "movement": 48,
+    "movement": 52,
     "action": 62,
     "emotion": 36
   },
   "hand_anchors": "Estimates only; not suitable for exact OS targeting without review",
-  "visual_review": "passed: core, back, movement, action, and emotion contact sheets reviewed; character identity, transparency, facing, and clip intent are coherent"
+  "visual_review": "passed: revised walk/climb contact sheet and 8-frame animated previews; other groups previously reviewed"
 }

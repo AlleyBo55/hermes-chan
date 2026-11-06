@@ -116,11 +116,10 @@ body[data-emotion="love"] #bubble[data-speaker="assistant"] {
   border: 2px solid #ff9ec4;
 }
 
+/* Opens above her head on ctrl+click, so it stays on screen while she walks the floor. */
 #chatbar {
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: 10px;
+  width: 220px;
+  margin-bottom: 8px;
 }
 
 #status-message {
