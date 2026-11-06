@@ -25,7 +25,7 @@ class HermechanProvider(ComputerUseProvider):
               f"(socket {self._bridge.path})")
         available = real_driver_available()
         if available:
-            print("hermes-chan: native macOS input available — real screen control enabled")
+            print("hermes-chan: native input available — real screen control enabled")
         else:
-            print("hermes-chan: native input unavailable on this platform — animations still work")
+            print("hermes-chan: native input unavailable here (Linux needs an X11 display) — animations still work")
         return 0 if available else 1

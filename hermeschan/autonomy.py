@@ -170,10 +170,11 @@ class AutonomyController:
 
     def trigger_once(self) -> bool:
         settings = self._settings.snapshot()
-        if settings["sleeping"] or not (settings["mischief"] or settings["watch"]):
+        if settings["sleeping"] or not settings["active"] or not (settings["mischief"] or settings["watch"]):
             return False
         threading.Thread(
             target=self._tick,
+            kwargs={"on_demand": True},
             name="hermeschan-react-once",
             daemon=True,
         ).start()
@@ -203,11 +204,14 @@ class AutonomyController:
                 continue
             self._tick()
 
-    def _tick(self) -> None:
+    def _tick(self, *, on_demand: bool = False) -> None:
+        """One bounded decision: on the heartbeat, or once for /hermeschan react."""
         settings = self._settings.snapshot()
-        if (not settings["heartbeat_enabled"] or settings["sleeping"]
-                or not (settings["mischief"] or settings["watch"])
-                or self._bridge.agent_busy):
+        # No body on screen (switched off, or not connected): a reaction would go nowhere,
+        # so do not spend a model call on it.
+        if ((not on_demand and not settings["heartbeat_enabled"]) or settings["sleeping"]
+                or not settings["active"] or not (settings["mischief"] or settings["watch"])
+                or self._bridge.agent_busy or not self._bridge.is_connected):
             return
         if not self._settings.claim_decision_slot(limit=10, window_seconds=3600.0):
             return
@@ -215,5 +219,5 @@ class AutonomyController:
             include_screenshot=bool(settings["watch"]), timeout=0.75)
         plan = decide_idle_action(self._ctx, window, allow_mischief=bool(settings["mischief"]))
         current = self._settings.snapshot()
-        if current["heartbeat_enabled"] and not current["sleeping"]:
+        if (on_demand or current["heartbeat_enabled"]) and not current["sleeping"] and current["active"]:
             apply_idle_action(self._bridge, plan, allow_mischief=bool(current["mischief"]))

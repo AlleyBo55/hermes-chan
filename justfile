@@ -13,7 +13,7 @@ check:
 
 # Build the bare overlay binary.
 build:
-    cd overlay/src-tauri && cargo build --release
+    cd overlay/src-tauri && cargo build --release --locked
 
 # Live-iterate the overlay window (needs @tauri-apps/cli).
 dev:
@@ -23,11 +23,12 @@ dev:
 bundle:
     cd overlay && npx tauri build
 
-# Symlink the plugin into your Hermes profile (dev install).
+# Symlink the plugin into your Hermes profile and enable it (dev install; plugins are opt-in).
 install:
     mkdir -p "{{hermes_home}}/plugins"
     ln -sfn "{{plugin_dir}}" "{{hermes_home}}/plugins/hermes-chan"
     @echo "linked -> {{hermes_home}}/plugins/hermes-chan"
+    -hermes plugins enable hermes-chan
 
 uninstall:
     rm -f "{{hermes_home}}/plugins/hermes-chan"

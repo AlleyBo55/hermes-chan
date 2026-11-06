@@ -317,8 +317,25 @@ input.addEventListener("keydown", (e) => {
   setChatOpen(false);
 });
 
+// Ctrl+Shift+click switches her off: the plugin remembers it, her process ends and she
+// disappears. /hermeschan on brings her back.
+let leaving = false;
+function switchOff() {
+  if (leaving) return;
+  leaving = true;
+  invokeNative("deactivate").catch((error) => {
+    leaving = false;
+    setStatus(`Unable to switch Hermes-chan off: ${errorText(error)}`, "error");
+  });
+}
+
 chara.addEventListener("contextmenu", (e) => {
   e.preventDefault();
+  // On macOS ctrl+click is also a right click, so the same gesture lands here.
+  if (e.ctrlKey && e.shiftKey) {
+    switchOff();
+    return;
+  }
   toggleChat();
 });
 
@@ -520,6 +537,10 @@ window.addEventListener("pointermove", (e) => {
 chara.addEventListener("pointerdown", async (e) => {
   if (e.isPrimary === false || e.button !== 0) return;
   e.preventDefault();
+  if (e.ctrlKey && e.shiftKey) {
+    switchOff();
+    return;
+  }
   if (e.ctrlKey) {
     toggleChat();
     return;

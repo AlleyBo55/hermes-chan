@@ -9,8 +9,12 @@ import time
 from pathlib import Path
 from typing import Any, Optional
 
+from .paths import private_file, state_dir
+
 _MIN_HEARTBEAT_SECONDS = 60.0
 _DEFAULTS: dict[str, Any] = {
+    # Off after Ctrl+Shift+click or /hermeschan off: her body stays away until switched on.
+    "active": True,
     "mischief": False,
     "watch": False,
     "sleeping": False,
@@ -24,7 +28,7 @@ class SettingsStore:
     """Small atomic JSON store. Values are preferences and rate-limit timestamps only."""
 
     def __init__(self, path: Optional[Path] = None) -> None:
-        self.path = path or (Path.home() / ".hermes" / "hermes-chan" / "settings.json")
+        self.path = path or (state_dir() / "settings.json")
         self._lock = threading.RLock()
         self._data = self._load()
 
@@ -76,7 +80,7 @@ class SettingsStore:
     @staticmethod
     def _validated(raw: dict[str, Any]) -> dict[str, Any]:
         data = dict(_DEFAULTS)
-        for key in ("mischief", "watch", "sleeping", "heartbeat_enabled"):
+        for key in ("active", "mischief", "watch", "sleeping", "heartbeat_enabled"):
             if isinstance(raw.get(key), bool):
                 data[key] = raw[key]
         interval = raw.get("heartbeat_interval")
@@ -95,7 +99,7 @@ class SettingsStore:
         parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         fd, temporary = tempfile.mkstemp(prefix=".settings-", suffix=".tmp", dir=str(parent))
         try:
-            os.fchmod(fd, 0o600)
+            private_file(fd)
             with os.fdopen(fd, "w", encoding="utf-8") as handle:
                 fd = -1
                 json.dump(self._data, handle, indent=2, sort_keys=True)

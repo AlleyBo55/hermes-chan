@@ -5,6 +5,7 @@ import json
 import os
 import secrets
 import stat
+import sys
 import threading
 import time
 from collections import OrderedDict
@@ -12,9 +13,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
+from .paths import private_file, state_dir
+
 _PLAN_TTL_SECONDS = 15 * 60
 _MAX_PLANS = 16
 _TIDY_ROOT = "Hermes-chan Tidy"
+# Windows marks desktop.ini and friends hidden/system; moving them breaks the folder.
+_HIDDEN_OR_SYSTEM = 0x2 | 0x4
+# Finder aliases, Windows shortcuts and Linux launchers.
+_SHORTCUT_SUFFIXES = {".alias", ".lnk", ".url", ".desktop"}
 
 _TYPE_CATEGORIES = {
     "Images": {".avif", ".bmp", ".gif", ".heic", ".jpeg", ".jpg", ".png", ".svg", ".tif", ".tiff", ".webp"},
@@ -28,6 +35,54 @@ _TYPE_CATEGORIES = {
 
 class CleanupError(ValueError):
     pass
+
+
+def _windows_desktop() -> Optional[Path]:
+    """The real Desktop folder, which OneDrive often moves out of the profile."""
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class _Guid(ctypes.Structure):
+            _fields_ = [("Data1", wintypes.DWORD), ("Data2", wintypes.WORD),
+                        ("Data3", wintypes.WORD), ("Data4", ctypes.c_ubyte * 8)]
+
+        # FOLDERID_Desktop {B4BFCC3A-DB2C-424C-B029-7FE99A87C641}
+        folder = _Guid(0xB4BFCC3A, 0xDB2C, 0x424C,
+                       (ctypes.c_ubyte * 8)(0xB0, 0x29, 0x7F, 0xE9, 0x9A, 0x87, 0xC6, 0x41))
+        found = ctypes.c_wchar_p()
+        if ctypes.windll.shell32.SHGetKnownFolderPath(ctypes.byref(folder), 0, None, ctypes.byref(found)) != 0:
+            return None
+        try:
+            return Path(found.value) if found.value else None
+        finally:
+            ctypes.windll.ole32.CoTaskMemFree(found)
+    except Exception:  # noqa: BLE001 - fall back to ~/Desktop
+        return None
+
+
+def _xdg_desktop() -> Optional[Path]:
+    """XDG_DESKTOP_DIR from user-dirs.dirs (it is localised, e.g. ~/Schreibtisch)."""
+    config_home = os.environ.get("XDG_CONFIG_HOME") or str(Path.home() / ".config")
+    try:
+        lines = (Path(config_home) / "user-dirs.dirs").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    for line in lines:
+        line = line.strip()
+        if line.startswith("XDG_DESKTOP_DIR="):
+            value = line.split("=", 1)[1].strip().strip('"').replace("$HOME", str(Path.home()))
+            return Path(value) if value else None
+    return None
+
+
+def default_desktop() -> Path:
+    found = None
+    if sys.platform == "win32":
+        found = _windows_desktop()
+    elif sys.platform.startswith("linux"):
+        found = _xdg_desktop()
+    return found or (Path.home() / "Desktop")
 
 
 @dataclass(frozen=True)
@@ -49,11 +104,11 @@ class _Plan:
 
 
 class DesktopTidier:
-    """Moves only direct, regular-file children of ``~/Desktop``."""
+    """Moves only direct, regular-file children of the desktop folder."""
 
     def __init__(self, desktop: Optional[Path] = None, journal: Optional[Path] = None) -> None:
-        self.desktop = desktop or (Path.home() / "Desktop")
-        self.journal = journal or (Path.home() / ".hermes" / "hermes-chan" / "cleanup-journal.jsonl")
+        self.desktop = desktop or default_desktop()
+        self.journal = journal or (state_dir() / "cleanup-journal.jsonl")
         self._plans: "OrderedDict[str, _Plan]" = OrderedDict()
         self._lock = threading.RLock()
 
@@ -72,6 +127,8 @@ class DesktopTidier:
                 continue
             # Finder aliases are regular files and are included. Symlinks and directories are not.
             if not stat.S_ISREG(info.st_mode):
+                continue
+            if getattr(info, "st_file_attributes", 0) & _HIDDEN_OR_SYSTEM:
                 continue
             category = self._category(source, info, rule)
             destination_dir = desktop / _TIDY_ROOT / category
@@ -191,7 +248,7 @@ class DesktopTidier:
                 return "This Week"
             return "Older"
         suffix = source.suffix.lower()
-        if suffix == ".alias":
+        if suffix in _SHORTCUT_SUFFIXES:
             return "Aliases"
         for category, suffixes in _TYPE_CATEGORIES.items():
             if suffix in suffixes:
@@ -244,6 +301,12 @@ class DesktopTidier:
 
     @staticmethod
     def _link_then_unlink(source: Path, destination: Path) -> None:
+        """A move that never replaces an existing file."""
+        if sys.platform == "win32":
+            # Windows rename already refuses an existing destination (FileExistsError), and
+            # works where hard links do not (FAT drives, OneDrive placeholders).
+            os.rename(source, destination)
+            return
         os.link(source, destination, follow_symlinks=False)
         try:
             source.unlink()
@@ -260,7 +323,7 @@ class DesktopTidier:
         flags = os.O_WRONLY | os.O_CREAT | os.O_APPEND
         fd = os.open(self.journal, flags, 0o600)
         try:
-            os.fchmod(fd, 0o600)
+            private_file(fd)
             payload = (json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n").encode("utf-8")
             os.write(fd, payload)
             os.fsync(fd)

@@ -120,6 +120,8 @@ struct Inner {
     persistent: PersistentState,
     persistence_dirty: bool,
     hit_regions: Vec<HitRegion>,
+    // Linux shapes the window's input region instead of toggling click-through.
+    #[cfg_attr(target_os = "linux", allow(dead_code))]
     ignoring_cursor: bool,
     active_window: Option<ActiveWindow>,
     force_perch: bool,
@@ -185,18 +187,32 @@ impl OverlayController {
             .map_err(|error| format!("could not restore overlay position: {error}"))?;
         }
 
+        // tao's Linux click-through needs a realized window and panics on the hidden
+        // effect window, so Linux sets the (empty) input shape through GTK instead.
+        #[cfg(not(target_os = "linux"))]
         effect
             .set_ignore_cursor_events(true)
             .map_err(|error| format!("could not make effect window click-through: {error}"))?;
+        #[cfg(target_os = "linux")]
+        pass_all_clicks_through(&effect);
+
+        winctl::set_scale_factor(main.scale_factor().unwrap_or(1.0));
 
         #[cfg(target_os = "macos")]
         lift_over_menu_bar(&main);
 
+        // Follow you onto other workspaces, like CanJoinAllSpaces does on macOS.
+        #[cfg(target_os = "linux")]
+        let _ = main.set_visible_on_all_workspaces(true);
+
         let controller = self.clone();
-        main.on_window_event(move |event| {
-            if let WindowEvent::Moved(position) = event {
-                controller.record_pinned_position(position.x, position.y);
-            }
+        let app = handle.clone();
+        main.on_window_event(move |event| match event {
+            WindowEvent::Moved(position) => controller.record_pinned_position(position.x, position.y),
+            WindowEvent::ScaleFactorChanged { scale_factor, .. } => winctl::set_scale_factor(*scale_factor),
+            // Alt+F4 and friends: closing her window switches her off, like Ctrl+Shift+click.
+            WindowEvent::CloseRequested { .. } => leave(&app),
+            _ => {}
         });
 
         if let Some(message) = self.load_error.as_ref() {
@@ -257,6 +273,10 @@ impl OverlayController {
             let mut last_active_poll = Instant::now() - ACTIVE_POLL;
             let mut last_flush = Instant::now() - PERSIST_INTERVAL;
             loop {
+                // Linux shapes her window's input region once per layout change instead
+                // (see set_overlay_hit_regions): XWayland cannot report the pointer over
+                // other apps, so polling it would leave her unclickable there.
+                #[cfg(not(target_os = "linux"))]
                 controller.update_hit_testing(&handle);
                 if last_flush.elapsed() >= PERSIST_INTERVAL {
                     controller.flush_dirty_state(&handle);
@@ -264,6 +284,12 @@ impl OverlayController {
                 }
 
                 if last_active_poll.elapsed() >= ACTIVE_POLL {
+                    if let Some(scale) = handle
+                        .get_webview_window(MAIN_WINDOW)
+                        .and_then(|window| window.scale_factor().ok())
+                    {
+                        winctl::set_scale_factor(scale);
+                    }
                     controller.poll_active_window(&handle);
                     last_active_poll = Instant::now();
                 }
@@ -413,6 +439,7 @@ impl OverlayController {
         }
     }
 
+    #[cfg_attr(target_os = "linux", allow(dead_code))]
     fn update_hit_testing(&self, handle: &AppHandle) {
         let Some(window) = handle.get_webview_window(MAIN_WINDOW) else {
             return;
@@ -658,7 +685,7 @@ impl OverlayController {
                     target.h as f64,
                 )))
             })
-            .and_then(|_| window.show());
+            .and_then(|_| show_without_focus(&window));
         if let Err(error) = result {
             self.emit_status(
                 handle,
@@ -900,8 +927,102 @@ pub fn set_overlay_hit_regions(
     }) {
         return Err("hit regions must contain finite, positive dimensions".to_string());
     }
+    #[cfg(target_os = "linux")]
+    shape_input(&window, &regions);
     controller.inner.lock().unwrap().hit_regions = regions;
+    #[cfg(not(target_os = "linux"))]
     controller.update_hit_testing(&app);
+    #[cfg(target_os = "linux")]
+    let _ = app;
+    Ok(())
+}
+
+/// Linux: only her body, bubble and buttons take clicks; the rest of her window passes
+/// them to whatever is underneath. No regions yet means the whole window is interactive.
+#[cfg(target_os = "linux")]
+fn shape_input(window: &WebviewWindow, regions: &[HitRegion]) {
+    use gtk::{cairo::RectangleInt, prelude::WidgetExt};
+    let rectangles: Vec<RectangleInt> = regions
+        .iter()
+        .map(|region| {
+            RectangleInt::new(
+                region.x.floor() as i32,
+                region.y.floor() as i32,
+                region.width.ceil() as i32 + 1,
+                region.height.ceil() as i32 + 1,
+            )
+        })
+        .collect();
+    let target = window.clone();
+    let _ = window.run_on_main_thread(move || {
+        let Ok(gtk_window) = target.gtk_window() else {
+            return;
+        };
+        if rectangles.is_empty() {
+            gtk_window.input_shape_combine_region(None);
+        } else {
+            let region = gtk::cairo::Region::create_rectangles(&rectangles);
+            gtk_window.input_shape_combine_region(Some(&region));
+        }
+    });
+}
+
+/// Linux: an empty input shape, stored by GTK and applied whenever the window is realized.
+#[cfg(target_os = "linux")]
+fn pass_all_clicks_through(window: &WebviewWindow) {
+    use gtk::prelude::WidgetExt;
+    let target = window.clone();
+    let _ = window.run_on_main_thread(move || {
+        if let Ok(gtk_window) = target.gtk_window() {
+            gtk_window.input_shape_combine_region(Some(&gtk::cairo::Region::create()));
+        }
+    });
+}
+
+/// Show a window without taking focus from the app you are using. Windows activates a
+/// window it shows unless asked not to; elsewhere `show` already leaves focus alone.
+fn show_without_focus(window: &WebviewWindow) -> tauri::Result<()> {
+    #[cfg(windows)]
+    {
+        use windows::Win32::UI::WindowsAndMessaging::{ShowWindow, SW_SHOWNOACTIVATE};
+        let hwnd = window.hwnd()?;
+        let _ = unsafe { ShowWindow(hwnd, SW_SHOWNOACTIVATE) };
+        Ok(())
+    }
+    #[cfg(not(windows))]
+    window.show()
+}
+
+/// Hide a window shown with `show_without_focus`.
+fn hide_shown_window(window: &WebviewWindow) -> tauri::Result<()> {
+    #[cfg(windows)]
+    {
+        use windows::Win32::UI::WindowsAndMessaging::{ShowWindow, SW_HIDE};
+        let hwnd = window.hwnd()?;
+        let _ = unsafe { ShowWindow(hwnd, SW_HIDE) };
+        Ok(())
+    }
+    #[cfg(not(windows))]
+    window.hide()
+}
+
+/// Ctrl+Shift+click (or closing her window): tell the plugin she was switched off, so it
+/// does not start her again, then disappear and end her process.
+pub fn leave(app: &AppHandle) {
+    let _ = crate::bridge::send_line(r#"{"type":"intent","name":"deactivate"}"#);
+    if let Some(window) = app.get_webview_window(EFFECT_WINDOW) {
+        let _ = hide_shown_window(&window);
+    }
+    if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
+        let _ = window.hide();
+    }
+    app.exit(0);
+}
+
+#[tauri::command]
+pub fn deactivate(window: WebviewWindow, app: AppHandle) -> Result<(), String> {
+    require_window(&window, MAIN_WINDOW)?;
+    leave(&app);
     Ok(())
 }
 
@@ -974,9 +1095,12 @@ pub async fn prepare_break_ui(window_id: u32, window: WebviewWindow, app: AppHan
 }
 
 /// On-screen app windows, front to back, so she can stand on, climb or jump to any of them.
+/// Async so the X11 and Win32 round trips run off the UI thread.
 #[tauri::command]
-pub fn list_windows() -> Vec<winctl::WindowFrame> {
-    winctl::visible_windows(std::process::id())
+pub async fn list_windows() -> Vec<winctl::WindowFrame> {
+    tauri::async_runtime::spawn_blocking(|| winctl::visible_windows(std::process::id()))
+        .await
+        .unwrap_or_default()
 }
 
 /// Her own harmless mischief: draw a short visual effect over a screen rectangle.
@@ -1010,6 +1134,7 @@ pub fn play_effect(
         y: y.round() as i32,
         w: w.min(4000.0).round() as i32,
         h: h.min(4000.0).round() as i32,
+        handle: 0,
     };
     let duration_ms = match effect.as_str() {
         "crack" | "ripple" => 1400,
@@ -1033,9 +1158,7 @@ pub fn play_effect(
 #[tauri::command]
 pub fn hide_effect(window: WebviewWindow) -> Result<(), String> {
     require_window(&window, EFFECT_WINDOW)?;
-    window
-        .hide()
-        .map_err(|error| format!("could not hide effect window: {error}"))
+    hide_shown_window(&window).map_err(|error| format!("could not hide effect window: {error}"))
 }
 
 /// Let her climb and hang over the menu bar, and follow you onto other Spaces and into
@@ -1111,10 +1234,7 @@ fn target_matches(target: Option<&serde_json::Value>, active: &ActiveWindow) -> 
 }
 
 fn overlay_state_path() -> PathBuf {
-    let home = std::env::var_os("HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("."));
-    home.join(".hermes/hermes-chan/overlay.json")
+    crate::paths::state_dir().join("overlay.json")
 }
 
 fn write_state(path: &Path, state: &PersistentState) -> Result<(), String> {

@@ -17,7 +17,8 @@ def register(ctx, bridge, settings) -> None:
 def _state_setter(bridge, settings, hook_name, state):
     def _cb(**payload):
         try:
-            if hook_name in ("pre_llm_call", "pre_tool_call", "on_blocked"):
+            if hook_name in ("pre_llm_call", "pre_tool_call", "pre_approval_request",
+                             "on_human_input_request"):
                 bridge.set_agent_busy(True)
             elif hook_name in ("on_session_start", "on_session_end"):
                 bridge.set_agent_busy(False)

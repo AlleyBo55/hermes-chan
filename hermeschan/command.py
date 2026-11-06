@@ -11,6 +11,7 @@ log = logging.getLogger("hermes-chan.command")
 _USAGE = (
     "/hermeschan — desktop companion controls\n"
     "  status                         show body, driver, and autonomy state\n"
+    "  on | off                       switch her on or off (Ctrl+Shift+click her = off)\n"
     "  come                           call her to the active window\n"
     "  sleep | wake                   persist sleeping/awake state\n"
     "  say <text>                     make her speak a line\n"
@@ -59,7 +60,32 @@ def _driver_available() -> bool:
         return False
 
 
-def register(ctx, bridge, settings, autonomy) -> None:
+def _status(bridge, settings, autonomy, body) -> str:
+    current = settings.snapshot()
+    heartbeat = autonomy.status()
+    heartbeat_state = "on" if heartbeat["enabled"] else "off"
+    if heartbeat["enabled"] and (heartbeat["sleeping"] or not heartbeat["opted_in"]):
+        heartbeat_state += " (paused)"
+    if bridge.is_connected:
+        link = f"connected ({bridge.path})"
+    elif bridge.is_listening:
+        link = f"waiting for her body ({bridge.path})"
+    else:
+        link = f"not listening{f': {bridge.problem}' if bridge.problem else ''}"
+    switched = "on" if current["active"] else "off (/hermeschan on brings her back)"
+    return (
+        f"Hermes-chan is {switched}.\n"
+        f"  body: {body.runner.describe()}\n"
+        f"  bridge: {link}\n"
+        f"  computer use: {'native input available' if _driver_available() else 'native input unavailable here'}\n"
+        f"  sleeping: {'yes' if current['sleeping'] else 'no'} · "
+        f"mischief: {'on' if current['mischief'] else 'off'} · "
+        f"watch: {'on' if current['watch'] else 'off'} · "
+        f"heartbeat: {heartbeat_state} every {heartbeat['interval']:g}s"
+    )
+
+
+def register(ctx, bridge, settings, autonomy, body) -> None:
     def _handler(raw: str, session_key: str = "", session_id: str = "", **_context) -> str:
         bridge.remember_session(session_key)
         args = (raw or "").strip().split(maxsplit=1)
@@ -69,19 +95,18 @@ def register(ctx, bridge, settings, autonomy) -> None:
         if sub in ("help", "-h", "--help"):
             return _USAGE
         if sub == "status":
-            current = settings.snapshot()
-            heartbeat = autonomy.status()
-            heartbeat_state = "on" if heartbeat["enabled"] else "off"
-            if heartbeat["enabled"] and (heartbeat["sleeping"] or not heartbeat["opted_in"]):
-                heartbeat_state += " (paused)"
-            return (
-                f"Hermes-chan body: {'connected' if bridge.is_connected else 'not connected'} "
-                f"(socket {bridge.path}); real driver: {'available' if _driver_available() else 'unavailable'}; "
-                f"sleeping: {'yes' if current['sleeping'] else 'no'}; "
-                f"mischief: {'on' if current['mischief'] else 'off'}; "
-                f"watch: {'on' if current['watch'] else 'off'}; "
-                f"heartbeat: {heartbeat_state} every {heartbeat['interval']:g}s."
-            )
+            return _status(bridge, settings, autonomy, body)
+        if sub == "on":
+            blocked = body.runner.blocked_reason()
+            body.switch_on()
+            if blocked:
+                return f"Hermes-chan is switched on, but her body cannot appear here: {blocked}."
+            return "Hermes-chan is switched on; she will appear in a moment."
+        if sub == "off":
+            body.switch_off()
+            return "Hermes-chan is switched off. /hermeschan on brings her back."
+        if not settings.get("active", True) and sub in ("come", "wake", "effect", "react"):
+            return "Hermes-chan is switched off; /hermeschan on brings her back."
         if sub == "come":
             if settings.get("sleeping", False):
                 return "Hermes-chan is asleep; use /hermeschan wake first."
@@ -120,16 +145,12 @@ def register(ctx, bridge, settings, autonomy) -> None:
         if sub == "wake":
             settings.update(sleeping=False)
             bridge.update_config(sleeping=False)
-            runner = getattr(bridge, "runner", None)
-            if runner is not None:
-                runner.maybe_start()
+            body.start()
             bridge.set_state(states.IDLE)
             return "Hermes-chan is awake."
         if sub == "hide":
-            runner = getattr(bridge, "runner", None)
-            if runner is not None:
-                runner.stop()
-            return "Hermes-chan's body is dismissed."
+            body.runner.stop()
+            return "Hermes-chan's body is dismissed until /hermeschan wake."
         if sub == "mischief":
             try:
                 enabled = _toggle(rest, "mischief")
@@ -148,6 +169,8 @@ def register(ctx, bridge, settings, autonomy) -> None:
             return ("Watch enabled: one active-window screenshot may be requested per bounded decision."
                     if enabled else "Watch disabled: autonomy will not request screenshots.")
         if sub == "react":
+            if not bridge.is_connected:
+                return "Hermes-chan's overlay is not connected."
             if autonomy.trigger_once():
                 return "Hermes-chan is taking one bounded look and will react shortly."
             return "Enable /hermeschan watch on or /hermeschan mischief on first."
@@ -180,6 +203,6 @@ def register(ctx, bridge, settings, autonomy) -> None:
         name="hermeschan",
         handler=_handler,
         description="Control the Hermes-chan desktop companion",
-        args_hint="status | come | sleep | wake | hide | say <text> | effect <name> | mischief on|off | watch on|off | react | heartbeat on|off|status [interval]",
+        args_hint="status | on | off | come | sleep | wake | hide | say <text> | effect <name> | mischief on|off | watch on|off | react | heartbeat on|off|status [interval]",
     )
     log.info("hermes-chan: registered /hermeschan command")
