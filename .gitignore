@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+# Rust build output (the real path is overlay/src-tauri/target)
+**/target/
+# node / tauri cli
+**/node_modules/
+overlay/dist/
+# local sockets / scratch
+*.sock

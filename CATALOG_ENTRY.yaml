@@ -1,0 +1,59 @@
+# Catalog entry for the Hermes plugin catalog.
+#
+# To submit: copy this file to `plugin-catalog/hermes-chan.yaml` in a fork of
+# NousResearch/hermes-agent, fill `repo` and the full 40-char `sha` (see
+# SUBMISSION.md), and open a PR. The `capabilities` block below must match what
+# register(ctx) actually registers (catalog rule 5) — keep it in sync with
+# plugin.yaml.
+name: hermes-chan
+repo: https://github.com/AlleyBo55/hermes-chan        # TODO: confirm/replace after push
+sha: "0000000000000000000000000000000000000000"        # TODO: full 40-char commit SHA
+maintainer: AlleyBo55
+tier: community
+category: desktop
+version: "0.1.0"
+title: "Hermechan"
+requires_hermes: ">=0.23.0"
+docs_url: https://github.com/AlleyBo55/hermes-chan#readme
+platforms: [macos]
+description: >-
+  A living desktop companion: an original chibi-maid who stands on your screen,
+  faces the window you are working in, reacts to the agent's activity, and acts
+  on the real desktop. She is the body behind the built-in computer_use tool —
+  every click/type/drag the agent makes is performed by her, while approval
+  gating stays in Hermes above her — and she perches on, shakes and nudges the
+  active window. You can type into her speech bubble to talk to the agent, and a
+  session heartbeat lets her idle, peek and react on her own between turns.
+  Disclosure — runs a local AF_UNIX socket server (~/.hermes/hermes-chan.sock)
+  and spawns a Rust/Tauri overlay process it builds from source on first run
+  (needs a Rust toolchain; set HERMESCHAN_AUTOSTART=0 to disable). As the
+  computer_use backend it drives the screen only through the built-in cua-driver
+  and only under Hermes' approval system — it adds no bypass. The body reads the
+  frontmost window's frame and moves windows via macOS System Events
+  (Accessibility permission); the glitch effect is a harmless overlay drawn on
+  top of a window and never touches the target app; tidy_desktop plans/animates
+  and real moves go through approved file tools. No network calls of its own, no
+  telemetry, no credential reads. macOS only for now; unattended runs do not
+  spawn the body.
+known_issues:
+  - "macOS only; Windows/Linux bodies are not implemented yet."
+  - "Window move/track uses osascript/System Events (tens of ms per call), so dragging is gesture-cadence, not per-frame smooth."
+  - "The overlay is built from source on first run; without a Rust toolchain the plugin runs headless (tools/hooks only)."
+capabilities:
+  provides_tools:
+    - hermeschan_say
+    - hermeschan_emote
+    - hermeschan_point_at
+    - hermeschan_grab_window
+    - hermeschan_glitch_window
+    - hermeschan_tidy_desktop
+  provides_hooks:
+    - on_session_start
+    - on_session_end
+    - pre_llm_call
+    - post_llm_call
+    - pre_tool_call
+    - post_tool_call
+    - on_blocked
+  provides_middleware: []
+  requires_env: []
