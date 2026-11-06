@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hermes-chan · Sprite collection</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f2eee7;color:#213c3c;font:15px/1.5 system-ui,sans-serif}
+    main{max-width:1200px;margin:auto;padding:32px}header{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:28px}
+    .eyebrow{text-transform:uppercase;letter-spacing:.15em;font-size:11px;color:#55776f}h1{font-size:40px;line-height:1.1;margin:8px 0 10px;letter-spacing:-.04em}p{margin:0;color:#5c706a}
+    .badge{border:1px solid #b2c7bd;border-radius:30px;padding:8px 16px;white-space:nowrap;background:#e7f0e8}
+    .workbench{display:grid;grid-template-columns:290px 1fr;gap:22px}.panel{border:1px solid #d6d9cf;border-radius:18px;padding:22px;background:#fbfaf6}
+    label{display:block;margin:0 0 6px;font-size:12px;font-weight:650}select,button{font:inherit;color:inherit;background:#fff;border:1px solid #bfcfc4;border-radius:9px;padding:10px}
+    select{width:100%;margin-bottom:20px}button{cursor:pointer}button:hover{background:#e6eee6}button[aria-pressed=true]{background:#244f49;color:white;border-color:#244f49}
+    .buttons{display:flex;gap:8px;flex-wrap:wrap}.control{margin-top:22px}.small{font-size:12px}.size-view{height:138px;display:flex;justify-content:center;align-items:end;border-bottom:1px solid #c3d0c3;margin-top:12px}
+    #actual{width:96px;height:104px}.stage{display:flex;align-items:center;justify-content:center;min-height:460px;border-radius:12px;background-color:#e9ebe4;background-image:linear-gradient(45deg,#dce1d8 25%,transparent 25%),linear-gradient(-45deg,#dce1d8 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#dce1d8 75%),linear-gradient(-45deg,transparent 75%,#dce1d8 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}
+    #character{width:384px;height:416px;max-width:100%;object-fit:contain}.status{display:flex;justify-content:space-between;margin:14px 0 0;gap:16px}.frames{display:flex;gap:8px;overflow:auto;margin-top:18px;padding-bottom:8px}
+    .frame{min-width:88px;padding:4px;font-size:11px}.frame canvas{display:block;width:72px;height:78px;margin:auto}.frame.active{outline:2px solid #4c8877}
+    h2{font-size:20px;margin:30px 0 16px}.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:10px}.clip{background:#faf9f4;padding:9px 4px;min-height:150px;font-size:12px}.clip canvas{width:96px;height:104px;display:block;margin:auto}.clip span{display:block;color:#668278;font-size:10px}
+    footer{margin-top:28px;padding-top:18px;border-top:1px solid #ced6cb;font-size:12px;color:#63776f}a{color:#286c5f}input[type=range]{width:100%;accent-color:#397463}
+    @media(max-width:740px){main{padding:20px}header{display:block}.badge{display:inline-block;margin-top:14px}.workbench{grid-template-columns:1fr}.stage{min-height:420px}h1{font-size:34px}}
+  </style>
+</head>
+<body>
+<main>
+  <header><div><div class="eyebrow">Desktop companion / character collection</div><h1>Hermes-chan</h1><p>The Nous Girl, brought to your desktop.</p></div><div class="badge" id="collection-count">Loading collection…</div></header>
+  <div class="workbench">
+    <aside class="panel">
+      <label for="animation">Animation</label><select id="animation" disabled><option>Loading sprites…</option></select>
+      <div class="buttons"><button id="play" type="button">Pause</button><button id="restart" type="button">Restart</button></div>
+      <div class="control"><label for="zoom">Inspect size</label><select id="zoom"><option value="0.5">Half size · 96 × 104</option><option value="1">Native · 192 × 208</option><option value="2" selected>2× · 384 × 416</option></select></div>
+      <label>Background</label><div class="buttons"><button data-bg="checker" aria-pressed="true">Grid</button><button data-bg="#ffffff" aria-pressed="false">Light</button><button data-bg="#252832" aria-pressed="false">Dark</button></div>
+      <div class="control"><label>Compact desktop size</label><p class="small">96 × 104 CSS px. The image keeps its full alpha canvas.</p><div class="size-view"><canvas id="actual" width="192" height="208" aria-label="Compact sprite preview"></canvas></div></div>
+      <div class="control small"><a href="preview.png">Collection overview</a> · <a href="walk-preview.gif">Walk loop</a> · <a href="climb-preview.gif">Climb loop</a> · <a href="dragged-preview.png">Dragged sequence</a> · <a href="manifest.json">Animation manifest</a></div>
+    </aside>
+    <section class="panel">
+      <div class="stage" id="stage"><canvas id="character" width="192" height="208" aria-label="Animated Hermes-chan"></canvas></div>
+      <div class="status"><strong id="clipname">Loading</strong><span id="counter" class="small"></span></div>
+      <input id="scrub" type="range" min="0" max="7" value="0" aria-label="Animation frame">
+      <div class="frames" id="frames"></div>
+    </section>
+  </div>
+  <h2>Every gesture, every mood</h2><div class="gallery" id="gallery"></div>
+  <footer>Generated with GPT Image 2.6 Sunburst. Appearance follows the supplied Nous Research girl reference. Desktop behavior is inspired by Sakurasou's Maid-chan. Preview repeats each selected clip for inspection; the manifest retains its intended loop and transition behavior.</footer>
+</main>
+<script src="sprite-player.js"></script>
+<script>
+const canvas=document.getElementById('character');
+const player=new HermesSpritePlayer(canvas,'./');
+const actual=document.getElementById('actual').getContext('2d');
+const select=document.getElementById('animation');
+const scrub=document.getElementById('scrub');
+const play=document.getElementById('play');
+const nice=s=>s.replaceAll('_',' ');
+function thumbnail(frame,width=192,height=208){const c=document.createElement('canvas');c.width=width;c.height=height;c.getContext('2d').drawImage(player.images[frame.atlas],...frame.rect,0,0,width,height);return c}
+function choose(name){
+  select.value=name;player.play(name,{loop:true});player.paused=false;play.textContent='Pause';
+  const clip=player.manifest.clips[name];scrub.max=clip.frames.length-1;
+  document.getElementById('clipname').textContent=nice(name.replace('/',' / '));
+  const strip=document.getElementById('frames');strip.replaceChildren();
+  clip.frames.forEach((f,i)=>{const b=document.createElement('button');b.className='frame';b.append(thumbnail(f),document.createTextNode(String(i+1).padStart(2,'0')));b.setAttribute('aria-label',`Frame ${i+1}`);b.onclick=()=>{player.paused=true;play.textContent='Play';player.seek(i)};strip.append(b)});
+  player.draw();
+}
+canvas.addEventListener('spriteframe',e=>{actual.clearRect(0,0,192,208);actual.drawImage(canvas,0,0);scrub.value=e.detail.index;document.getElementById('counter').textContent=`Frame ${e.detail.index+1} / ${player.manifest.clips[e.detail.clip].frames.length}`;document.querySelectorAll('.frame').forEach((b,i)=>b.classList.toggle('active',i===e.detail.index))});
+player.ready.then(()=>{
+  const clips=Object.values(player.manifest.clips);
+  const count=clips.reduce((total,clip)=>total+clip.frames.length,0);
+  document.getElementById('collection-count').textContent=`${count} PNGs · ${clips.length} animations · ${player.manifest.cell.join(' × ')}`;
+  select.replaceChildren();let group;
+  for(const [name,clip] of Object.entries(player.manifest.clips)){
+    const [category,label]=name.split('/');
+    if(!group||group.label!==category){group=document.createElement('optgroup');group.label=category;select.append(group)}
+    const option=document.createElement('option');option.value=name;option.textContent=nice(label);group.append(option);
+    const b=document.createElement('button');b.className='clip';b.append(thumbnail(clip.frames[0]));const span=document.createElement('span');span.textContent=category;b.append(span,document.createTextNode(nice(label)));b.onclick=()=>{choose(name);document.getElementById('stage').scrollIntoView({behavior:'smooth',block:'center'})};document.getElementById('gallery').append(b);
+  }
+  select.disabled=false;select.onchange=()=>choose(select.value);choose('core/idle');
+}).catch(error=>{document.getElementById('clipname').textContent='Could not load sprites. Open through a local HTTP server.';console.error(error)});
+play.onclick=()=>{player.paused=!player.paused;play.textContent=player.paused?'Play':'Pause'};
+document.getElementById('restart').onclick=()=>choose(select.value);
+scrub.oninput=()=>{player.paused=true;play.textContent='Play';player.seek(Number(scrub.value))};
+document.getElementById('zoom').onchange=e=>{canvas.style.width=192*Number(e.target.value)+'px';canvas.style.height=208*Number(e.target.value)+'px'};
+document.querySelectorAll('[data-bg]').forEach(b=>b.onclick=()=>{const stage=document.getElementById('stage');stage.style.backgroundImage=b.dataset.bg==='checker'?'':'none';stage.style.backgroundColor=b.dataset.bg==='checker'?'':b.dataset.bg;document.querySelectorAll('[data-bg]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
+</script>
+</body>
+</html>

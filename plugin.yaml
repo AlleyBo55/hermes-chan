@@ -1,0 +1,36 @@
+name: hermes-chan
+label: Hermes-chan
+version: 0.1.0
+requires_hermes: ">=0.23.0"
+author: AlleyBo55
+description: >-
+  A living desktop companion for Hermes. Hermes-chan is an original chibi
+  character who stands on your screen, faces whatever you are doing, reacts to
+  agent activity, and acts on the real desktop through the public computer-use
+  provider API. Click, drag, scroll, key and type operations synchronize with
+  her sprite contact frames. Desktop cleanup is confirmation-gated, journaled,
+  and reversible. Opt-in idle autonomy is limited to bounded visual reactions.
+
+optional_env:
+  - name: HERMESCHAN_SOCKET
+    description: "Unix socket the Python bridge listens on (default ~/.hermes/hermes-chan.sock)"
+    prompt: "Overlay socket path"
+    password: false
+
+provides_tools:
+  - hermeschan_say
+  - hermeschan_emote
+  - hermeschan_point_at
+  - hermeschan_grab_window
+  - hermeschan_glitch_window
+  - hermeschan_tidy_desktop
+  - hermeschan_undo_tidy
+provides_hooks:
+  - on_session_start
+  - on_session_end
+  - pre_llm_call
+  - post_llm_call
+  - pre_tool_call
+  - post_tool_call
+  - on_blocked
+provides_middleware: []

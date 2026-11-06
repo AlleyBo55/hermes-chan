@@ -1,0 +1,524 @@
+// Animated, click-through crack and portal art for the active-window effect.
+// It draws only into this transparent overlay; the app underneath is untouched.
+(function () {
+  "use strict";
+
+  const canvas = document.getElementById("fx-canvas");
+  const ctx = canvas?.getContext("2d");
+  if (!ctx) return;
+
+  const TAU = Math.PI * 2;
+  let active = null;
+  let animationFrame = 0;
+  let width = 1;
+  let height = 1;
+
+  const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
+  const easeOut = (value) => 1 - (1 - value) ** 3;
+
+  function resize() {
+    width = Math.max(1, window.innerWidth);
+    height = Math.max(1, window.innerHeight);
+    const ratio = Math.min(window.devicePixelRatio || 1, 2, 4096 / width, 4096 / height);
+    canvas.width = Math.round(width * ratio);
+    canvas.height = Math.round(height * ratio);
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  }
+
+  function random(seed) {
+    let state = seed >>> 0;
+    return () => {
+      state = (1664525 * state + 1013904223) >>> 0;
+      return state / 4294967296;
+    };
+  }
+
+  function makeCracks(cx, cy) {
+    const rand = random(Math.round(cx * 31 + cy * 73 + width * 7 + height * 11));
+    const radius = clamp(Math.min(width, height) * 0.62, 140, 560);
+    const rays = [];
+    const branches = [];
+    for (let ray = 0; ray < 15; ray += 1) {
+      const angle = (ray / 15) * TAU + (rand() - 0.5) * 0.2;
+      const length = radius * (0.68 + rand() * 0.45);
+      const points = [{ x: cx, y: cy }];
+      for (let step = 1; step <= 5; step += 1) {
+        const distance = (step / 5) * length;
+        const bend = (rand() - 0.5) * 0.24;
+        points.push({
+          x: cx + Math.cos(angle + bend) * distance,
+          y: cy + Math.sin(angle + bend) * distance,
+        });
+      }
+      rays.push(points);
+      const fork = points[2 + (ray % 2)];
+      const branchAngle = angle + (ray % 2 ? 0.8 : -0.8);
+      branches.push([
+        fork,
+        { x: fork.x + Math.cos(branchAngle) * length * 0.18,
+          y: fork.y + Math.sin(branchAngle) * length * 0.18 },
+        { x: fork.x + Math.cos(branchAngle + 0.13) * length * 0.36,
+          y: fork.y + Math.sin(branchAngle + 0.13) * length * 0.36 },
+      ]);
+    }
+    return { rays, branches, radius };
+  }
+
+  function partialPath(points, progress) {
+    const step = clamp(progress, 0, 1) * (points.length - 1);
+    const whole = Math.floor(step);
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let index = 1; index <= whole; index += 1) {
+      ctx.lineTo(points[index].x, points[index].y);
+    }
+    if (whole < points.length - 1) {
+      const fraction = step - whole;
+      const from = points[whole];
+      const to = points[whole + 1];
+      ctx.lineTo(from.x + (to.x - from.x) * fraction,
+                 from.y + (to.y - from.y) * fraction);
+    }
+  }
+
+  function drawCrack(fx, progress) {
+    const reveal = easeOut(clamp(progress / 0.34, 0, 1));
+    const fade = clamp((1 - progress) / 0.22, 0, 1);
+    ctx.save();
+    ctx.globalAlpha = fade;
+    const flash = clamp(1 - progress / 0.28, 0, 1);
+    if (flash > 0) {
+      const glow = ctx.createRadialGradient(fx.cx, fx.cy, 0, fx.cx, fx.cy, fx.paths.radius * 0.44);
+      glow.addColorStop(0, `rgba(238,252,255,${0.5 * flash})`);
+      glow.addColorStop(0.35, `rgba(100,210,255,${0.22 * flash})`);
+      glow.addColorStop(1, "rgba(100,210,255,0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, width, height);
+    }
+    for (const [paths, delay, lineWidth] of [
+      [fx.paths.rays, 0, 2.7],
+      [fx.paths.branches, 0.12, 1.5],
+    ]) {
+      const amount = clamp((reveal - delay) / (1 - delay), 0, 1);
+      for (const points of paths) {
+        partialPath(points, amount);
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = "rgba(6,12,30,0.92)";
+        ctx.lineWidth = lineWidth + 1;
+        ctx.stroke();
+        ctx.save();
+        ctx.translate(-1.2, -1.2);
+        partialPath(points, amount);
+        ctx.strokeStyle = "rgba(220,248,255,0.95)";
+        ctx.lineWidth = lineWidth;
+        ctx.shadowColor = "#83e6ff";
+        ctx.shadowBlur = 7;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+    if (progress < 0.38) {
+      ctx.beginPath();
+      ctx.arc(fx.cx, fx.cy, fx.paths.radius * 0.32 * easeOut(progress / 0.38), 0, TAU);
+      ctx.strokeStyle = `rgba(170,235,255,${0.7 * (1 - progress / 0.38)})`;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawPortal(fx, progress, now) {
+    const opening = easeOut(clamp(progress / 0.25, 0, 1));
+    const closing = easeOut(clamp((1 - progress) / 0.19, 0, 1));
+    const open = Math.min(opening, closing);
+    if (open <= 0) return;
+    const radius = fx.radius * open;
+    const spin = (now - fx.started) / 900;
+    ctx.save();
+    ctx.translate(fx.cx, fx.cy);
+    ctx.scale(1, 0.78);
+
+    const halo = ctx.createRadialGradient(0, 0, radius * 0.62, 0, 0, radius * 1.38);
+    halo.addColorStop(0, "rgba(19,7,47,0.88)");
+    halo.addColorStop(0.65, "rgba(54,36,119,0.8)");
+    halo.addColorStop(0.82, "rgba(27,184,255,0.43)");
+    halo.addColorStop(1, "rgba(27,184,255,0)");
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 1.38, 0, TAU);
+    ctx.fill();
+
+    const voidFill = ctx.createRadialGradient(-radius * 0.15, -radius * 0.15, 0, 0, 0, radius);
+    voidFill.addColorStop(0, "rgba(3,5,24,0.98)");
+    voidFill.addColorStop(0.62, "rgba(20,9,57,0.96)");
+    voidFill.addColorStop(1, "rgba(58,36,130,0.94)");
+    ctx.fillStyle = voidFill;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 0.92, 0, TAU);
+    ctx.fill();
+
+    for (let spiral = 0; spiral < 9; spiral += 1) {
+      ctx.beginPath();
+      for (let point = 0; point <= 24; point += 1) {
+        const fraction = point / 24;
+        const angle = spiral * TAU / 9 + spin * 1.6 + fraction * 2.5;
+        const distance = radius * (0.12 + fraction * 0.72);
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance;
+        if (point === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = spiral % 2 ? "rgba(93,81,230,0.42)" : "rgba(75,213,255,0.38)";
+      ctx.lineWidth = 2.4;
+      ctx.stroke();
+    }
+
+    ctx.lineCap = "round";
+    for (let ring = 0; ring < 4; ring += 1) {
+      const start = spin * (ring % 2 ? -1 : 1) + ring * 1.3;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius * (0.96 + ring * 0.045), start, start + 1.8 + ring * 0.17);
+      ctx.strokeStyle = ["#9df3ff", "#6acbff", "#a187ff", "#e5c1ff"][ring];
+      ctx.lineWidth = Math.max(2, radius * (0.045 - ring * 0.006));
+      ctx.shadowColor = ring % 2 ? "#a076ff" : "#5ce5ff";
+      ctx.shadowBlur = radius * 0.17;
+      ctx.stroke();
+    }
+    ctx.shadowBlur = 0;
+    for (let spark = 0; spark < 18; spark += 1) {
+      const angle = spark * TAU / 18 + spin * (spark % 2 ? 0.5 : -0.4);
+      const distance = radius * (1.06 + 0.07 * Math.sin(spin * 3 + spark));
+      ctx.beginPath();
+      ctx.arc(Math.cos(angle) * distance, Math.sin(angle) * distance,
+              Math.max(1.3, radius * 0.012), 0, TAU);
+      ctx.fillStyle = spark % 3 ? "rgba(153,231,255,0.9)" : "rgba(221,172,255,0.9)";
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function makeGlyphs(cx, cy, title) {
+    const letters = Array.from(String(title || "ACTIVE APP").slice(0, 28));
+    const fontSize = clamp(width / Math.max(letters.length * 0.65, 12), 18, 32);
+    ctx.font = `800 ${fontSize}px system-ui, sans-serif`;
+    const total = letters.reduce((sum, letter) => sum + ctx.measureText(letter).width, 0);
+    const rand = random(letters.length * 97 + Math.round(cx * 11 + cy * 17));
+    let x = cx - total / 2;
+    return {
+      fontSize,
+      letters: letters.map((letter) => {
+        const letterWidth = ctx.measureText(letter).width;
+        const glyph = {
+          letter,
+          x: x + letterWidth / 2,
+          y: cy,
+          dx: (rand() - 0.5) * 230,
+          dy: -35 - rand() * 155,
+          spin: (rand() - 0.5) * 2.8,
+        };
+        x += letterWidth;
+        return glyph;
+      }),
+    };
+  }
+
+  function drawTextShatter(fx, progress) {
+    const scatter = easeOut(clamp((progress - 0.14) / 0.62, 0, 1));
+    const fade = clamp((1 - progress) / 0.25, 0, 1);
+    ctx.save();
+    ctx.globalAlpha = fade;
+    ctx.font = `800 ${fx.glyphs.fontSize}px system-ui, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    for (const [index, glyph] of fx.glyphs.letters.entries()) {
+      ctx.save();
+      ctx.translate(glyph.x + glyph.dx * scatter,
+                    glyph.y + glyph.dy * scatter + 110 * scatter * scatter);
+      ctx.rotate(glyph.spin * scatter);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "rgba(8,17,42,0.94)";
+      ctx.strokeText(glyph.letter, 0, 0);
+      ctx.shadowColor = index % 2 ? "#8a7dff" : "#5ce5ff";
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = index % 3 ? "#dffaff" : "#a9a0ff";
+      ctx.fillText(glyph.letter, 0, 0);
+      if (scatter > 0.1 && glyph.letter.trim()) {
+        ctx.fillStyle = "rgba(155,231,255,0.82)";
+        ctx.fillRect(-2, -fx.glyphs.fontSize * 0.65 - scatter * 12, 3, 5);
+      }
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  function drawRipple(fx, progress) {
+    const radius = Math.min(Math.hypot(width, height) * 0.62, 850);
+    ctx.save();
+    for (let ring = 0; ring < 5; ring += 1) {
+      const phase = progress * 1.36 - ring * 0.16;
+      if (phase <= 0 || phase >= 1) continue;
+      const reach = radius * easeOut(phase);
+      const alpha = (1 - phase) * 0.78;
+      ctx.beginPath();
+      ctx.arc(fx.cx, fx.cy, reach, 0, TAU);
+      ctx.strokeStyle = `rgba(108,222,255,${alpha})`;
+      ctx.lineWidth = 2 + (1 - phase) * 7;
+      ctx.shadowColor = "#78dfff";
+      ctx.shadowBlur = 18;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(fx.cx, fx.cy, reach + 7, Math.PI * 0.15, Math.PI * 1.36);
+      ctx.strokeStyle = `rgba(195,167,255,${alpha * 0.54})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function makePixels(cx, cy) {
+    const rand = random(Math.round(cx * 43 + cy * 61));
+    const pixels = [];
+    for (let row = -7; row <= 7; row += 1) {
+      for (let column = -10; column <= 10; column += 1) {
+        if (rand() < 0.27) continue;
+        const x = cx + column * 15;
+        const y = cy + row * 15;
+        const distance = Math.hypot(column / 10, row / 7);
+        pixels.push({
+          x, y, size: 7 + rand() * 9,
+          dx: column * (5 + rand() * 7) + (rand() - 0.5) * 35,
+          dy: row * (5 + rand() * 7) - rand() * 28,
+          delay: distance * 0.18 + rand() * 0.12,
+          color: ["#a7ebff", "#6eaeff", "#b395ff", "#122445"][Math.floor(rand() * 4)],
+        });
+      }
+    }
+    return pixels;
+  }
+
+  function drawPixelDissolve(fx, progress) {
+    ctx.save();
+    for (const pixel of fx.pixels) {
+      const scatter = clamp((progress - pixel.delay) / 0.74, 0, 1);
+      const fade = clamp((1 - progress) / 0.3, 0, 1) * (1 - scatter * 0.25);
+      ctx.globalAlpha = fade;
+      ctx.fillStyle = pixel.color;
+      ctx.fillRect(pixel.x + pixel.dx * scatter, pixel.y + pixel.dy * scatter,
+                   pixel.size * (1 - scatter * 0.55), pixel.size * (1 - scatter * 0.55));
+    }
+    ctx.restore();
+  }
+
+  function makeLightning(cx, cy) {
+    const rand = random(Math.round(cx * 31 + cy * 83 + width * 3));
+    const endpoints = [
+      [width * 0.05, height * 0.08], [width * 0.95, height * 0.1],
+      [width * 0.06, height * 0.92], [width * 0.94, height * 0.9],
+      [width * 0.5, height * 0.03], [width * 0.52, height * 0.97],
+    ];
+    return endpoints.map(([endX, endY]) => {
+      const dx = endX - cx;
+      const dy = endY - cy;
+      const distance = Math.hypot(dx, dy) || 1;
+      const points = [{ x: cx, y: cy }];
+      for (let step = 1; step < 11; step += 1) {
+        const fraction = step / 11;
+        const offset = (rand() - 0.5) * Math.min(distance * 0.12, 45);
+        points.push({ x: cx + dx * fraction - dy / distance * offset,
+                      y: cy + dy * fraction + dx / distance * offset });
+      }
+      points.push({ x: endX, y: endY });
+      return points;
+    });
+  }
+
+  function drawLightning(fx, progress) {
+    const reveal = easeOut(clamp(progress / 0.27, 0, 1));
+    const fade = clamp((1 - progress) / 0.31, 0, 1);
+    const flicker = 0.75 + 0.25 * Math.sin(progress * 91) ** 2;
+    ctx.save();
+    ctx.globalAlpha = fade * flicker;
+    for (const bolt of fx.bolts) {
+      partialPath(bolt, reveal);
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#478aff";
+      ctx.lineWidth = 8;
+      ctx.shadowColor = "#72d9ff";
+      ctx.shadowBlur = 23;
+      ctx.stroke();
+      partialPath(bolt, reveal);
+      ctx.strokeStyle = "#e3faff";
+      ctx.lineWidth = 2.4;
+      ctx.shadowBlur = 3;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function makeTear(cx, cy) {
+    const rand = random(Math.round(cx * 19 + cy * 37));
+    const span = Math.min(width * 0.88, 850);
+    const points = [];
+    for (let index = 0; index <= 22; index += 1) {
+      points.push({
+        x: clamp(cx - span / 2 + span * index / 22, 0, width),
+        y: cy + (rand() - 0.5) * 20,
+      });
+    }
+    return points;
+  }
+
+  function drawTear(fx, progress) {
+    const opening = easeOut(clamp(progress / 0.31, 0, 1));
+    const closing = easeOut(clamp((1 - progress) / 0.22, 0, 1));
+    const gap = Math.min(65, height * 0.12) * Math.min(opening, closing);
+    if (gap <= 0) return;
+    ctx.save();
+    ctx.beginPath();
+    fx.tear.forEach((point, index) => {
+      const y = point.y - gap * Math.sin(Math.PI * index / 22);
+      if (index === 0) ctx.moveTo(point.x, y);
+      else ctx.lineTo(point.x, y);
+    });
+    for (let index = fx.tear.length - 1; index >= 0; index -= 1) {
+      const point = fx.tear[index];
+      ctx.lineTo(point.x, point.y + gap * Math.sin(Math.PI * index / 22));
+    }
+    ctx.closePath();
+    const fill = ctx.createLinearGradient(0, fx.cy - gap, 0, fx.cy + gap);
+    fill.addColorStop(0, "rgba(36,20,83,0.96)");
+    fill.addColorStop(0.5, "rgba(3,4,18,0.99)");
+    fill.addColorStop(1, "rgba(42,17,92,0.96)");
+    ctx.fillStyle = fill;
+    ctx.fill();
+    for (const direction of [-1, 1]) {
+      ctx.beginPath();
+      fx.tear.forEach((point, index) => {
+        const y = point.y + direction * gap * Math.sin(Math.PI * index / 22);
+        if (index === 0) ctx.moveTo(point.x, y);
+        else ctx.lineTo(point.x, y);
+      });
+      ctx.strokeStyle = direction < 0 ? "#b6f0ff" : "#b99dff";
+      ctx.lineWidth = 3;
+      ctx.shadowColor = direction < 0 ? "#69dcff" : "#a271ff";
+      ctx.shadowBlur = 13;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // "Her prank broke the app": a snapshot of the area cracks, its pieces fall into a dark
+  // void, then everything fades and the real (untouched) interface is back. The snapshot
+  // arrives from Rust just before the effect starts and is drawn only here.
+  let snapshot = null;
+
+  function setSnapshot(src) {
+    const image = new Image();
+    image.onload = () => {
+      snapshot = image;
+    };
+    image.src = src;
+  }
+
+  function makeTiles(seed) {
+    const rnd = random(seed);
+    const cols = 9;
+    const rows = 7;
+    const tiles = [];
+    for (let r = 0; r < rows; r += 1) {
+      for (let c = 0; c < cols; c += 1) {
+        tiles.push({ c, r, cols, rows, vx: (rnd() - 0.5) * 220, vy: -rnd() * 160,
+          spin: (rnd() - 0.5) * 4, delay: rnd() * 0.25 + (1 - r / rows) * 0.1 });
+      }
+    }
+    return tiles;
+  }
+
+  function drawCollapse(fx, progress) {
+    const image = snapshot;
+    if (!image) return;
+    const fade = progress > 0.82 ? 1 - (progress - 0.82) / 0.18 : 1;
+    ctx.save();
+    ctx.globalAlpha = fade;
+    if (progress > 0.12) {
+      ctx.fillStyle = "rgba(6, 8, 16, 0.94)";
+      ctx.fillRect(0, 0, width, height);
+    }
+    const tw = width / fx.tiles[0].cols;
+    const th = height / fx.tiles[0].rows;
+    const iw = image.width / fx.tiles[0].cols;
+    const ih = image.height / fx.tiles[0].rows;
+    for (const tile of fx.tiles) {
+      const fall = clamp((progress - 0.12 - tile.delay) / 0.62, 0, 1) * 1.5; // seconds of fall
+      const shake = progress < 0.12 ? Math.sin(progress * 260 + tile.c) * 2 : 0;
+      ctx.save();
+      ctx.translate(tile.c * tw + tw / 2 + tile.vx * fall + shake, tile.r * th + th / 2 + tile.vy * fall + 900 * fall * fall);
+      ctx.rotate(tile.spin * fall);
+      ctx.drawImage(image, tile.c * iw, tile.r * ih, iw, ih, -tw / 2, -th / 2, tw + 1, th + 1);
+      ctx.restore();
+    }
+    ctx.restore();
+    if (progress < 0.2) drawCrack(fx, clamp(progress / 0.12, 0, 1));
+  }
+
+  function tick(now) {
+    if (!active) return;
+    const progress = clamp((now - active.started) / active.duration, 0, 1);
+    ctx.clearRect(0, 0, width, height);
+    if (active.kind === "crack") drawCrack(active, progress);
+    else if (active.kind === "portal") drawPortal(active, progress, now);
+    else if (active.kind === "text_shatter") drawTextShatter(active, progress);
+    else if (active.kind === "ripple") drawRipple(active, progress);
+    else if (active.kind === "pixel_dissolve") drawPixelDissolve(active, progress);
+    else if (active.kind === "lightning") drawLightning(active, progress);
+    else if (active.kind === "tear") drawTear(active, progress);
+    else if (active.kind === "collapse") drawCollapse(active, progress);
+    if (progress < 1) animationFrame = requestAnimationFrame(tick);
+    else animationFrame = 0;
+  }
+
+  function stop() {
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+    animationFrame = 0;
+    active = null;
+    ctx.clearRect(0, 0, width, height);
+  }
+
+  function start(kind, config) {
+    stop();
+    resize();
+    const requestedX = Number(config.origin_x);
+    const requestedY = Number(config.origin_y);
+    let cx = clamp(Number.isFinite(requestedX) ? requestedX : 0.5, 0.05, 0.95) * width;
+    let cy = clamp(Number.isFinite(requestedY) ? requestedY : 0.35, 0.05, 0.95) * height;
+    const radius = clamp(Math.min(width, height) * 0.22, 64, 230);
+    if (kind === "portal") {
+      cx = width > radius * 2.4 ? clamp(cx, radius * 1.2, width - radius * 1.2) : width / 2;
+      cy = height > radius * 2.4 ? clamp(cy, radius * 1.2, height - radius * 1.2) : height / 2;
+    }
+    active = {
+      kind, cx, cy, radius,
+      paths: kind === "crack" || kind === "collapse" ? makeCracks(cx, cy) : null,
+      tiles: kind === "collapse" ? makeTiles(Math.floor(cx * 31 + cy * 17)) : null,
+      glyphs: kind === "text_shatter" ? makeGlyphs(cx, cy, config.title) : null,
+      pixels: kind === "pixel_dissolve" ? makePixels(cx, cy) : null,
+      bolts: kind === "lightning" ? makeLightning(cx, cy) : null,
+      tear: kind === "tear" ? makeTear(cx, cy) : null,
+      title: config.title,
+      started: performance.now(),
+      duration: config.duration,
+    };
+    animationFrame = requestAnimationFrame(tick);
+  }
+
+  window.addEventListener("resize", () => {
+    if (!active) return;
+    const kind = active.kind;
+    const origin_x = active.cx / width;
+    const origin_y = active.cy / height;
+    const duration = Math.max(100, active.duration - (performance.now() - active.started));
+    start(kind, { origin_x, origin_y, duration, title: active.title });
+  });
+
+  window.HermesEffectCanvas = { start, stop, setSnapshot };
+})();

@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.DS_Store
+# Rust build output (the real path is overlay/src-tauri/target)
+**/target/
+# node / tauri cli
+**/node_modules/
+overlay/dist/
+# local sockets / scratch
+*.sock
+# image-generation working files; the final reviewed pack lives in sprites/hermeschan-v1/
+output/
+tmp/
