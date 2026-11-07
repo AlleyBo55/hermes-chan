@@ -37,4 +37,3 @@ provides_hooks:
   - post_tool_call
   - pre_approval_request
   - on_human_input_request
-  - post_gateway_admission

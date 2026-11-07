@@ -252,7 +252,7 @@ class Bridge:
         value = session_key.strip() if isinstance(session_key, str) else ""
         if value and value != self._session_key:
             self._session_key = value
-            log.info("hermes-chan: her chat box now talks to the chat you used last")
+            log.info("hermes-chan: her chat box now talks to the chat you used last (%s…)", value[:20])
 
     def chat_steps(self) -> list[str]:
         """What is still missing before her chat box can post into your chat, in order."""
