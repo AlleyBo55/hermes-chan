@@ -28,6 +28,12 @@ provides_tools:
   - hermeschan_visual_effect
   - hermeschan_tidy_desktop
   - hermeschan_undo_tidy
+config_schema:
+  mischief:
+    type: bool
+    default: true
+    label: "Mischief"
+    description: "Her own pranks on your apps: cracks, portals, glitches, the window falling apart, and now and then a nudge of the active window after you've been idle 20 s."
 provides_hooks:
   - on_session_start
   - on_session_end

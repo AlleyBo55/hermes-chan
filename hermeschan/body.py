@@ -98,6 +98,7 @@ class Body:
         Only a change of the flag counts, so her own exit after Ctrl+Shift+click never
         races the flag into restarting her."""
         while not self._cancel.wait(_WATCH_SECONDS):
+            self._follow_mischief_setting()
             current = self._settings.refresh().snapshot()
             if current["resummons"] != self._seen_resummons:
                 self._resummon_here()  # also re-syncs away
@@ -110,6 +111,20 @@ class Body:
                 self._runner.stop()
             else:
                 self._runner.maybe_start(self._ctx)
+
+    def _follow_mischief_setting(self) -> None:
+        """The mischief switch in Hermes' plugin settings (or `hermes config set …`) changes
+        without telling the plugin; pass a change on to her within a couple of seconds."""
+        from .settings import mischief_setting
+
+        try:
+            enabled = mischief_setting(self._ctx)
+        except Exception as exc:  # noqa: BLE001 - an unreadable config must not stop the watch
+            log.debug("hermes-chan: could not read the mischief setting (%s)", exc)
+            return
+        if self._settings.get("mischief") != enabled:
+            self._settings.update(mischief=enabled)
+            self._bridge.update_config(mischief=enabled)
 
     def resummon(self) -> bool:
         """Bring her back fresh. True when this process restarted her itself; False when

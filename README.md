@@ -212,7 +212,7 @@ own; Ctrl+Shift+click her to quit.
 /hermeschan status | on | off | come | sleep | wake | hide | say <text>
 /hermeschan resummon        # stuck or lost? restart her fresh (keeps mischief/watch/heartbeat)
 /hermeschan effect <name>   # crack, portal, text_shatter, ripple, pixel_dissolve, lightning, tear, glitch, bend, hijack, collapse
-/hermeschan mischief on|off # her own pranks, effects and window moves
+/hermeschan mischief on|off # her own pranks, effects and window moves (on by default; also a switch in Settings ▸ Plugins ▸ Hermes-chan)
 /hermeschan watch on|off | react
 /hermeschan heartbeat on|off|status [interval]
 /hermeschan rest on|off|test [hours]   # her take-a-break reminder (on by default)
@@ -240,8 +240,8 @@ stands), `build.log`, `overlay.log`, the tidy journal, and on Windows `bridge.js
 
 | System | What she asks for | Without it |
 | --- | --- | --- |
-| macOS | **Accessibility** (read and move the active window, native input) | she still roams, but can't perch, follow or move windows |
-| macOS | **Screen Recording** (the collapse and hijack snapshots, the heartbeat's optional glance) | she does a different prank instead of the collapse; the hijack glitches without the app's own pixels |
+| macOS | **Accessibility** (read and move the active window, native input) | she finds the front window from the window list instead, but can't move windows |
+| macOS | **Screen Recording** (the collapse and hijack snapshots, window titles when Accessibility is off, the heartbeat's optional glance) | she does a different prank instead of the collapse, the hijack glitches without the app's own pixels, and with Accessibility also off she spots video players but not video tabs in a browser |
 | macOS | **Automation** for System Events and Finder (window titles, real `tidy_desktop` moves) | no app-aware reactions; tidying stays a plan |
 | Windows | nothing | apps running as administrator are off limits (Windows UIPI) |
 | Linux | nothing; an X11 display (XWayland counts) | native Wayland apps are invisible to her |
@@ -255,7 +255,8 @@ and she runs inside that gateway ([details](INSTALL.md#5-grant-permissions-macos
 - Her pranks are drawn on a click-through overlay. They never change an app's memory, content
   or files.
 - She moves a real window only after you have been idle for 20 seconds, only the active window,
-  and she puts it back. `/hermeschan mischief off` stops all her pranks.
+  and she puts it back. `/hermeschan mischief off`, or the Mischief switch in Hermes' plugin
+  settings, stops all her pranks.
 - As the `computer_use` backend she acts only through Hermes' approval system and adds no bypass.
 - `tidy_desktop` is plan-first: running it needs a short-lived plan token plus `confirm=true`,
   journals each move first, never overwrites a file, skips hidden and system files, and can be
