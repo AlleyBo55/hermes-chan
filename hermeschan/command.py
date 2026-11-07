@@ -22,7 +22,8 @@ _USAGE = (
     "  mischief on|off                allow/stop autonomous antics\n"
     "  watch on|off                   allow/stop one screenshot per decision\n"
     "  react                          run one bounded watch/reaction now\n"
-    "  heartbeat on|off|status [60s]  control bounded idle decisions"
+    "  heartbeat on|off|status [60s]  control bounded idle decisions\n"
+    "  rest on|off|test [hours]       her take-a-break reminder after 3 h of work"
 )
 
 
@@ -86,8 +87,35 @@ def _status(bridge, settings, autonomy, body) -> str:
         f"  sleeping: {'yes' if current['sleeping'] else 'no'} · "
         f"mischief: {'on' if current['mischief'] else 'off'} · "
         f"watch: {'on' if current['watch'] else 'off'} · "
-        f"heartbeat: {heartbeat_state} every {heartbeat['interval']:g}s"
+        f"heartbeat: {heartbeat_state} every {heartbeat['interval']:g}s · "
+        f"rest reminder: {'on' if current['rest_reminder'] else 'off'}"
     )
+
+
+_REST_ON = ("Rest reminder on: after 3 hours at the computer without a 10-minute break, "
+            "she takes over your screen to ask you to rest, and again every 3 hours.")
+
+
+def _rest(raw: str, bridge, settings) -> str:
+    words = (raw or "").split()
+    action = words[0].lower() if words else "status"
+    if action in ("on", "off"):
+        enabled = action == "on"
+        settings.update(rest_reminder=enabled)
+        bridge.update_config(rest_reminder=enabled)
+        return _REST_ON if enabled else "Rest reminder off."
+    if action == "test":
+        try:
+            hours = max(1, min(99, int(words[1]))) if len(words) > 1 else 3
+        except ValueError:
+            return "Usage: /hermeschan rest test [hours]"
+        if not bridge.is_connected:
+            return "Hermes-chan's overlay is not connected."
+        bridge.send({"type": "rest_test", "hours": hours})
+        return f"Hermes-chan shows her {hours}-hour rest reminder now. Click it to close it."
+    if action == "status":
+        return _REST_ON if settings.refresh().get("rest_reminder", True) else "Rest reminder off."
+    return "Usage: /hermeschan rest on|off|test [hours]"
 
 
 def _with_chat_steps(reply: str, bridge) -> str:
@@ -173,6 +201,8 @@ def register(ctx, bridge, settings, autonomy, body) -> None:
         if sub == "hide":
             body.runner.stop()
             return "Hermes-chan's body is dismissed until /hermeschan wake."
+        if sub == "rest":
+            return _rest(rest, bridge, settings)
         if sub == "mischief":
             try:
                 enabled = _toggle(rest, "mischief")

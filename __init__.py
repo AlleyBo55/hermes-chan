@@ -81,6 +81,7 @@ def register(ctx):
         sleeping=current["sleeping"],
         heartbeat_enabled=current["heartbeat_enabled"],
         heartbeat_interval=current["heartbeat_interval"],
+        rest_reminder=current["rest_reminder"],
     )
     # A reload in the same process: retire the previous body before building a new one.
     previous = getattr(bridge, "body", None)

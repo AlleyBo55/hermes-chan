@@ -26,6 +26,9 @@ pub(super) fn move_window(_target: &ActiveWindow, _x: i32, _y: i32, _overlay_pid
 pub(super) fn user_idle_seconds() -> f64 {
     0.0
 }
+pub(super) fn user_idle_seconds_if_known() -> Option<f64> {
+    None
+}
 
 pub(super) fn capture_window(_target: &ActiveWindow) -> Result<String, WindowControlError> {
     Err(unsupported())

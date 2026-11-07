@@ -43,6 +43,8 @@ fn main() {
             overlay::get_overlay_state,
             overlay::set_overlay_hit_regions,
             overlay::hide_effect,
+            overlay::user_idle_seconds,
+            overlay::show_rest_reminder,
             overlay::list_windows,
             overlay::play_effect,
             overlay::self_grab,

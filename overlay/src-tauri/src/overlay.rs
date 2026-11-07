@@ -6,13 +6,18 @@ use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    },
     thread,
     time::{Duration, Instant},
 };
 use tauri::{AppHandle, Emitter, Manager, State, WebviewWindow, WindowEvent};
 
 const MAIN_WINDOW: &str = "hermeschan";
+/// Her rest reminder owns the effect window while it is up: no prank may move or resize it.
+static REST_SHOWING: AtomicBool = AtomicBool::new(false);
 const EFFECT_WINDOW: &str = "effect";
 const ACTIVE_POLL: Duration = Duration::from_millis(750);
 const HIT_TEST_POLL: Duration = Duration::from_millis(50);
@@ -200,6 +205,9 @@ impl OverlayController {
 
         #[cfg(target_os = "macos")]
         lift_over_menu_bar(&main);
+        // The rest reminder covers the whole screen, menu bar and full-screen apps included.
+        #[cfg(target_os = "macos")]
+        lift_over_menu_bar(&effect);
 
         // Follow you onto other workspaces, like CanJoinAllSpaces does on macOS.
         #[cfg(target_os = "linux")]
@@ -670,6 +678,9 @@ impl OverlayController {
         duration_ms: u64,
         hand: Option<(f64, f64)>,
     ) {
+        if REST_SHOWING.load(Ordering::Relaxed) {
+            return;
+        }
         let Some(window) = handle.get_webview_window(EFFECT_WINDOW) else {
             self.emit_status(handle, "error", "effect", "effect window is missing");
             return;
@@ -1156,9 +1167,81 @@ pub fn play_effect(
 }
 
 #[tauri::command]
-pub fn hide_effect(window: WebviewWindow) -> Result<(), String> {
+pub fn hide_effect(window: WebviewWindow, app: AppHandle) -> Result<(), String> {
     require_window(&window, EFFECT_WINDOW)?;
-    hide_shown_window(&window).map_err(|error| format!("could not hide effect window: {error}"))
+    let hidden = hide_shown_window(&window).map_err(|error| format!("could not hide effect window: {error}"));
+    if REST_SHOWING.swap(false, Ordering::Relaxed) {
+        // Back to click-through, and let her react to your promise to rest.
+        let _ = pass_clicks_through(&window);
+        let _ = app.emit_to(MAIN_WINDOW, "rest-done", ());
+    }
+    hidden
+}
+
+/// Seconds since your last keyboard or mouse input, for her rest reminder; None when this
+/// desktop cannot tell.
+#[tauri::command]
+pub fn user_idle_seconds(window: WebviewWindow) -> Result<Option<f64>, String> {
+    require_window(&window, MAIN_WINDOW)?;
+    Ok(winctl::user_idle_seconds_if_known())
+}
+
+#[derive(Clone, Serialize)]
+struct RestPayload {
+    hours: u32,
+    test: bool,
+}
+
+/// Her rest reminder: take over the whole screen she is on with a "please rest" card. The
+/// card closes on one click (it takes clicks while it is up) and never takes keyboard focus.
+#[tauri::command]
+pub fn show_rest_reminder(hours: u32, test: bool, window: WebviewWindow, app: AppHandle) -> Result<(), String> {
+    require_window(&window, MAIN_WINDOW)?;
+    let effect = app
+        .get_webview_window(EFFECT_WINDOW)
+        .ok_or_else(|| "effect window is missing".to_string())?;
+    let monitor = window
+        .current_monitor()
+        .ok()
+        .flatten()
+        .or_else(|| window.primary_monitor().ok().flatten())
+        .ok_or_else(|| "no screen to show the rest reminder on".to_string())?;
+    REST_SHOWING.store(true, Ordering::Relaxed);
+    let shown = effect
+        .set_position(tauri::Position::Physical(*monitor.position()))
+        .and_then(|_| effect.set_size(tauri::Size::Physical(*monitor.size())))
+        .and_then(|_| take_clicks(&effect))
+        .and_then(|_| show_without_focus(&effect))
+        .and_then(|_| effect.emit("rest", RestPayload { hours: hours.clamp(1, 99), test }));
+    if let Err(error) = shown {
+        REST_SHOWING.store(false, Ordering::Relaxed);
+        let _ = pass_clicks_through(&effect);
+        let _ = hide_shown_window(&effect);
+        return Err(format!("could not show the rest reminder: {error}"));
+    }
+    Ok(())
+}
+
+/// The rest reminder closes on a click, so the effect window takes clicks while it is up.
+fn take_clicks(window: &WebviewWindow) -> tauri::Result<()> {
+    #[cfg(target_os = "linux")]
+    {
+        shape_input(window, &[]);
+        Ok(())
+    }
+    #[cfg(not(target_os = "linux"))]
+    window.set_ignore_cursor_events(false)
+}
+
+/// Back to click-through, as the effect window always is otherwise.
+fn pass_clicks_through(window: &WebviewWindow) -> tauri::Result<()> {
+    #[cfg(target_os = "linux")]
+    {
+        pass_all_clicks_through(window);
+        Ok(())
+    }
+    #[cfg(not(target_os = "linux"))]
+    window.set_ignore_cursor_events(true)
 }
 
 /// Let her climb and hang over the menu bar, and follow you onto other Spaces and into

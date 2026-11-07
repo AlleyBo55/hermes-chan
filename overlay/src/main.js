@@ -54,12 +54,48 @@ function sendToPlugin(payload) {
   return invokeNative("send_to_plugin", { msg: JSON.stringify(payload) });
 }
 
-function setStatus(text, kind = "") {
-  statusMessage.textContent = text || "";
+// `copy`: a command this message tells you to run; clicking the message copies it.
+function setStatus(text, kind = "", copy = "") {
+  statusMessage.textContent = text && copy ? `${text}\n(click here to copy the command)` : text || "";
   statusMessage.dataset.kind = kind;
+  statusMessage.dataset.copy = copy || "";
+  statusMessage.classList.toggle("copyable", Boolean(text && copy));
   statusMessage.classList.toggle("hidden", !text);
   scheduleHitRegions();
 }
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (_) {
+    // Older webviews: copy through a hidden text field.
+    const field = document.createElement("textarea");
+    field.value = text;
+    field.setAttribute("readonly", "");
+    field.style.position = "fixed";
+    field.style.opacity = "0";
+    document.body.appendChild(field);
+    field.select();
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } catch (_) {
+      copied = false;
+    }
+    field.remove();
+    return copied;
+  }
+}
+
+statusMessage.addEventListener("click", async () => {
+  const command = statusMessage.dataset.copy;
+  if (!command) return;
+  const copied = await copyText(command);
+  setStatus(copied ? "Copied! Paste it in a terminal and press Enter ✿"
+    : `Copy this into a terminal: ${command}`, "warning");
+  if (chatOpen) input.focus();
+});
 
 function setStateMetadata(state) {
   currentState = state;
@@ -250,6 +286,7 @@ function handleConfig(msg) {
   }
   if (msg.sleep === true || msg.sleeping === true) startSleep();
   if (msg.wake === true || msg.sleep === false || msg.sleeping === false) startWake("idle", true);
+  if (typeof msg.rest_reminder === "boolean") window.HermesRest?.setEnabled(msg.rest_reminder);
 }
 
 function handlePoint(msg) {
@@ -280,7 +317,8 @@ function handleChatResult(msg) {
   const original = pendingChat.text;
   if (msg.ok === false) {
     input.value = original;
-    setStatus(msg.error || "Hermes did not accept the message.", "error");
+    setStatus(msg.error || "Hermes did not accept the message.", "error",
+      typeof msg.copy === "string" ? msg.copy : "");
   } else {
     input.value = "";
     showBubble(original, "neutral", "user");
@@ -317,7 +355,7 @@ function handleChatStatus(msg) {
   const text = steps.length === 1
     ? `To chat with me: ${steps[0]}.`
     : `To chat with me:\n${steps.map((step, i) => `${i + 1}. ${step}`).join("\n")}`;
-  setStatus(text, "warning");
+  setStatus(text, "warning", typeof msg.copy === "string" ? msg.copy : "");
 }
 
 function toggleChat() {
@@ -397,6 +435,9 @@ function handle(msg) {
       break;
     case "chat_status":
       handleChatStatus(msg);
+      break;
+    case "rest_test":
+      window.HermesRest?.test(msg.hours);
       break;
     case "action_result":
       if (activeAction && msg.action_id === activeAction.actionId && msg.ok === false) {
@@ -703,6 +744,8 @@ if (event?.listen) {
     }
   });
   listenNative("active-window", (e) => handleActiveWindow(e.payload));
+  // You closed her rest reminder: she is happy about it.
+  listenNative("rest-done", () => showBubble("Yay ♡ Rest your eyes a little, I'll keep watch!", "love"));
   listenNative("window-control-status", (e) => handlePermissionStatus(e.payload));
   listenNative("permission-status", (e) => handlePermissionStatus(e.payload));
 }

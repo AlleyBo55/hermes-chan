@@ -167,6 +167,9 @@ end tell"#
 }
 
 /// Seconds since the last keyboard, mouse or trackpad input.
+pub(super) fn user_idle_seconds_if_known() -> Option<f64> {
+    Some(user_idle_seconds())
+}
 pub(super) fn user_idle_seconds() -> f64 {
     #[link(name = "CoreGraphics", kind = "framework")]
     extern "C" {

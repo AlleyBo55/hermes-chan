@@ -25,6 +25,8 @@ _DEFAULTS: dict[str, Any] = {
     "sleeping": False,
     "heartbeat_enabled": False,
     "heartbeat_interval": 120.0,
+    # After 3 hours of work without a 10-minute break she asks you to rest (then every 3 h).
+    "rest_reminder": True,
     "decision_times": [],
 }
 
@@ -93,7 +95,8 @@ class SettingsStore:
     @staticmethod
     def _validated(raw: dict[str, Any]) -> dict[str, Any]:
         data = dict(_DEFAULTS)
-        for key in ("away", "mischief", "watch", "sleeping", "heartbeat_enabled", "welcomed"):
+        for key in ("away", "mischief", "watch", "sleeping", "heartbeat_enabled", "welcomed",
+                    "rest_reminder"):
             if isinstance(raw.get(key), bool):
                 data[key] = raw[key]
         resummons = raw.get("resummons")

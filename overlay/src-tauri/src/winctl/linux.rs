@@ -427,16 +427,16 @@ pub(super) fn move_window(
     Ok(())
 }
 
-pub(super) fn user_idle_seconds() -> f64 {
-    let Ok(x11) = X11::connect() else {
-        return 0.0;
-    };
+pub(super) fn user_idle_seconds_if_known() -> Option<f64> {
+    let x11 = X11::connect().ok()?;
     x11.conn
         .screensaver_query_info(x11.root)
         .ok()
         .and_then(|cookie| cookie.reply().ok())
         .map(|info| info.ms_since_user_input as f64 / 1000.0)
-        .unwrap_or(0.0)
+}
+pub(super) fn user_idle_seconds() -> f64 {
+    user_idle_seconds_if_known().unwrap_or(0.0)
 }
 
 pub(super) fn capture_window(target: &ActiveWindow) -> Result<String, WindowControlError> {

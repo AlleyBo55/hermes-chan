@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>hermeschan-effect</title>
   <link rel="stylesheet" href="effect.css" />
+  <link rel="stylesheet" href="rest.css" />
 </head>
 <body>
   <!-- Transparent, click-through-by-design overlay. Purely visual: it never
@@ -16,7 +17,11 @@
     <div id="fx-bend"></div>
     <canvas id="fx-canvas"></canvas>
   </div>
+  <!-- Her rest reminder: the one part of this window that takes a click (to close it). -->
+  <div id="rest-root" hidden></div>
+  <script src="sprite-player.js"></script>
   <script src="effect-canvas.js"></script>
   <script src="effect.js"></script>
+  <script src="rest-takeover.js"></script>
 </body>
 </html>
