@@ -11,7 +11,22 @@ log = logging.getLogger("hermes-chan.hooks")
 def register(ctx, bridge, settings) -> None:
     for hook_name, state in states.HOOK_STATE.items():
         ctx.register_hook(hook_name, _state_setter(bridge, settings, hook_name, state))
-    log.info("hermes-chan: registered %d lifecycle hooks", len(states.HOOK_STATE))
+    # Every message you send names its chat: her chat box talks to the one you used last.
+    ctx.register_hook("post_gateway_admission", _chat_tracker(bridge))
+    log.info("hermes-chan: registered %d lifecycle hooks", len(states.HOOK_STATE) + 1)
+
+
+def _chat_tracker(bridge):
+    def _cb(**payload):
+        # Observer only: returning None lets Hermes run the turn, and the text is never read.
+        # Local chats only (CLI, TUI, Desktop); a Telegram chat is not where her bubble lives.
+        try:
+            if payload.get("platform") == "local":
+                bridge.remember_session(payload.get("session_key"))
+        except Exception as exc:  # noqa: BLE001 - observers never raise into the gateway
+            log.debug("chat tracking failed: %s", exc)
+        return None
+    return _cb
 
 
 def _state_setter(bridge, settings, hook_name, state):

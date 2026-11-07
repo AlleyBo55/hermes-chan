@@ -18,6 +18,8 @@ _DEFAULTS: dict[str, Any] = {
     "away": False,
     # Bumped by /hermeschan resummon; the process showing her restarts her when it changes.
     "resummons": 0,
+    # Her first appearance ever says how to use her, once.
+    "welcomed": False,
     "mischief": False,
     "watch": False,
     "sleeping": False,
@@ -91,7 +93,7 @@ class SettingsStore:
     @staticmethod
     def _validated(raw: dict[str, Any]) -> dict[str, Any]:
         data = dict(_DEFAULTS)
-        for key in ("away", "mischief", "watch", "sleeping", "heartbeat_enabled"):
+        for key in ("away", "mischief", "watch", "sleeping", "heartbeat_enabled", "welcomed"):
             if isinstance(raw.get(key), bool):
                 data[key] = raw[key]
         resummons = raw.get("resummons")

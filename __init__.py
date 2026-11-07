@@ -43,6 +43,18 @@ def _register_provider_only(ctx) -> None:
     ctx.register_computer_use_provider(HermechanProvider())
 
 
+_WELCOME = ("Hi, I'm Hermes-chan! Ctrl+click me to chat, drag me anywhere, "
+            "Ctrl+Shift+click to send me away.")
+
+
+def _greet_once(bridge, settings) -> None:
+    """Her first appearance after install says how to use her; never again after that."""
+    if settings.refresh().get("welcomed", False):
+        return
+    settings.update(welcomed=True)
+    bridge.say(_WELCOME, emotion="happy")
+
+
 def register(ctx):
     if not callable(getattr(ctx, "register_command", None)):
         _register_provider_only(ctx)
@@ -82,6 +94,7 @@ def register(ctx):
     bridge.body = body
     bridge.deactivate_handler = body.switched_off_from_overlay
     bridge.on_acquired = body.took_over
+    bridge.on_connected = lambda: _greet_once(bridge, settings)
 
     # 1. Computer-use driver: the character's body performs real actions. Current Hermes loads it
     #    through _register_provider_only; older releases offered the registrar here.

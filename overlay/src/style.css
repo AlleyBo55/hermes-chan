@@ -131,6 +131,9 @@ body[data-emotion="love"] #bubble[data-speaker="assistant"] {
   font-size: 10px;
   line-height: 1.25;
   text-align: center;
+  /* Numbered setup steps go one per line; long commands may break anywhere. */
+  white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 #status-message[data-kind="error"] {

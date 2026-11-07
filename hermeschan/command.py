@@ -74,8 +74,9 @@ def _status(bridge, settings, autonomy, body) -> str:
     else:
         link = f"not listening{f': {bridge.problem}' if bridge.problem else ''}"
     switched = "away (/hermeschan on brings her back)" if current["away"] else "on"
-    chat = {True: "allowed", None: "unknown",
-            False: f"blocked by Hermes (hermes config set {bridge.chat_setting} true)"}[bridge.chat_allowed()]
+    steps = bridge.chat_steps()
+    chat = "ready" if not steps else "not ready yet:" + "".join(
+        f"\n    {i}. {step}" for i, step in enumerate(steps, 1))
     return (
         f"Hermes-chan is {switched}.\n"
         f"  body: {body.runner.describe()}\n"
@@ -87,6 +88,15 @@ def _status(bridge, settings, autonomy, body) -> str:
         f"watch: {'on' if current['watch'] else 'off'} · "
         f"heartbeat: {heartbeat_state} every {heartbeat['interval']:g}s"
     )
+
+
+def _with_chat_steps(reply: str, bridge) -> str:
+    """Add what you still have to do before her chat box can reach this chat."""
+    steps = bridge.chat_steps()
+    if not steps:
+        return reply
+    return reply + "\nTo chat with her from her bubble:" + "".join(
+        f"\n  {i}. {step}" for i, step in enumerate(steps, 1))
 
 
 def register(ctx, bridge, settings, autonomy, body) -> None:
@@ -105,14 +115,14 @@ def register(ctx, bridge, settings, autonomy, body) -> None:
             body.switch_on()
             if blocked:
                 return f"Hermes-chan is switched on, but her body cannot appear here: {blocked}."
-            return "Hermes-chan is switched on; she will appear in a moment."
+            return _with_chat_steps("Hermes-chan is switched on; she will appear in a moment.", bridge)
         if sub == "resummon":
             blocked = body.runner.blocked_reason()
             if blocked:
                 return f"Hermes-chan cannot appear here: {blocked}."
             here = body.resummon()
-            return ("Hermes-chan is coming back fresh." if here
-                    else "Hermes-chan will come back fresh in a moment.")
+            return _with_chat_steps("Hermes-chan is coming back fresh." if here
+                                    else "Hermes-chan will come back fresh in a moment.", bridge)
         if sub == "off":
             body.switch_off()
             return ("Hermes-chan left. /hermeschan on brings her back, and so does a Hermes restart; "
