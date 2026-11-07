@@ -13,10 +13,10 @@ const FIELD_SEPARATOR: char = '\u{1f}';
 // AppleScript's own wording ("100:121: execution error: …") would land verbatim in her status
 // bubble. macOS checks these grants against whatever launched the Hermes gateway: `osascript`
 // for the background gateway (Hermes starts it through /usr/bin/osascript), else the terminal.
-const ACCESSIBILITY_HELP: &str = "Turn on Accessibility for osascript (Hermes' gateway) or your \
-     terminal: System Settings ▸ Privacy & Security.";
-const SCREEN_RECORDING_HELP: &str = "To break your window for real I need its picture. Turn on \
-     Screen Recording for osascript (Hermes' gateway) or your terminal: System Settings ▸ \
+const ACCESSIBILITY_HELP: &str = "To move your windows I need Accessibility. Turn on osascript \
+     (Hermes' gateway) or your terminal in System Settings ▸ Privacy & Security ▸ Accessibility.";
+const SCREEN_RECORDING_HELP: &str = "To break your window for real and spot video tabs, I need to \
+     see your screen. Turn on osascript (Hermes' gateway) or your terminal in System Settings ▸ \
      Privacy & Security ▸ Screen & System Audio Recording.";
 const AUTOMATION_HELP: &str = "Allow osascript (Hermes' gateway) or your terminal to control \
      System Events: System Settings ▸ Privacy & Security ▸ Automation.";
