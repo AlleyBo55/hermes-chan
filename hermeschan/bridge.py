@@ -41,8 +41,12 @@ _MAX_SCREENSHOT_BYTES = 6 * 1024 * 1024
 _USE_TCP = sys.platform == "win32" or not hasattr(socket, "AF_UNIX")
 _ACCEPT_POLL_SECONDS = 0.5
 _HELLO_TIMEOUT_SECONDS = 5.0
-_INJECT_REFUSED = ("Hermes did not take the message. Run /hermeschan status in your chat first; "
-                   "the README's Chat section has the one setting the TUI and Desktop app need.")
+_CHAT_SETTING = "plugins.entries.hermes-chan.allow_gateway_injection"
+# Hermes refuses plugin messages into your chats until you allow it for this plugin.
+_INJECT_BLOCKED = ("Hermes blocks her chat box until you allow it. In a terminal run: "
+                   f"hermes config set {_CHAT_SETTING} true")
+_INJECT_REFUSED = ("Hermes did not take the message. Send any /hermeschan command in the chat "
+                   "you want her to talk to, then try again.")
 
 
 def _default_socket_path() -> str:
@@ -179,6 +183,7 @@ class Bridge:
         self.deactivate_handler: Optional[Callable[[], None]] = None
         # Called once this process owns the bridge (it may have waited for another one).
         self.on_acquired: Optional[Callable[[], None]] = None
+        self.chat_setting = _CHAT_SETTING
         self._socket_identity: Optional[tuple[int, int]] = None
         self._actions: "OrderedDict[str, _PendingAction]" = OrderedDict()
         self._actions_lock = threading.Lock()
@@ -794,7 +799,8 @@ class Bridge:
             else:
                 accepted = ctx.inject_message(text, role="user")
             if accepted is False:
-                self._chat_result(chat_id, False, _INJECT_REFUSED)
+                blocked = self.chat_allowed() is False
+                self._chat_result(chat_id, False, _INJECT_BLOCKED if blocked else _INJECT_REFUSED)
                 return
             self.set_state("listening")
             self._chat_result(chat_id, True)
@@ -821,3 +827,20 @@ class Bridge:
             self._window_requests.clear()
         for request in requests:
             request["event"].set()
+
+    def reset_runtime(self) -> None:
+        """For a resummon: drop in-flight actions and stale flags a fresh body would inherit."""
+        self._release_pending()
+        self._agent_busy.clear()
+        with self._config_lock:
+            self._config["sleeping"] = False
+
+    def chat_allowed(self) -> Optional[bool]:
+        """Whether Hermes lets her chat box post into your chats; None when Hermes can't say."""
+        check = getattr(self._ctx, "_gateway_injection_allowed", None)
+        if not callable(check):
+            return None
+        try:
+            return bool(check())
+        except Exception:  # noqa: BLE001 - a status helper, never fatal
+            return None

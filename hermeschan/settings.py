@@ -16,6 +16,8 @@ _DEFAULTS: dict[str, Any] = {
     # Sent away (Ctrl+Shift+click, /hermeschan off) while the Hermes process showing her runs.
     # The next process to take her over clears it, so a restart or plugin reload brings her back.
     "away": False,
+    # Bumped by /hermeschan resummon; the process showing her restarts her when it changes.
+    "resummons": 0,
     "mischief": False,
     "watch": False,
     "sleeping": False,
@@ -92,6 +94,9 @@ class SettingsStore:
         for key in ("away", "mischief", "watch", "sleeping", "heartbeat_enabled"):
             if isinstance(raw.get(key), bool):
                 data[key] = raw[key]
+        resummons = raw.get("resummons")
+        if isinstance(resummons, int) and not isinstance(resummons, bool) and resummons >= 0:
+            data["resummons"] = resummons
         interval = raw.get("heartbeat_interval")
         if isinstance(interval, (int, float)) and not isinstance(interval, bool):
             data["heartbeat_interval"] = max(_MIN_HEARTBEAT_SECONDS, float(interval))

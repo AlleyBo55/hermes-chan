@@ -200,6 +200,7 @@ own; Ctrl+Shift+click her to quit.
 
 ```text
 /hermeschan status | on | off | come | sleep | wake | hide | say <text>
+/hermeschan resummon        # stuck or lost? restart her fresh (keeps mischief/watch/heartbeat)
 /hermeschan effect <name>   # crack, portal, text_shatter, ripple, pixel_dissolve, lightning, tear, glitch, bend
 /hermeschan mischief on|off # her own pranks, effects and window moves
 /hermeschan watch on|off | react
@@ -263,7 +264,9 @@ and she runs inside that gateway ([details](INSTALL.md#5-grant-permissions-macos
 | The plugin doesn't load at all | `hermes plugins enable hermes-chan`, then start a new session |
 | Linux: black box instead of a transparent window | run a compositor (most desktops do); on some GPU drivers set `WEBKIT_DISABLE_DMABUF_RENDERER=1` |
 | Linux: "no graphical display" | Hermes' gateway runs without your session's display, usually as a systemd service: `systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XAUTHORITY`, then `hermes gateway restart` |
-| Chat bubble says Hermes did not take the message | set `allow_gateway_injection` (see [Configuration](#configuration)) and run `/hermeschan status` in your chat |
+| Chat bubble says Hermes blocks her chat box | `hermes config set plugins.entries.hermes-chan.allow_gateway_injection true`; it works on the next message, no restart |
+| Chat bubble says Hermes did not take the message | send any `/hermeschan` command in the chat you want her to talk to, then try again |
+| She is stuck, lost off screen or acting odd | `/hermeschan resummon` |
 | Windows: she can't touch one app | that app runs as administrator; Windows blocks input from normal apps into it |
 
 ## Evidence
