@@ -6,13 +6,23 @@ use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::{
+        atomic::{AtomicBool, AtomicU64, Ordering},
+        Arc, Mutex,
+    },
     thread,
     time::{Duration, Instant},
 };
 use tauri::{AppHandle, Emitter, Manager, State, WebviewWindow, WindowEvent};
 
 const MAIN_WINDOW: &str = "hermeschan";
+/// Her rest reminder owns the effect window while it is up: no prank may move or resize it.
+static REST_SHOWING: AtomicBool = AtomicBool::new(false);
+/// Which reminder is up, so a late failsafe never closes a newer one.
+static REST_GENERATION: AtomicU64 = AtomicU64::new(0);
+/// The card closes itself after about 27 s. If its page failed, never leave a screen-sized
+/// window catching clicks for longer than this.
+const REST_FAILSAFE: Duration = Duration::from_secs(40);
 const EFFECT_WINDOW: &str = "effect";
 const ACTIVE_POLL: Duration = Duration::from_millis(750);
 const HIT_TEST_POLL: Duration = Duration::from_millis(50);
@@ -200,6 +210,8 @@ impl OverlayController {
 
         #[cfg(target_os = "macos")]
         lift_over_menu_bar(&main);
+        #[cfg(target_os = "macos")]
+        set_effect_level(&effect, false);
 
         // Follow you onto other workspaces, like CanJoinAllSpaces does on macOS.
         #[cfg(target_os = "linux")]
@@ -670,6 +682,9 @@ impl OverlayController {
         duration_ms: u64,
         hand: Option<(f64, f64)>,
     ) {
+        if REST_SHOWING.load(Ordering::Relaxed) {
+            return;
+        }
         let Some(window) = handle.get_webview_window(EFFECT_WINDOW) else {
             self.emit_status(handle, "error", "effect", "effect window is missing");
             return;
@@ -1156,9 +1171,109 @@ pub fn play_effect(
 }
 
 #[tauri::command]
-pub fn hide_effect(window: WebviewWindow) -> Result<(), String> {
+pub fn hide_effect(window: WebviewWindow, app: AppHandle, promised: Option<bool>) -> Result<(), String> {
     require_window(&window, EFFECT_WINDOW)?;
-    hide_shown_window(&window).map_err(|error| format!("could not hide effect window: {error}"))
+    let hidden = hide_shown_window(&window).map_err(|error| format!("could not hide effect window: {error}"));
+    if REST_SHOWING.swap(false, Ordering::Relaxed) {
+        release_rest(&window);
+        // Her reaction: `true` you clicked the card to promise a rest, `false` it timed out.
+        if let Some(promised) = promised {
+            let _ = app.emit_to(MAIN_WINDOW, "rest-done", promised);
+        }
+    }
+    hidden
+}
+
+/// The rest reminder let go of the effect window: click-through again, and below her body
+/// again for pranks.
+fn release_rest(window: &WebviewWindow) {
+    let _ = pass_clicks_through(window);
+    #[cfg(target_os = "macos")]
+    set_effect_level(window, false);
+}
+
+/// Seconds since your last keyboard or mouse input, for her rest reminder; None when this
+/// desktop cannot tell.
+#[tauri::command]
+pub fn user_idle_seconds(window: WebviewWindow) -> Result<Option<f64>, String> {
+    require_window(&window, MAIN_WINDOW)?;
+    Ok(winctl::user_idle_seconds_if_known())
+}
+
+#[derive(Clone, Serialize)]
+struct RestPayload {
+    hours: u32,
+}
+
+/// Her rest reminder: take over the whole screen she is on with a "please rest" card. The
+/// card closes on one click (it takes clicks while it is up) and never takes keyboard focus.
+#[tauri::command]
+pub fn show_rest_reminder(hours: u32, window: WebviewWindow, app: AppHandle) -> Result<(), String> {
+    require_window(&window, MAIN_WINDOW)?;
+    let effect = app
+        .get_webview_window(EFFECT_WINDOW)
+        .ok_or_else(|| "effect window is missing".to_string())?;
+    let monitor = window
+        .current_monitor()
+        .ok()
+        .flatten()
+        .or_else(|| window.primary_monitor().ok().flatten())
+        .ok_or_else(|| "no screen to show the rest reminder on".to_string())?;
+    REST_SHOWING.store(true, Ordering::Relaxed);
+    let generation = REST_GENERATION.fetch_add(1, Ordering::Relaxed) + 1;
+    // Over the menu bar and full-screen apps on macOS, and over her small body too.
+    #[cfg(target_os = "macos")]
+    set_effect_level(&effect, true);
+    let shown = effect
+        .set_position(tauri::Position::Physical(*monitor.position()))
+        .and_then(|_| effect.set_size(tauri::Size::Physical(*monitor.size())))
+        .and_then(|_| take_clicks(&effect))
+        .and_then(|_| show_without_focus(&effect))
+        .and_then(|_| effect.emit("rest", RestPayload { hours: hours.clamp(1, 99) }));
+    if let Err(error) = shown {
+        REST_SHOWING.store(false, Ordering::Relaxed);
+        release_rest(&effect);
+        let _ = hide_shown_window(&effect);
+        return Err(format!("could not show the rest reminder: {error}"));
+    }
+    let handle = app.clone();
+    thread::spawn(move || {
+        thread::sleep(REST_FAILSAFE);
+        if REST_GENERATION.load(Ordering::Relaxed) != generation {
+            return;
+        }
+        let _ = handle.clone().run_on_main_thread(move || {
+            if REST_GENERATION.load(Ordering::Relaxed) == generation && REST_SHOWING.swap(false, Ordering::Relaxed) {
+                if let Some(effect) = handle.get_webview_window(EFFECT_WINDOW) {
+                    let _ = hide_shown_window(&effect);
+                    release_rest(&effect);
+                }
+            }
+        });
+    });
+    Ok(())
+}
+
+/// The rest reminder closes on a click, so the effect window takes clicks while it is up.
+fn take_clicks(window: &WebviewWindow) -> tauri::Result<()> {
+    #[cfg(target_os = "linux")]
+    {
+        shape_input(window, &[]);
+        Ok(())
+    }
+    #[cfg(not(target_os = "linux"))]
+    window.set_ignore_cursor_events(false)
+}
+
+/// Back to click-through, as the effect window always is otherwise.
+fn pass_clicks_through(window: &WebviewWindow) -> tauri::Result<()> {
+    #[cfg(target_os = "linux")]
+    {
+        pass_all_clicks_through(window);
+        Ok(())
+    }
+    #[cfg(not(target_os = "linux"))]
+    window.set_ignore_cursor_events(true)
 }
 
 /// Let her climb and hang over the menu bar, and follow you onto other Spaces and into
@@ -1175,6 +1290,24 @@ fn lift_over_menu_bar(window: &WebviewWindow) {
     ns_window.setCollectionBehavior(
         NSWindowCollectionBehavior::CanJoinAllSpaces | NSWindowCollectionBehavior::FullScreenAuxiliary,
     );
+}
+
+/// The effect window follows you onto other Spaces and into full-screen apps like her body.
+/// Pranks draw at the floating level, below her body; only the rest reminder goes over the
+/// menu bar. Called on the main thread (setup and synchronous commands).
+#[cfg(target_os = "macos")]
+fn set_effect_level(window: &WebviewWindow, over_menu_bar: bool) {
+    use objc2_app_kit::{NSFloatingWindowLevel, NSStatusWindowLevel, NSWindow, NSWindowCollectionBehavior};
+    let Ok(pointer) = window.ns_window() else {
+        return;
+    };
+    // SAFETY: Tauri hands back the live NSWindow of this webview window, on the main thread.
+    let ns_window: &NSWindow = unsafe { &*pointer.cast::<NSWindow>() };
+    ns_window.setCollectionBehavior(
+        NSWindowCollectionBehavior::CanJoinAllSpaces | NSWindowCollectionBehavior::FullScreenAuxiliary,
+    );
+    // One level above her body (which sits at the status level), so the card covers her too.
+    ns_window.setLevel(if over_menu_bar { NSStatusWindowLevel + 1 } else { NSFloatingWindowLevel });
 }
 
 fn require_window(window: &WebviewWindow, expected: &str) -> Result<(), String> {

@@ -1,0 +1,234 @@
+/* Her rest reminder: a full-screen, pastel "screen hijack" card. */
+
+#rest-root {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  /* The rest of this window is click-through by design; this card takes the click that
+     closes it. */
+  pointer-events: auto;
+  cursor: pointer;
+  font-family: "Arial Rounded MT Bold", "SF Pro Rounded", ui-rounded, "Hiragino Maru Gothic ProN",
+    "Nunito", "Varela Round", "Comic Sans MS", system-ui, sans-serif;
+  color: #6a4c93;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#rest-root[hidden] {
+  display: none;
+}
+
+.rest-tint {
+  position: absolute;
+  inset: -6%;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.55) 2px, transparent 2.5px) 0 0 / 34px 34px,
+    radial-gradient(circle at 50% 42%, rgba(255, 244, 250, 0.985), rgba(255, 210, 233, 0.965) 48%,
+      rgba(207, 199, 255, 0.95) 100%);
+  opacity: 0;
+}
+
+#rest-root[data-phase="card"] .rest-tint,
+#rest-root[data-phase="bye"] .rest-tint {
+  animation: rest-bend 900ms cubic-bezier(0.2, 1.4, 0.4, 1) forwards,
+    rest-dots 18s linear infinite;
+}
+
+/* The screen "bends" into her card: a skewed, tilted zoom that springs flat. */
+@keyframes rest-bend {
+  0% { opacity: 0; transform: perspective(900px) rotateX(18deg) skewX(10deg) scale(1.35);
+       clip-path: circle(4% at 50% 46%); }
+  55% { opacity: 1; transform: perspective(900px) rotateX(-4deg) skewX(-3deg) scale(0.98);
+        clip-path: circle(80% at 50% 46%); }
+  100% { opacity: 1; transform: none; clip-path: circle(150% at 50% 46%); }
+}
+
+@keyframes rest-dots {
+  to { background-position: 340px 340px, 0 0; }
+}
+
+.rest-card {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2vh;
+  text-align: center;
+  padding: 0 6vw;
+  opacity: 0;
+}
+
+#rest-root[data-phase="card"] .rest-card,
+#rest-root[data-phase="bye"] .rest-card {
+  animation: rest-pop 700ms 120ms cubic-bezier(0.2, 1.6, 0.4, 1) forwards;
+}
+
+@keyframes rest-pop {
+  0% { opacity: 0; transform: scale(0.3) rotate(-6deg); }
+  70% { opacity: 1; transform: scale(1.06) rotate(1.5deg); }
+  100% { opacity: 1; transform: none; }
+}
+
+.rest-chan {
+  width: clamp(150px, 19vh, 240px);
+  height: auto;
+  aspect-ratio: 192 / 208;
+  filter: drop-shadow(0 10px 18px rgba(155, 123, 255, 0.35));
+  animation: rest-bob 1.6s ease-in-out infinite;
+}
+
+@keyframes rest-bob {
+  50% { transform: translateY(-10px) rotate(-2deg); }
+}
+
+.rest-title {
+  margin: 0;
+  font-size: clamp(44px, 8.5vw, 132px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.rest-title span {
+  display: inline-block;
+  -webkit-text-stroke: 3px #fff;
+  paint-order: stroke fill;
+  text-shadow: 0 6px 0 #fff, 0 12px 28px rgba(155, 123, 255, 0.4);
+  animation: rest-hop 1.1s calc(var(--i) * 70ms) ease-in-out infinite;
+}
+
+.rest-title span:nth-child(5n + 1) { color: #ff5fa2; }
+.rest-title span:nth-child(5n + 2) { color: #9b7bff; }
+.rest-title span:nth-child(5n + 3) { color: #4fb3ff; }
+.rest-title span:nth-child(5n + 4) { color: #2ec4a0; }
+.rest-title span:nth-child(5n) { color: #ff9f43; }
+
+@keyframes rest-hop {
+  0%, 60%, 100% { transform: translateY(0) scale(1); }
+  25% { transform: translateY(-0.22em) scale(1.06, 0.96); }
+  40% { transform: translateY(0) scale(0.96, 1.06); }
+}
+
+.rest-face {
+  font-size: clamp(30px, 4.2vw, 68px);
+  font-weight: 800;
+  color: #ff5fa2;
+  text-shadow: 0 4px 0 #fff;
+  animation: rest-wiggle 1.4s ease-in-out infinite;
+}
+
+@keyframes rest-wiggle {
+  25% { transform: rotate(-6deg) scale(1.05); }
+  75% { transform: rotate(6deg) scale(1.05); }
+}
+
+.rest-sub {
+  margin: 0;
+  max-width: 900px;
+  font-size: clamp(17px, 2.1vw, 32px);
+  font-weight: 800;
+  line-height: 1.3;
+  color: #6a4c93;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.9);
+}
+
+.rest-hint {
+  margin: 1.5vh 0 0;
+  padding: 0.55em 1.4em;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 6px 18px rgba(155, 123, 255, 0.25);
+  font-size: clamp(14px, 1.4vw, 20px);
+  font-weight: 800;
+  color: #9b7bff;
+  animation: rest-pulse 1.8s ease-in-out infinite;
+}
+
+.rest-hint:empty {
+  display: none;
+}
+
+@keyframes rest-pulse {
+  50% { transform: scale(1.07); box-shadow: 0 8px 26px rgba(255, 95, 162, 0.35); }
+}
+
+.rest-floaters,
+.rest-sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
+#rest-root[data-phase="card"] .rest-floaters,
+#rest-root[data-phase="card"] .rest-sparkles,
+#rest-root[data-phase="bye"] .rest-floaters,
+#rest-root[data-phase="bye"] .rest-sparkles {
+  opacity: 1;
+  transition: opacity 600ms ease;
+}
+
+.rest-floater {
+  position: absolute;
+  bottom: -12%;
+  font-size: var(--size);
+  font-weight: 800;
+  white-space: nowrap;
+  opacity: 0.85;
+  animation: rest-float var(--dur) var(--delay) linear infinite;
+}
+
+.rest-floater:nth-child(5n + 1) { color: #ff5fa2; }
+.rest-floater:nth-child(5n + 2) { color: #9b7bff; }
+.rest-floater:nth-child(5n + 3) { color: #4fb3ff; }
+.rest-floater:nth-child(5n + 4) { color: #2ec4a0; }
+.rest-floater:nth-child(5n) { color: #ff9f43; }
+
+@keyframes rest-float {
+  0% { transform: translate(0, 0) rotate(-8deg); opacity: 0; }
+  10% { opacity: 0.9; }
+  50% { transform: translate(var(--sway), -60vh) rotate(8deg); }
+  90% { opacity: 0.9; }
+  100% { transform: translate(calc(var(--sway) * -1), -125vh) rotate(-8deg); opacity: 0; }
+}
+
+.rest-sparkle {
+  position: absolute;
+  font-size: 14px;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+  animation: rest-twinkle 1.8s var(--delay) ease-in-out infinite;
+}
+
+@keyframes rest-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.4); }
+  50% { opacity: 1; transform: scale(1.2) rotate(30deg); }
+}
+
+/* On her way out: a little pop and fade. */
+#rest-root.rest-out .rest-card,
+#rest-root.rest-out .rest-tint,
+#rest-root.rest-out .rest-floaters,
+#rest-root.rest-out .rest-sparkles {
+  animation: rest-away 380ms ease-in forwards;
+}
+
+@keyframes rest-away {
+  to { opacity: 0; transform: scale(0.85); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rest-title span,
+  .rest-face,
+  .rest-chan,
+  .rest-hint,
+  .rest-floater,
+  .rest-sparkle {
+    animation: none;
+  }
+}

@@ -136,6 +136,14 @@ body[data-emotion="love"] #bubble[data-speaker="assistant"] {
   overflow-wrap: anywhere;
 }
 
+#status-message.copyable {
+  cursor: pointer;
+}
+
+#status-message.copyable:hover {
+  text-decoration: underline;
+}
+
 #status-message[data-kind="error"] {
   color: #812f2f;
   background: rgba(255, 225, 225, 0.95);

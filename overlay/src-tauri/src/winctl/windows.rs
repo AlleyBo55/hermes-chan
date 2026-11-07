@@ -259,12 +259,15 @@ pub(super) fn move_window(
     })
 }
 
-pub(super) fn user_idle_seconds() -> f64 {
+pub(super) fn user_idle_seconds_if_known() -> Option<f64> {
     let mut info = LASTINPUTINFO { cbSize: size_of::<LASTINPUTINFO>() as u32, dwTime: 0 };
     if !unsafe { GetLastInputInfo(&mut info) }.as_bool() {
-        return 0.0;
+        return None;
     }
-    unsafe { GetTickCount() }.wrapping_sub(info.dwTime) as f64 / 1000.0
+    Some(unsafe { GetTickCount() }.wrapping_sub(info.dwTime) as f64 / 1000.0)
+}
+pub(super) fn user_idle_seconds() -> f64 {
+    user_idle_seconds_if_known().unwrap_or(0.0)
 }
 
 /// Copy a bitmap's pixels as RGBA, cropped to (x, y, w, h). The bitmap must not be

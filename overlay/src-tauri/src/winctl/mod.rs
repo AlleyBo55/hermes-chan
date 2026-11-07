@@ -121,6 +121,11 @@ pub fn visible_windows(own_pid: u32) -> Vec<WindowFrame> {
 pub fn user_idle_seconds() -> f64 {
     imp::user_idle_seconds()
 }
+/// Like `user_idle_seconds`, but None when this desktop cannot tell (X11 without the
+/// screensaver extension), so her rest reminder stays quiet instead of guessing.
+pub fn user_idle_seconds_if_known() -> Option<f64> {
+    imp::user_idle_seconds_if_known()
+}
 
 /// PNG base64 of one validated window rectangle, for an opt-in sample or computer use.
 pub fn capture_window(target: &ActiveWindow) -> Result<String, WindowControlError> {

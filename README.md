@@ -116,6 +116,12 @@ it helps a lot.
   to peek at it, point at it or climb its side.
 - **Mumbles to herself.** 510 idle lines and 219 video reactions, one every minute or two, each
   list shuffled so nothing repeats until all have played. Local and free: no model call.
+- **Makes you take a break.** After 3 hours at the computer without a 10-minute break, she
+  hijacks your screen: it glitches, cracks, then bends into a pastel card shouting
+  "HEY!! TAKE A REST ^_^ U BEEN WORKING FOR SO LONG". One click closes it and she cheers. She asks
+  again at 6 and 9 hours, more worried each time. Ten minutes away from the keyboard and mouse
+  (or the computer sleeping) starts the count over. She only reads how long ago your last input
+  was, never what it was. `/hermeschan rest test` shows it now; `/hermeschan rest off` turns it off.
 
 ### ✨ She plays pranks on your apps
 Every prank has its own casting animation, and its effect fires on that animation's impact
@@ -208,6 +214,7 @@ own; Ctrl+Shift+click her to quit.
 /hermeschan mischief on|off # her own pranks, effects and window moves
 /hermeschan watch on|off | react
 /hermeschan heartbeat on|off|status [interval]
+/hermeschan rest on|off|test [hours]   # her take-a-break reminder (on by default)
 ```
 
 ## Configuration

@@ -168,8 +168,19 @@
     }
   }
 
+  // Stop a running prank without hiding the window (her rest reminder is taking it over).
+  function cancelEffect() {
+    if (activeTimer) {
+      clearTimeout(activeTimer);
+      activeTimer = null;
+    }
+    clearLayers();
+    running = false;
+  }
+
   function runEffect(payload) {
     if (!root) return;
+    if (window.HermesRestTakeover && window.HermesRestTakeover.isActive()) return;
     var cfg = parsePayload(payload);
 
     // Nothing recognized -> still honor the contract: show nothing briefly and
@@ -219,5 +230,5 @@
   }
 
   // Used by the local visual preview; production still receives Tauri events.
-  window.HermesEffects = { play: runEffect, stop: endEffect };
+  window.HermesEffects = { play: runEffect, stop: endEffect, cancel: cancelEffect };
 })();

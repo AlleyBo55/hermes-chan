@@ -42,9 +42,9 @@ _USE_TCP = sys.platform == "win32" or not hasattr(socket, "AF_UNIX")
 _ACCEPT_POLL_SECONDS = 0.5
 _HELLO_TIMEOUT_SECONDS = 5.0
 _CHAT_SETTING = "plugins.entries.hermes-chan.allow_gateway_injection"
+_CHAT_COMMAND = f"hermes config set {_CHAT_SETTING} true"
 # Hermes refuses plugin messages into your chats until you allow it for this plugin.
-_INJECT_BLOCKED = ("Hermes blocks her chat box until you allow it. In a terminal run: "
-                   f"hermes config set {_CHAT_SETTING} true")
+_INJECT_BLOCKED = f"Hermes blocks her chat box until you allow it. In a terminal run: {_CHAT_COMMAND}"
 _INJECT_REFUSED = ("Hermes did not take the message. Send any message to Hermes in the chat "
                    "I should talk to, then try again here.")
 
@@ -258,7 +258,7 @@ class Bridge:
         """What is still missing before her chat box can post into your chat, in order."""
         steps = []
         if self.chat_allowed() is False:
-            steps.append(f"Allow it once, in a terminal: hermes config set {_CHAT_SETTING} true")
+            steps.append(f"Allow it once, in a terminal: {_CHAT_COMMAND}")
         if not self._session_key:
             steps.append("Send any message to Hermes in the chat I should talk to")
         return steps
@@ -717,7 +717,9 @@ class Bridge:
             self._inject(msg.get("text", ""), msg.get("session_key"), msg.get("chat_id"))
         elif kind == "chat_check":
             # Her chat box just opened: tell her what (if anything) you still have to do.
-            self.send({"type": "chat_status", "steps": self.chat_steps()})
+            blocked = self.chat_allowed() is False
+            self.send({"type": "chat_status", "steps": self.chat_steps(),
+                       "copy": _CHAT_COMMAND if blocked else ""})
         elif kind == "action_event":
             self._mark_action_event(msg.get("action_id"), msg.get("event"))
         elif kind == "action_complete":
@@ -819,8 +821,10 @@ class Bridge:
             else:
                 accepted = ctx.inject_message(text, role="user")
             if accepted is False:
-                blocked = self.chat_allowed() is False
-                self._chat_result(chat_id, False, _INJECT_BLOCKED if blocked else _INJECT_REFUSED)
+                if self.chat_allowed() is False:
+                    self._chat_result(chat_id, False, _INJECT_BLOCKED, copy=_CHAT_COMMAND)
+                else:
+                    self._chat_result(chat_id, False, _INJECT_REFUSED)
                 return
             self.set_state("listening")
             self._chat_result(chat_id, True)
@@ -828,12 +832,15 @@ class Bridge:
             log.warning("inject_message failed (%s)", exc)
             self._chat_result(chat_id, False, "Hermes could not deliver that message.")
 
-    def _chat_result(self, chat_id: Any, ok: bool, error: Optional[str] = None) -> None:
+    def _chat_result(self, chat_id: Any, ok: bool, error: Optional[str] = None,
+                     copy: Optional[str] = None) -> None:
         payload: dict[str, Any] = {"type": "chat_result", "ok": ok}
         if isinstance(chat_id, str) and chat_id:
             payload["chat_id"] = chat_id
         if error:
             payload["error"] = error
+        if copy:
+            payload["copy"] = copy  # her bubble copies this command when you click it
         self.send(payload)
 
     def _release_pending(self) -> None:
