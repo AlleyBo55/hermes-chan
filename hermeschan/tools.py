@@ -12,7 +12,7 @@ log = logging.getLogger("hermes-chan.tools")
 TOOLSET = "hermeschan"
 _EMOTIONS = ["neutral", "happy", "shy", "surprised", "sulk", "sleepy", "proud", "panic", "love"]
 _VISUAL_EFFECTS = ["glitch", "crack", "portal", "bend", "text_shatter",
-                   "ripple", "pixel_dissolve", "lightning", "tear"]
+                   "ripple", "pixel_dissolve", "lightning", "tear", "hijack", "collapse"]
 
 
 def _intensity(value, default: float) -> float:
@@ -75,7 +75,8 @@ def register(ctx, bridge, tidier=None) -> None:
     def _visual_effect(args):
         effect = str(args.get("effect") or "glitch").lower()
         if effect not in _VISUAL_EFFECTS:
-            return "Choose glitch, crack, portal, bend, text_shatter, ripple, pixel_dissolve, lightning, or tear."
+            return ("Choose glitch, crack, portal, bend, text_shatter, ripple, pixel_dissolve, lightning, "
+                    "tear, hijack, or collapse.")
         if not bridge.is_connected:
             return "Hermes-chan's overlay is not connected."
         target = {"app": args.get("app", "active")}
@@ -127,7 +128,7 @@ def register(ctx, bridge, tidier=None) -> None:
          {"type": "object",
           "properties": {"app": {"type": "string"},
                          "intensity": {"type": "number", "minimum": 0, "maximum": 1}}}, _glitch),
-        ("hermeschan_visual_effect", "Make Hermes-chan play a temporary visual effect over the active app window, including text shatter and portal; visual only.",
+        ("hermeschan_visual_effect", "Make Hermes-chan play a temporary visual effect over the active app window, including text shatter, portal, and hijack (the app near her glitches out); visual only.",
          {"type": "object",
           "properties": {"effect": {"type": "string", "enum": _VISUAL_EFFECTS},
                          "app": {"type": "string"},

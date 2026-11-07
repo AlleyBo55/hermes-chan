@@ -184,7 +184,7 @@ class Bridge:
         # Called once this process owns the bridge (it may have waited for another one).
         self.on_acquired: Optional[Callable[[], None]] = None
         self.chat_setting = _CHAT_SETTING
-        # Called each time her body connects (after the hello handshake).
+        # Called each time her window says it is ready (its page listens for messages).
         self.on_connected: Optional[Callable[[], None]] = None
         self._socket_identity: Optional[tuple[int, int]] = None
         self._actions: "OrderedDict[str, _PendingAction]" = OrderedDict()
@@ -669,6 +669,12 @@ class Bridge:
         if config:
             self.send({"type": "config", **config})
         self.set_state("idle", **({"corner": True} if config.get("sleeping") else {}))
+
+    def _page_ready(self) -> None:
+        # Her body connects before her page listens, so what it was sent on connect went
+        # unseen (she pranked with mischief off, the welcome never showed). Send it again.
+        log.info("hermes-chan: her window is ready")
+        self._replay_state()
         if self.on_connected is not None:
             try:
                 self.on_connected()
@@ -713,7 +719,9 @@ class Bridge:
             log.debug("overlay sent a non-object message")
             return
         kind = msg.get("type")
-        if kind == "chat":
+        if kind == "ready":
+            self._page_ready()
+        elif kind == "chat":
             self._inject(msg.get("text", ""), msg.get("session_key"), msg.get("chat_id"))
         elif kind == "chat_check":
             # Her chat box just opened: tell her what (if anything) you still have to do.

@@ -411,11 +411,15 @@
   // void, then everything fades and the real (untouched) interface is back. The snapshot
   // arrives from Rust just before the effect starts and is drawn only here.
   let snapshot = null;
+  let snapshotAt = -Infinity;
 
   function setSnapshot(src) {
+    // Never draw the previous window's picture while this one decodes.
+    snapshot = null;
     const image = new Image();
     image.onload = () => {
       snapshot = image;
+      snapshotAt = performance.now();
     };
     image.src = src;
   }
@@ -461,6 +465,184 @@
     if (progress < 0.2) drawCrack(fx, clamp(progress / 0.12, 0, 1));
   }
 
+  // "She hijacked your app": from her hand the whole window glitches out (its real pixels
+  // slip sideways, split into colour fringes and break into blocks), then switches off like
+  // an old screen. Without a fresh snapshot (no Screen Recording) it gets drawn-on
+  // corruption instead of the window's pixels.
+  const HIJACK_STEP_MS = 70;
+  const HIJACK_LABEL = "HIJACKED BY HERMES-CHAN (^_~)";
+  const NEON = ["#ff2bd6", "#28f0ff", "#7dff5a", "#ffe14d", "#120018"];
+  const scratch = document.createElement("canvas");
+  const sctx = scratch.getContext("2d");
+
+  function makeHijack(cx, cy) {
+    return { seed: (Math.floor(cx * 13 + cy * 29) + Math.floor(performance.now())) >>> 0 };
+  }
+
+  // One band of the snapshot in a single colour channel, for the colour fringes.
+  function tint(image, x, y, w, h, color) {
+    const sx = image.width / width;
+    const sy = image.height / height;
+    if (scratch.width < w) scratch.width = Math.ceil(w);
+    if (scratch.height < h) scratch.height = Math.ceil(h);
+    sctx.globalCompositeOperation = "copy";
+    sctx.drawImage(image, x * sx, y * sy, w * sx, h * sy, 0, 0, w, h);
+    sctx.globalCompositeOperation = "multiply";
+    sctx.fillStyle = color;
+    sctx.fillRect(0, 0, w, h);
+    sctx.globalCompositeOperation = "destination-in";
+    sctx.drawImage(image, x * sx, y * sy, w * sx, h * sy, 0, 0, w, h);
+    return scratch;
+  }
+
+  // The app's own rows slipped sideways (now and then one pulled from elsewhere), with
+  // red and cyan fringes on a few bands.
+  function drawStolenPixels(image, x, y, w, h, rand) {
+    const sx = image.width / width;
+    const sy = image.height / height;
+    const maxShift = Math.min(90, w * 0.1);
+    for (let top = y; top < y + h;) {
+      const band = Math.min(y + h - top, 3 + Math.floor(rand() * 24));
+      const shift = rand() < 0.6 ? (rand() * 2 - 1) * maxShift : 0;
+      const from = rand() < 0.12 ? clamp(top + (rand() * 2 - 1) * 90, 0, height - band) : top;
+      ctx.drawImage(image, x * sx, from * sy, w * sx, band * sy, x + shift, top, w, band);
+      top += band;
+    }
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.5;
+    for (let index = 0; index < 4; index += 1) {
+      const band = Math.min(h, 6 + Math.floor(rand() * 36));
+      const top = y + rand() * Math.max(0, h - band);
+      const offset = 3 + rand() * 7;
+      ctx.drawImage(tint(image, x, top, w, band, "#ff0000"), 0, 0, w, band, x + offset, top, w, band);
+      ctx.drawImage(tint(image, x, top, w, band, "#00ffff"), 0, 0, w, band, x - offset, top, w, band);
+    }
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 1;
+  }
+
+  // No snapshot to break: draw the corruption itself (a dark veil and neon tears).
+  function drawFakeCorruption(x, y, w, h, rand) {
+    ctx.fillStyle = "rgba(10, 6, 24, 0.35)";
+    ctx.fillRect(x, y, w, h);
+    for (let top = y; top < y + h;) {
+      const band = 2 + Math.floor(rand() * 18);
+      if (rand() < 0.45) {
+        ctx.globalAlpha = 0.18 + rand() * 0.45;
+        ctx.fillStyle = NEON[Math.floor(rand() * NEON.length)];
+        ctx.fillRect(x + (rand() * 2 - 1) * w * 0.2, top, w * (0.3 + rand() * 0.7), band);
+      }
+      top += band;
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Blocks copied from elsewhere in the window, smeared into big pixels, or stuck on a colour.
+  function drawGlitchBlocks(image, x, y, w, h, rand) {
+    const sx = image ? image.width / width : 1;
+    const sy = image ? image.height / height : 1;
+    // Bigger and more blocks on a bigger window.
+    const unit = w * h > 400000 ? 16 : 8;
+    const count = 4 + Math.floor(rand() * 9) + Math.min(24, Math.floor((w * h) / 50000));
+    for (let index = 0; index < count; index += 1) {
+      const bw = unit * (1 + Math.floor(rand() * 7));
+      const bh = unit * (1 + Math.floor(rand() * 4));
+      const bx = x + Math.floor(rand() * Math.max(1, (w - bw) / unit)) * unit;
+      const by = y + Math.floor(rand() * Math.max(1, (h - bh) / unit)) * unit;
+      const kind = rand();
+      if (image && kind < 0.4) {
+        const fromX = x + rand() * Math.max(1, w - bw);
+        const fromY = y + rand() * Math.max(1, h - bh);
+        ctx.drawImage(image, fromX * sx, fromY * sy, bw * sx, bh * sy, bx, by, bw, bh);
+      } else if (image && kind < 0.7) {
+        const cw = Math.max(1, Math.round(bw / 8));
+        const ch = Math.max(1, Math.round(bh / 8));
+        sctx.globalCompositeOperation = "copy";
+        sctx.drawImage(image, bx * sx, by * sy, bw * sx, bh * sy, 0, 0, cw, ch);
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(scratch, 0, 0, cw, ch, bx, by, bw, bh);
+        ctx.imageSmoothingEnabled = true;
+      } else {
+        ctx.globalAlpha = 0.55 + rand() * 0.4;
+        ctx.fillStyle = NEON[Math.floor(rand() * NEON.length)];
+        ctx.fillRect(bx, by, bw, bh);
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+
+  function drawScanlines(x, y, w, h, rand) {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.16)";
+    for (let line = y; line < y + h; line += 3) ctx.fillRect(x, line, w, 1);
+    ctx.fillStyle = "rgba(220, 255, 255, 0.55)";
+    for (let index = 0; index < 3; index += 1) ctx.fillRect(x, y + rand() * h, w, 1);
+    const dots = clamp(Math.floor((w * h) / 1500), 90, 700);
+    for (let index = 0; index < dots; index += 1) {
+      ctx.fillStyle = rand() < 0.5 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.7)";
+      const size = 1 + Math.floor(rand() * 2);
+      ctx.fillRect(x + rand() * w, y + rand() * h, size, size);
+    }
+  }
+
+  // Her tag on the broken patch, with a colour split.
+  function drawHijackLabel(x, y, w, h, rand) {
+    const size = Math.round(clamp(w / 26, 12, 40));
+    ctx.font = `bold ${size}px ui-monospace, Menlo, Consolas, monospace`;
+    ctx.textBaseline = "middle";
+    const pad = size * 0.7;
+    const tw = ctx.measureText(HIJACK_LABEL).width + pad * 2;
+    const th = size * 1.8;
+    const jitter = size * 0.4;
+    const lx = x + clamp(w / 2 - tw / 2 + (rand() * 2 - 1) * jitter, 4, Math.max(4, w - tw - 4));
+    const ly = y + clamp(h * 0.4 - th / 2, 8, Math.max(8, h - th - 8));
+    const split = Math.max(1.5, size / 8);
+    ctx.fillStyle = "rgba(8, 2, 20, 0.86)";
+    ctx.fillRect(lx, ly, tw, th);
+    ctx.fillStyle = "#28f0ff";
+    ctx.fillText(HIJACK_LABEL, lx + pad - split, ly + th / 2);
+    ctx.fillStyle = "#ff2bd6";
+    ctx.fillText(HIJACK_LABEL, lx + pad + split, ly + th / 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(HIJACK_LABEL, lx + pad, ly + th / 2);
+  }
+
+  function drawHijack(fx, progress, now) {
+    // A new glitch pattern every step, so it jumps like a broken screen instead of flowing.
+    const rand = random(fx.hijack.seed + Math.floor((now - fx.started) / HIJACK_STEP_MS) * 7919);
+    // It starts at her hand, spreads over the whole window, glitches, then collapses to a
+    // line and is gone.
+    const grow = easeOut(clamp(progress / 0.22, 0, 1));
+    const off = clamp((progress - 0.84) / 0.16, 0, 1);
+    const seedW = Math.min(width, 120);
+    const seedH = Math.min(height, 84);
+    const w = seedW + (width - seedW) * grow;
+    const h = Math.max(2, (seedH + (height - seedH) * grow) * (1 - off) ** 2);
+    const x = clamp(fx.cx - w / 2 + (width / 2 - fx.cx) * grow, 0, Math.max(0, width - w));
+    const y = clamp(fx.cy - h / 2 + (height / 2 - fx.cy) * grow, 0, Math.max(0, height - h));
+    if (off === 0 && progress > 0.18 && rand() < 0.08) return; // a blink
+    // Only a snapshot taken for this prank: an older one would show some other window.
+    const image = snapshot && snapshotAt > fx.started - 8000 ? snapshot : null;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.clip();
+    if (image) drawStolenPixels(image, x, y, w, h, rand);
+    else drawFakeCorruption(x, y, w, h, rand);
+    drawGlitchBlocks(image, x, y, w, h, rand);
+    drawScanlines(x, y, w, h, rand);
+    if (off === 0 && progress > 0.25 && progress < 0.8 && rand() < 0.7) drawHijackLabel(x, y, w, h, rand);
+    ctx.restore();
+    if (off > 0) {
+      ctx.save();
+      ctx.globalAlpha = 1 - off;
+      ctx.fillStyle = "#e9fdff";
+      ctx.shadowColor = "#7af2ff";
+      ctx.shadowBlur = 16;
+      ctx.fillRect(x, y + h / 2 - 1, w, 2);
+      ctx.restore();
+    }
+  }
+
   function tick(now) {
     if (!active) return;
     const progress = clamp((now - active.started) / active.duration, 0, 1);
@@ -473,6 +655,7 @@
     else if (active.kind === "lightning") drawLightning(active, progress);
     else if (active.kind === "tear") drawTear(active, progress);
     else if (active.kind === "collapse") drawCollapse(active, progress);
+    else if (active.kind === "hijack") drawHijack(active, progress, now);
     if (progress < 1) animationFrame = requestAnimationFrame(tick);
     else animationFrame = 0;
   }
@@ -504,6 +687,7 @@
       pixels: kind === "pixel_dissolve" ? makePixels(cx, cy) : null,
       bolts: kind === "lightning" ? makeLightning(cx, cy) : null,
       tear: kind === "tear" ? makeTear(cx, cy) : null,
+      hijack: kind === "hijack" ? makeHijack(cx, cy) : null,
       title: config.title,
       started: performance.now(),
       duration: config.duration,

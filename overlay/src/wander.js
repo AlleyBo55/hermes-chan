@@ -58,7 +58,7 @@
   // next (a hop uses her falling pose) plays on top of a prank that is still running.
   const EFFECT_MS = {
     bend: 1100, glitch: 1200, crack: 1400, portal: 2200, text_shatter: 1650, ripple: 1400,
-    pixel_dissolve: 1600, lightning: 1300, tear: 1700, collapse: 2600,
+    pixel_dissolve: 1600, lightning: 1300, tear: 1700, collapse: 2600, hijack: 2000,
     shake: 1500, nudge: 2900, throw: 2900, pull_down: 3000,
   };
   // These come out of her hand, so they get a patch of screen centred on it; the rest act
@@ -67,7 +67,9 @@
   const GRAB_SHARE = 0.4; // pranks next to the active window that grab it for real
   // The fake "broken app": the window under her hand cracks and falls apart, then is fine.
   const BREAK_UI = { effect: "collapse", clip: "action/crack", event: "effect_start", snapshot: true };
-  const BREAK_SHARE = 0.25; // pranks on a window that break it
+  // "She hijacked your app": the window around her hand glitches out with its own pixels.
+  const HIJACK = { effect: "hijack", clip: "action/glitch", event: "effect_start", snapshot: true };
+  const BREAK_SHARE = 0.5; // pranks on a window that break it (collapse or hijack, half each)
   // What she does once she reaches the window, all facing it with her back to you.
   const LOOKS = {
     watch: { clip: "back/idle", ms: [8000, 16000] },
@@ -605,9 +607,12 @@
       return true;
     }
 
-    // Snapshot the window first (it takes a moment), then cast; the collapse fires on her
-    // effect frame like any other prank. Without Screen Recording she does another prank.
+    // Snapshot the window first (it takes a moment), then cast; the collapse or hijack fires
+    // on her effect frame like any other prank. Without Screen Recording the collapse turns
+    // into another prank, and the hijack glitches without the window's own pixels.
     startBreakUi(now, win) {
+      const prank = Math.random() < 0.5 ? HIJACK : BREAK_UI;
+      const frame = { x: win.x, y: win.y, w: win.w, h: win.h };
       this.lastMischiefAt = now;
       this.phase = "rest";
       this.looking = "prank-wait";
@@ -616,12 +621,11 @@
       this.invoke("prepare_break_ui", { windowId: win.id })
         .then(() => {
           if (this.looking !== "prank-wait") return;
-          this.cast(BREAK_UI, { x: win.x, y: win.y, w: win.w, h: win.h });
+          this.cast(prank, frame);
         })
         .catch(() => {
           if (this.looking !== "prank-wait") return;
-          const fallback = MISCHIEF[Math.floor(Math.random() * MISCHIEF.length)];
-          this.cast(fallback, { x: win.x, y: win.y, w: win.w, h: win.h });
+          this.cast(prank === HIJACK ? HIJACK : MISCHIEF[Math.floor(Math.random() * MISCHIEF.length)], frame);
         });
       return true;
     }
