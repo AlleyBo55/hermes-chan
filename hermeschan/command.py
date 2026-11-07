@@ -208,6 +208,11 @@ def register(ctx, bridge, settings, autonomy, body) -> None:
                 enabled = _toggle(rest, "mischief")
             except ValueError as exc:
                 return str(exc)
+            # The plugin setting is the one source, so Hermes' Settings switch shows the same.
+            try:
+                ctx.set_config("mischief", enabled)
+            except PermissionError as exc:
+                return f"Mischief stays {'on' if not enabled else 'off'}: {exc}"
             settings.update(mischief=enabled)
             bridge.update_config(mischief=enabled)
             return f"Autonomous mischief {'enabled' if enabled else 'disabled'}."

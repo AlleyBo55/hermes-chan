@@ -20,7 +20,9 @@ _DEFAULTS: dict[str, Any] = {
     "resummons": 0,
     # Her first appearance ever says how to use her, once.
     "welcomed": False,
-    "mischief": False,
+    # Her own pranks. On from the start; this mirrors the plugin setting in Hermes (see
+    # mischief_setting), which is what the Settings switch and /hermeschan mischief change.
+    "mischief": True,
     "watch": False,
     "sleeping": False,
     "heartbeat_enabled": False,
@@ -29,6 +31,13 @@ _DEFAULTS: dict[str, Any] = {
     "rest_reminder": True,
     "decision_times": [],
 }
+
+
+def mischief_setting(ctx) -> bool:
+    """Mischief from Hermes' own plugin settings: the switch in Settings ▸ Plugins ▸ Hermes-chan,
+    or `hermes config set plugins.entries.hermes-chan.settings.mischief false`. On by default."""
+    value = ctx.get_config("mischief", True)
+    return value if isinstance(value, bool) else True
 
 
 class SettingsStore:

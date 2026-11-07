@@ -70,10 +70,13 @@ def register(ctx):
     from .hermeschan.body import Body
     from .hermeschan.bridge import Bridge
     from .hermeschan.overlay_runner import OverlayRunner
-    from .hermeschan.settings import SettingsStore
+    from .hermeschan.settings import SettingsStore, mischief_setting
 
     bridge = Bridge.shared(ctx)
     settings = SettingsStore()
+    mischief = mischief_setting(ctx)
+    if settings.get("mischief") != mischief:
+        settings.update(mischief=mischief)
     current = settings.snapshot()
     bridge.update_config(
         mischief=current["mischief"],

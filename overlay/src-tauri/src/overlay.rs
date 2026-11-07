@@ -552,12 +552,7 @@ impl OverlayController {
             return;
         }
 
-        // A visual effect only needs to know where the front window is. Without Accessibility
-        // (macOS wants it to read the active window) the plain window list still says.
-        let target = self.resolve_target(handle, "action_target").or_else(|| {
-            (verb == "glitch").then(front_window_on_screen).flatten()
-        });
-        let Some(target) = target else {
+        let Some(target) = self.resolve_target(handle, "action_target") else {
             return;
         };
         if !target_matches(message.get("target"), &target) {
@@ -1368,21 +1363,6 @@ fn require_window(window: &WebviewWindow, expected: &str) -> Result<(), String> 
             "command is only available to the {expected} window"
         ))
     }
-}
-
-/// The frontmost app window from the window list, which needs no permission (no title).
-fn front_window_on_screen() -> Option<ActiveWindow> {
-    let win = winctl::visible_windows(std::process::id()).into_iter().next()?;
-    Some(ActiveWindow {
-        pid: win.pid,
-        app: win.app,
-        title: String::new(),
-        x: win.x.round() as i32,
-        y: win.y.round() as i32,
-        w: win.w.round() as i32,
-        h: win.h.round() as i32,
-        handle: 0,
-    })
 }
 
 fn target_matches(target: Option<&serde_json::Value>, active: &ActiveWindow) -> bool {

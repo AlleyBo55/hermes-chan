@@ -59,9 +59,11 @@ fn osascript(script: &str) -> Result<String, WindowControlError> {
     })
 }
 
-/// Frontmost application window in global logical screen coordinates.
+/// Frontmost application window in global logical screen coordinates. Without Accessibility
+/// System Events refuses, but the window list still has the front window: its owner and
+/// frame need no permission, its title (a "YouTube" tab, say) needs Screen Recording.
 pub(super) fn frontmost_window() -> Result<Option<ActiveWindow>, WindowControlError> {
-    let output = osascript(
+    let output = match osascript(
         r#"tell application "System Events"
   set p to first application process whose frontmost is true
   if (count of windows of p) is 0 then return ""
@@ -74,8 +76,46 @@ pub(super) fn frontmost_window() -> Result<Option<ActiveWindow>, WindowControlEr
   set sep to ASCII character 31
   return (unix id of p as text) & sep & (name of p as text) & sep & windowTitle & sep & (px as text) & sep & (py as text) & sep & (ww as text) & sep & (wh as text)
 end tell"#,
-    )?;
+    ) {
+        Ok(output) => output,
+        Err(error) if matches!(error.kind, ErrorKind::Permission) => {
+            return Ok(front_window_from_list(std::process::id()));
+        }
+        Err(error) => return Err(error),
+    };
     parse_window(&output)
+}
+
+fn front_window_from_list(own_pid: u32) -> Option<ActiveWindow> {
+    let front = visible_windows(own_pid).into_iter().next()?;
+    Some(ActiveWindow {
+        pid: front.pid,
+        title: window_title(front.id).unwrap_or_default(),
+        app: front.app,
+        x: front.x.round() as i32,
+        y: front.y.round() as i32,
+        w: front.w.round() as i32,
+        h: front.h.round() as i32,
+        handle: 0,
+    })
+}
+
+/// One window's title from the window list; macOS includes it only with Screen Recording.
+fn window_title(window_id: u32) -> Option<String> {
+    use core_foundation::base::{CFType, TCFType};
+    use core_foundation::dictionary::{CFDictionary, CFDictionaryRef};
+    use core_foundation::string::CFString;
+    use core_graphics::window::{copy_window_info, kCGWindowListOptionIncludingWindow, kCGWindowName};
+
+    let list = copy_window_info(kCGWindowListOptionIncludingWindow, window_id)?;
+    let item = list.iter().next()?;
+    let dict: CFDictionary<CFString, CFType> =
+        unsafe { CFDictionary::wrap_under_get_rule(*item as CFDictionaryRef) };
+    let key = unsafe { CFString::wrap_under_get_rule(kCGWindowName) };
+    dict.find(key)
+        .and_then(|value| value.downcast::<CFString>())
+        .map(|name| name.to_string())
+        .filter(|name| !name.is_empty())
 }
 
 /// Current front window for a process ID previously observed as active.
