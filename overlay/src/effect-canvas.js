@@ -465,10 +465,10 @@
     if (progress < 0.2) drawCrack(fx, clamp(progress / 0.12, 0, 1));
   }
 
-  // "She hijacked your app": the window around her hand glitches out (its real pixels slip
-  // sideways, split into colour fringes and break into blocks), then switches back off like
-  // an old screen. Without a fresh snapshot (no Screen Recording) the same patch gets
-  // drawn-on corruption instead of the window's pixels.
+  // "She hijacked your app": from her hand the whole window glitches out (its real pixels
+  // slip sideways, split into colour fringes and break into blocks), then switches off like
+  // an old screen. Without a fresh snapshot (no Screen Recording) it gets drawn-on
+  // corruption instead of the window's pixels.
   const HIJACK_STEP_MS = 70;
   const HIJACK_LABEL = "HIJACKED BY HERMES-CHAN (^_~)";
   const NEON = ["#ff2bd6", "#28f0ff", "#7dff5a", "#ffe14d", "#120018"];
@@ -476,15 +476,7 @@
   const sctx = scratch.getContext("2d");
 
   function makeHijack(cx, cy) {
-    const w = Math.min(width, clamp(width * 0.5, 220, 460));
-    const h = Math.min(height, clamp(height * 0.42, 150, 320));
-    return {
-      w,
-      h,
-      x: clamp(cx - w / 2, 0, width - w),
-      y: clamp(cy - h / 2, 0, height - h),
-      seed: (Math.floor(cx * 13 + cy * 29) + Math.floor(performance.now())) >>> 0,
-    };
+    return { seed: (Math.floor(cx * 13 + cy * 29) + Math.floor(performance.now())) >>> 0 };
   }
 
   // One band of the snapshot in a single colour channel, for the colour fringes.
@@ -508,7 +500,7 @@
   function drawStolenPixels(image, x, y, w, h, rand) {
     const sx = image.width / width;
     const sy = image.height / height;
-    const maxShift = Math.min(48, w * 0.12);
+    const maxShift = Math.min(90, w * 0.1);
     for (let top = y; top < y + h;) {
       const band = Math.min(y + h - top, 3 + Math.floor(rand() * 24));
       const shift = rand() < 0.6 ? (rand() * 2 - 1) * maxShift : 0;
@@ -549,12 +541,14 @@
   function drawGlitchBlocks(image, x, y, w, h, rand) {
     const sx = image ? image.width / width : 1;
     const sy = image ? image.height / height : 1;
-    const count = 4 + Math.floor(rand() * 9);
+    // Bigger and more blocks on a bigger window.
+    const unit = w * h > 400000 ? 16 : 8;
+    const count = 4 + Math.floor(rand() * 9) + Math.min(24, Math.floor((w * h) / 50000));
     for (let index = 0; index < count; index += 1) {
-      const bw = 8 * (1 + Math.floor(rand() * 7));
-      const bh = 8 * (1 + Math.floor(rand() * 4));
-      const bx = x + Math.floor(rand() * Math.max(1, (w - bw) / 8)) * 8;
-      const by = y + Math.floor(rand() * Math.max(1, (h - bh) / 8)) * 8;
+      const bw = unit * (1 + Math.floor(rand() * 7));
+      const bh = unit * (1 + Math.floor(rand() * 4));
+      const bx = x + Math.floor(rand() * Math.max(1, (w - bw) / unit)) * unit;
+      const by = y + Math.floor(rand() * Math.max(1, (h - bh) / unit)) * unit;
       const kind = rand();
       if (image && kind < 0.4) {
         const fromX = x + rand() * Math.max(1, w - bw);
@@ -582,7 +576,8 @@
     for (let line = y; line < y + h; line += 3) ctx.fillRect(x, line, w, 1);
     ctx.fillStyle = "rgba(220, 255, 255, 0.55)";
     for (let index = 0; index < 3; index += 1) ctx.fillRect(x, y + rand() * h, w, 1);
-    for (let index = 0; index < 90; index += 1) {
+    const dots = clamp(Math.floor((w * h) / 1500), 90, 700);
+    for (let index = 0; index < dots; index += 1) {
       ctx.fillStyle = rand() < 0.5 ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.7)";
       const size = 1 + Math.floor(rand() * 2);
       ctx.fillRect(x + rand() * w, y + rand() * h, size, size);
@@ -591,32 +586,39 @@
 
   // Her tag on the broken patch, with a colour split.
   function drawHijackLabel(x, y, w, h, rand) {
-    ctx.font = "bold 12px ui-monospace, Menlo, Consolas, monospace";
+    const size = Math.round(clamp(w / 26, 12, 40));
+    ctx.font = `bold ${size}px ui-monospace, Menlo, Consolas, monospace`;
     ctx.textBaseline = "middle";
-    const tw = ctx.measureText(HIJACK_LABEL).width + 16;
-    const lx = x + clamp(w / 2 - tw / 2 + (rand() * 2 - 1) * 6, 4, Math.max(4, w - tw - 4));
-    const ly = y + clamp(h * 0.18, 8, Math.max(8, h - 30));
+    const pad = size * 0.7;
+    const tw = ctx.measureText(HIJACK_LABEL).width + pad * 2;
+    const th = size * 1.8;
+    const jitter = size * 0.4;
+    const lx = x + clamp(w / 2 - tw / 2 + (rand() * 2 - 1) * jitter, 4, Math.max(4, w - tw - 4));
+    const ly = y + clamp(h * 0.4 - th / 2, 8, Math.max(8, h - th - 8));
+    const split = Math.max(1.5, size / 8);
     ctx.fillStyle = "rgba(8, 2, 20, 0.86)";
-    ctx.fillRect(lx, ly, tw, 22);
+    ctx.fillRect(lx, ly, tw, th);
     ctx.fillStyle = "#28f0ff";
-    ctx.fillText(HIJACK_LABEL, lx + 6.5, ly + 11);
+    ctx.fillText(HIJACK_LABEL, lx + pad - split, ly + th / 2);
     ctx.fillStyle = "#ff2bd6";
-    ctx.fillText(HIJACK_LABEL, lx + 9.5, ly + 11);
+    ctx.fillText(HIJACK_LABEL, lx + pad + split, ly + th / 2);
     ctx.fillStyle = "#ffffff";
-    ctx.fillText(HIJACK_LABEL, lx + 8, ly + 11);
+    ctx.fillText(HIJACK_LABEL, lx + pad, ly + th / 2);
   }
 
   function drawHijack(fx, progress, now) {
-    const patch = fx.hijack;
     // A new glitch pattern every step, so it jumps like a broken screen instead of flowing.
-    const rand = random(patch.seed + Math.floor((now - fx.started) / HIJACK_STEP_MS) * 7919);
-    // It spreads out from her hand, glitches, then collapses to a line and is gone.
-    const grow = easeOut(clamp(progress / 0.14, 0, 1));
+    const rand = random(fx.hijack.seed + Math.floor((now - fx.started) / HIJACK_STEP_MS) * 7919);
+    // It starts at her hand, spreads over the whole window, glitches, then collapses to a
+    // line and is gone.
+    const grow = easeOut(clamp(progress / 0.22, 0, 1));
     const off = clamp((progress - 0.84) / 0.16, 0, 1);
-    const w = patch.w * (0.25 + 0.75 * grow);
-    const h = Math.max(2, patch.h * (0.25 + 0.75 * grow) * (1 - off) ** 2);
-    const x = clamp(fx.cx + (patch.x + patch.w / 2 - fx.cx) * grow - w / 2, 0, Math.max(0, width - w));
-    const y = clamp(fx.cy + (patch.y + patch.h / 2 - fx.cy) * grow - h / 2, 0, Math.max(0, height - h));
+    const seedW = Math.min(width, 120);
+    const seedH = Math.min(height, 84);
+    const w = seedW + (width - seedW) * grow;
+    const h = Math.max(2, (seedH + (height - seedH) * grow) * (1 - off) ** 2);
+    const x = clamp(fx.cx - w / 2 + (width / 2 - fx.cx) * grow, 0, Math.max(0, width - w));
+    const y = clamp(fx.cy - h / 2 + (height / 2 - fx.cy) * grow, 0, Math.max(0, height - h));
     if (off === 0 && progress > 0.18 && rand() < 0.08) return; // a blink
     // Only a snapshot taken for this prank: an older one would show some other window.
     const image = snapshot && snapshotAt > fx.started - 8000 ? snapshot : null;

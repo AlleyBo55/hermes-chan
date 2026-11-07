@@ -135,7 +135,7 @@ app, so the app itself never changes and looks normal again a moment later.
 | Break font | the window's text shatters into flying glyphs |
 | Collapse | a snapshot of the window cracks and falls apart into a dark void, then the real app is back |
 | Tear | the window rips open |
-| Hijack | the app around her hand glitches out: its own pixels slip sideways, split into colour fringes and break into blocks, then it switches back like an old screen |
+| Hijack | from her hand the whole window glitches out: its own pixels slip sideways, split into colour fringes and break into blocks, then it switches off like an old screen |
 | Ripple, pixel dissolve, lightning | ripples, pixels and bolts burst from her hand |
 | Glitch, bend | scanlines, colour split and blocks, or the window's border bends |
 
@@ -211,7 +211,7 @@ own; Ctrl+Shift+click her to quit.
 ```text
 /hermeschan status | on | off | come | sleep | wake | hide | say <text>
 /hermeschan resummon        # stuck or lost? restart her fresh (keeps mischief/watch/heartbeat)
-/hermeschan effect <name>   # crack, portal, text_shatter, ripple, pixel_dissolve, lightning, tear, glitch, bend, hijack
+/hermeschan effect <name>   # crack, portal, text_shatter, ripple, pixel_dissolve, lightning, tear, glitch, bend, hijack, collapse
 /hermeschan mischief on|off # her own pranks, effects and window moves
 /hermeschan watch on|off | react
 /hermeschan heartbeat on|off|status [interval]

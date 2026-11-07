@@ -588,16 +588,21 @@ impl OverlayController {
                 Some("lightning") => ("lightning", 1300),
                 Some("tear") => ("tear", 1700),
                 Some("hijack") => ("hijack", 2000),
+                Some("collapse") => ("collapse", 2600),
                 _ => {
                     self.emit_status(handle, "error", "effect", "unsupported visual effect");
                     return;
                 }
             };
-            let intensity = if effect == "hijack" {
-                self.send_window_snapshot(handle, &target);
-                1.0
-            } else {
-                intensity
+            // Both break the window's own pixels. The hijack still glitches without them; the
+            // collapse would have nothing to drop, so it cracks the window instead.
+            let (effect, duration_ms, intensity) = match effect {
+                "hijack" => {
+                    self.send_window_snapshot(handle, &target);
+                    ("hijack", duration_ms, 1.0)
+                }
+                "collapse" if !self.send_window_snapshot(handle, &target) => ("crack", 1400, intensity),
+                _ => (effect, duration_ms, intensity),
             };
             self.show_effect(handle, effect, verb, None, &target, intensity, duration_ms);
             return;
@@ -669,9 +674,10 @@ impl OverlayController {
         }
     }
 
-    /// The hijack glitches the window's own pixels: hand a snapshot of the target window to
-    /// the effect window first. Without Screen Recording it glitches without them.
-    fn send_window_snapshot(&self, handle: &AppHandle, target: &ActiveWindow) {
+    /// The hijack and collapse break the window's own pixels: hand a snapshot of the target
+    /// window to the effect window first. False when there is none; her bubble then says
+    /// which permission it takes.
+    fn send_window_snapshot(&self, handle: &AppHandle, target: &ActiveWindow) -> bool {
         let windows = winctl::visible_windows(std::process::id());
         let same_app: Vec<&winctl::WindowFrame> =
             windows.iter().filter(|win| win.pid == target.pid).collect();
@@ -682,12 +688,19 @@ impl OverlayController {
             .or_else(|| same_app.first())
             .map(|win| win.id)
         else {
-            return;
+            return false;
         };
-        if let (Ok(snapshot), Some(effect)) =
-            (winctl::capture_window_id(id), handle.get_webview_window(EFFECT_WINDOW))
-        {
-            let _ = effect.emit("effect-image", snapshot);
+        match winctl::capture_window_id(id) {
+            Ok(snapshot) => {
+                self.emit_ready(handle, "window_snapshot");
+                handle
+                    .get_webview_window(EFFECT_WINDOW)
+                    .is_some_and(|effect| effect.emit("effect-image", snapshot).is_ok())
+            }
+            Err(error) => {
+                self.emit_winctl_error(handle, "window_snapshot", &error);
+                false
+            }
         }
     }
 

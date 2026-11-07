@@ -193,7 +193,9 @@ function resolveActionClip(msg) {
     return manifest.windowGestures[msg.gesture || "drag"] || null;
   }
   if (msg.verb === "glitch" && msg.effect) {
-    const effectClip = `action/${msg.effect}`;
+    // Her own pranks cast these two with these clips (wander.js), so the command does too.
+    const effectClip = { collapse: "action/crack", hijack: "action/glitch" }[msg.effect]
+      || `action/${msg.effect}`;
     if (manifest.clips[effectClip]) return effectClip;
   }
   return manifest.actions[msg.verb] || null;

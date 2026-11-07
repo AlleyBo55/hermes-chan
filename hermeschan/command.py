@@ -17,7 +17,7 @@ _USAGE = (
     "  sleep | wake                   persist sleeping/awake state\n"
     "  say <text>                     make her speak a line\n"
     "  effect <name>                  play an effect on the active app\n"
-    "    crack portal text_shatter ripple pixel_dissolve lightning tear glitch bend hijack\n"
+    "    crack portal text_shatter ripple pixel_dissolve lightning tear glitch bend hijack collapse\n"
     "  hide                           stop the visible body\n"
     "  mischief on|off                allow/stop autonomous antics\n"
     "  watch on|off                   allow/stop one screenshot per decision\n"
@@ -177,9 +177,9 @@ def register(ctx, bridge, settings, autonomy, body) -> None:
         if sub == "effect":
             effect = rest.strip().lower()
             if effect not in {"glitch", "crack", "portal", "bend", "text_shatter",
-                              "ripple", "pixel_dissolve", "lightning", "tear", "hijack"}:
-                return ("Usage: /hermeschan effect "
-                        "glitch|crack|portal|bend|text_shatter|ripple|pixel_dissolve|lightning|tear|hijack")
+                              "ripple", "pixel_dissolve", "lightning", "tear", "hijack", "collapse"}:
+                return ("Usage: /hermeschan effect glitch|crack|portal|bend|text_shatter|ripple|"
+                        "pixel_dissolve|lightning|tear|hijack|collapse")
             if not bridge.is_connected:
                 return "Hermes-chan's overlay is not connected."
             target = {"app": "active"}

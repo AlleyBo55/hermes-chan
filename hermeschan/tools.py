@@ -12,7 +12,7 @@ log = logging.getLogger("hermes-chan.tools")
 TOOLSET = "hermeschan"
 _EMOTIONS = ["neutral", "happy", "shy", "surprised", "sulk", "sleepy", "proud", "panic", "love"]
 _VISUAL_EFFECTS = ["glitch", "crack", "portal", "bend", "text_shatter",
-                   "ripple", "pixel_dissolve", "lightning", "tear", "hijack"]
+                   "ripple", "pixel_dissolve", "lightning", "tear", "hijack", "collapse"]
 
 
 def _intensity(value, default: float) -> float:
@@ -75,7 +75,8 @@ def register(ctx, bridge, tidier=None) -> None:
     def _visual_effect(args):
         effect = str(args.get("effect") or "glitch").lower()
         if effect not in _VISUAL_EFFECTS:
-            return "Choose glitch, crack, portal, bend, text_shatter, ripple, pixel_dissolve, lightning, tear, or hijack."
+            return ("Choose glitch, crack, portal, bend, text_shatter, ripple, pixel_dissolve, lightning, "
+                    "tear, hijack, or collapse.")
         if not bridge.is_connected:
             return "Hermes-chan's overlay is not connected."
         target = {"app": args.get("app", "active")}
