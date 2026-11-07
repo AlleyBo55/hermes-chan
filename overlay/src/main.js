@@ -92,6 +92,12 @@ async function copyText(text) {
   }
 }
 
+// Her window has no use for the browser's own right-click menu (just "Reload", which would
+// reset her). The chat box keeps its Cut / Copy / Paste menu.
+document.addEventListener("contextmenu", (e) => {
+  if (e.target !== input) e.preventDefault();
+});
+
 statusMessage.addEventListener("click", async () => {
   const command = statusMessage.dataset.copy;
   if (!command) return;
