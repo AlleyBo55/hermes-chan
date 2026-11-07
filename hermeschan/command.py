@@ -12,6 +12,7 @@ _USAGE = (
     "/hermeschan — desktop companion controls\n"
     "  status                         show body, driver, and autonomy state\n"
     "  on | off                       switch her on or off (Ctrl+Shift+click her = off)\n"
+    "  resummon                       restart her fresh: clears away, sleep, saved spot, stuck chat\n"
     "  come                           call her to the active window\n"
     "  sleep | wake                   persist sleeping/awake state\n"
     "  say <text>                     make her speak a line\n"
@@ -73,10 +74,13 @@ def _status(bridge, settings, autonomy, body) -> str:
     else:
         link = f"not listening{f': {bridge.problem}' if bridge.problem else ''}"
     switched = "away (/hermeschan on brings her back)" if current["away"] else "on"
+    chat = {True: "allowed", None: "unknown",
+            False: f"blocked by Hermes (hermes config set {bridge.chat_setting} true)"}[bridge.chat_allowed()]
     return (
         f"Hermes-chan is {switched}.\n"
         f"  body: {body.runner.describe()}\n"
         f"  bridge: {link}\n"
+        f"  chat box: {chat}\n"
         f"  computer use: {'native input available' if _driver_available() else 'native input unavailable here'}\n"
         f"  sleeping: {'yes' if current['sleeping'] else 'no'} · "
         f"mischief: {'on' if current['mischief'] else 'off'} · "
@@ -102,6 +106,13 @@ def register(ctx, bridge, settings, autonomy, body) -> None:
             if blocked:
                 return f"Hermes-chan is switched on, but her body cannot appear here: {blocked}."
             return "Hermes-chan is switched on; she will appear in a moment."
+        if sub == "resummon":
+            blocked = body.runner.blocked_reason()
+            if blocked:
+                return f"Hermes-chan cannot appear here: {blocked}."
+            here = body.resummon()
+            return ("Hermes-chan is coming back fresh." if here
+                    else "Hermes-chan will come back fresh in a moment.")
         if sub == "off":
             body.switch_off()
             return ("Hermes-chan left. /hermeschan on brings her back, and so does a Hermes restart; "

@@ -27,7 +27,7 @@ import sys
 import threading
 import time
 from pathlib import Path
-from typing import IO, Any, Optional
+from typing import IO, Any, Callable, Optional
 
 from .paths import hermes_home, state_dir
 
@@ -141,6 +141,18 @@ class OverlayRunner:
             except Exception as exc:  # noqa: BLE001
                 log.debug("overlay terminate failed: %s", exc)
         self._phase = "stopped"
+
+    def restart(self, before_start: Optional[Callable[[], None]] = None) -> None:
+        """End her body, wait for its supervisor to finish, then start a fresh one.
+        ``before_start`` runs in between, while no body is alive to rewrite her files."""
+        self.stop()
+        thread = self._thread
+        if thread is not None and thread is not threading.current_thread():
+            thread.join(timeout=5.0)
+        if before_start is not None:
+            before_start()
+        self.problem = None
+        self.maybe_start()
 
     def is_running(self) -> bool:
         proc = self._proc

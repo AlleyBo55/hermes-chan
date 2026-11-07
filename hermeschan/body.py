@@ -16,6 +16,18 @@ from typing import Optional
 
 log = logging.getLogger("hermes-chan.body")
 
+
+def _forget_overlay_layout() -> None:
+    """Her saved spot and follow mode (written by the overlay); a fresh body starts roaming."""
+    from .paths import state_dir
+
+    try:
+        (state_dir() / "overlay.json").unlink()
+    except FileNotFoundError:
+        pass
+    except OSError as exc:
+        log.warning("hermes-chan: could not reset her saved position (%s)", exc)
+
 # Short-lived Hermes commands (`hermes plugins install --enable`, validation) load
 # plugins too; waiting a moment keeps them from flashing a body on screen.
 _START_DELAY_SECONDS = 2.0
@@ -34,6 +46,7 @@ class Body:
         self._starter: Optional[threading.Thread] = None
         self._watcher: Optional[threading.Thread] = None
         self._seen_away = False
+        self._seen_resummons = int(settings.get("resummons", 0))
         self._lock = threading.Lock()
 
     @property
@@ -85,7 +98,11 @@ class Body:
         Only a change of the flag counts, so her own exit after Ctrl+Shift+click never
         races the flag into restarting her."""
         while not self._cancel.wait(_WATCH_SECONDS):
-            away = bool(self._settings.refresh().get("away", False))
+            current = self._settings.refresh().snapshot()
+            if current["resummons"] != self._seen_resummons:
+                self._resummon_here()  # also re-syncs away
+                continue
+            away = bool(current["away"])
             if away == self._seen_away:
                 continue
             self._seen_away = away
@@ -93,6 +110,27 @@ class Body:
                 self._runner.stop()
             else:
                 self._runner.maybe_start(self._ctx)
+
+    def resummon(self) -> bool:
+        """Bring her back fresh. True when this process restarted her itself; False when
+        another Hermes process shows her and will do it within a couple of seconds."""
+        if self._bridge.is_listening:
+            self._resummon_here()
+            return True
+        count = int(self._settings.refresh().get("resummons", 0))
+        self._settings.update(resummons=count + 1, away=False, sleeping=False)
+        return False
+
+    def _resummon_here(self) -> None:
+        """Clear every state that can keep her stuck or hidden, then restart her body.
+        Opted-in preferences (mischief, watch, heartbeat) stay as they are."""
+        current = self._settings.update(away=False, sleeping=False)
+        self._seen_resummons = current["resummons"]
+        self._seen_away = False
+        self._bridge.reset_runtime()
+        self._cancel.clear()
+        log.info("hermes-chan: resummoned; restarting her body fresh")
+        self._runner.restart(before_start=_forget_overlay_layout)
 
     def stop(self) -> None:
         self._cancel.set()
