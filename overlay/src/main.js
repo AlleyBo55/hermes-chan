@@ -59,11 +59,15 @@ function sendToPlugin(payload) {
 window.HermesChanBusy = () => Boolean(activeAction || pendingAction)
   || ["thinking", "working", "blocked", "listening"].includes(currentState);
 
-function setStatus(text, kind = "", copy = "") {
-  statusMessage.textContent = text && copy ? `${text}\n(click here to copy the command)` : text || "";
+// `settings`: the macOS Privacy & Security page that fixes it; clicking opens it.
+function setStatus(text, kind = "", copy = "", settings = "") {
+  const hint = copy ? "(click here to copy the command)"
+    : settings ? "(click here: I'll open that page and show you what to drag in)" : "";
+  statusMessage.textContent = text && hint ? `${text}\n${hint}` : text || "";
   statusMessage.dataset.kind = kind;
   statusMessage.dataset.copy = copy || "";
-  statusMessage.classList.toggle("copyable", Boolean(text && copy));
+  statusMessage.dataset.settings = settings || "";
+  statusMessage.classList.toggle("copyable", Boolean(text && hint));
   statusMessage.classList.toggle("hidden", !text);
   scheduleHitRegions();
 }
@@ -99,6 +103,18 @@ document.addEventListener("contextmenu", (e) => {
 });
 
 statusMessage.addEventListener("click", async () => {
+  const pane = statusMessage.dataset.settings;
+  if (pane) {
+    try {
+      const program = await invokeNative("open_privacy_settings", { pane });
+      setStatus(program
+        ? `Drag ${program} from the Finder window into that list, then switch it on ✿`
+        : "Switch on the app that runs Hermes in that list ✿", "warning");
+    } catch (error) {
+      setStatus(`Could not open System Settings: ${errorText(error)}`, "error");
+    }
+    return;
+  }
   const command = statusMessage.dataset.copy;
   if (!command) return;
   const copied = await copyText(command);
@@ -702,7 +718,8 @@ function handlePermissionStatus(payload) {
   const status = String(data.status || "").toLowerCase();
   if (status === "permission_required") {
     body.dataset.permission = "denied";
-    setStatus(data.message || "Accessibility or Screen Recording permission is required.", "warning");
+    setStatus(data.message || "Accessibility or Screen Recording permission is required.", "warning",
+      "", typeof data.settings === "string" ? data.settings : "");
     return;
   }
   if (status === "error") {

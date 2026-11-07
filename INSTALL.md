@@ -95,6 +95,18 @@ That grant also covers the rest of the gateway (and anything else launched the s
 turn it on if you want her window features. If you run `hermes gateway run` in a terminal, grant
 that terminal instead.
 
+`osascript` does not show in these lists until someone adds it, and the **+** button may refuse a
+command-line tool. Drag it in instead. Her bubble does the first part for you: when a prank needs a
+switch, click the bubble and she opens the page and selects the right program in Finder. By hand:
+
+```bash
+open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"   # or ?Privacy_Accessibility
+open -R /usr/bin/osascript
+```
+
+Then drag `osascript` from the Finder window into the list and switch it on. A new grant works on
+her next try; Hermes does not need a restart.
+
 Windows and Linux ask for nothing. On Windows she cannot touch apps running as administrator; on
 Linux she needs an X11 display, and on Wayland she only sees X11/XWayland apps.
 

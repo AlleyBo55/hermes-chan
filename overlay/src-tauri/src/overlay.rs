@@ -107,6 +107,9 @@ struct WindowControlStatus<'a> {
     status: &'a str,
     operation: &'a str,
     message: Option<&'a str>,
+    /// The System Settings page that fixes it (macOS); her bubble then opens it on a click.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    settings: Option<&'a str>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -827,10 +830,21 @@ impl OverlayController {
             ErrorKind::Permission => "permission_required",
             ErrorKind::Other => "error",
         };
-        self.emit_status(handle, status, operation, &error.message);
+        self.emit_status_for(handle, status, operation, &error.message, winctl::privacy_pane(error));
     }
 
     fn emit_status(&self, handle: &AppHandle, status: &str, operation: &str, message: &str) {
+        self.emit_status_for(handle, status, operation, message, None);
+    }
+
+    fn emit_status_for(
+        &self,
+        handle: &AppHandle,
+        status: &str,
+        operation: &str,
+        message: &str,
+        settings: Option<&str>,
+    ) {
         let changed = {
             let mut inner = self.inner.lock().unwrap();
             let value = (status.to_string(), message.to_string());
@@ -848,6 +862,7 @@ impl OverlayController {
                     status,
                     operation,
                     message: Some(message),
+                    settings,
                 },
             );
         }
@@ -868,6 +883,7 @@ impl OverlayController {
                     status: "ready",
                     operation,
                     message: None,
+                    settings: None,
                 },
             );
         }
@@ -1174,6 +1190,17 @@ pub async fn prepare_break_ui(
         .get_webview_window(EFFECT_WINDOW)
         .ok_or_else(|| "effect window is missing".to_string())?;
     effect.emit("effect-image", snapshot).map_err(|error| error.to_string())
+}
+
+/// Her permission hint was clicked: open that Privacy & Security page and select, in Finder,
+/// the program to switch on (osascript for Hermes' background gateway). Its name when known.
+#[tauri::command]
+pub async fn open_privacy_settings(pane: String, window: WebviewWindow) -> Result<Option<String>, String> {
+    require_window(&window, MAIN_WINDOW)?;
+    tauri::async_runtime::spawn_blocking(move || winctl::open_privacy_settings(&pane))
+        .await
+        .map_err(|error| error.to_string())?
+        .map_err(|error| error.to_string())
 }
 
 /// On-screen app windows, front to back, so she can stand on, climb or jump to any of them.
