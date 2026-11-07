@@ -61,7 +61,7 @@ def _driver_available() -> bool:
 
 
 def _status(bridge, settings, autonomy, body) -> str:
-    current = settings.snapshot()
+    current = settings.refresh().snapshot()
     heartbeat = autonomy.status()
     heartbeat_state = "on" if heartbeat["enabled"] else "off"
     if heartbeat["enabled"] and (heartbeat["sleeping"] or not heartbeat["opted_in"]):
@@ -72,7 +72,7 @@ def _status(bridge, settings, autonomy, body) -> str:
         link = f"waiting for her body ({bridge.path})"
     else:
         link = f"not listening{f': {bridge.problem}' if bridge.problem else ''}"
-    switched = "on" if current["active"] else "off (/hermeschan on brings her back)"
+    switched = "away (/hermeschan on brings her back)" if current["away"] else "on"
     return (
         f"Hermes-chan is {switched}.\n"
         f"  body: {body.runner.describe()}\n"
@@ -104,9 +104,10 @@ def register(ctx, bridge, settings, autonomy, body) -> None:
             return "Hermes-chan is switched on; she will appear in a moment."
         if sub == "off":
             body.switch_off()
-            return "Hermes-chan is switched off. /hermeschan on brings her back."
-        if not settings.get("active", True) and sub in ("come", "wake", "effect", "react"):
-            return "Hermes-chan is switched off; /hermeschan on brings her back."
+            return ("Hermes-chan left. /hermeschan on brings her back, and so does a Hermes restart; "
+                    "to keep her off, switch the plugin off in Hermes.")
+        if settings.refresh().get("away", False) and sub in ("come", "wake", "effect", "react"):
+            return "Hermes-chan is away; /hermeschan on brings her back."
         if sub == "come":
             if settings.get("sleeping", False):
                 return "Hermes-chan is asleep; use /hermeschan wake first."

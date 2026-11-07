@@ -177,6 +177,8 @@ class Bridge:
         self.problem: Optional[str] = None
         # Called (on its own thread) when the user switches her off from the overlay.
         self.deactivate_handler: Optional[Callable[[], None]] = None
+        # Called once this process owns the bridge (it may have waited for another one).
+        self.on_acquired: Optional[Callable[[], None]] = None
         self._socket_identity: Optional[tuple[int, int]] = None
         self._actions: "OrderedDict[str, _PendingAction]" = OrderedDict()
         self._actions_lock = threading.Lock()
@@ -446,6 +448,11 @@ class Bridge:
             self._listening = True
             self._ready.set()
             log.info("hermes-chan bridge listening on %s", self.path)
+            if self.on_acquired is not None:
+                try:
+                    self.on_acquired()
+                except Exception:  # noqa: BLE001 - a handler failure must not end the server loop
+                    log.exception("hermes-chan: taking over her body failed")
             while not self._stop.is_set():
                 try:
                     conn, _ = srv.accept()

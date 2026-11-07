@@ -40,9 +40,12 @@ Two processes, one duplex bridge. Runs on macOS, Windows and Linux (X11/XWayland
 - One body per profile: only the process that owns the bridge starts her. A second Hermes process
   waits and takes over when the first lets go.
 - **Ctrl+Shift+click** (or closing her window) makes the overlay send
-  `{"type":"intent","name":"deactivate"}` and exit with code 0. The plugin persists `active:
-  false` and stops supervising; exit code 0 is never restarted. `/hermeschan on` and `off` flip
-  the same switch from a chat.
+  `{"type":"intent","name":"deactivate"}` and exit with code 0; exit code 0 is never restarted.
+  The plugin marks her `away` in settings and stops supervising but keeps the bridge, so a
+  waiting Hermes process cannot bring her straight back. The bridge owner watches that flag, so
+  `/hermeschan on` and `off` work from any Hermes process. Whoever takes the bridge next (after a
+  Hermes restart or a plugin reload) clears `away` and shows her: the plugin's switch in Hermes
+  is the only lasting off.
 - Disabling the plugin in Hermes runs its `on_unload` callback, which stops the heartbeat, the
   overlay process and the bridge. Interpreter exit does the same through `atexit`, and the overlay
   also watches its parent PID (`HERMESCHAN_PARENT_PID`) so it leaves even after a crash.

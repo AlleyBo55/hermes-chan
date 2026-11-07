@@ -13,8 +13,9 @@ from .paths import private_file, state_dir
 
 _MIN_HEARTBEAT_SECONDS = 60.0
 _DEFAULTS: dict[str, Any] = {
-    # Off after Ctrl+Shift+click or /hermeschan off: her body stays away until switched on.
-    "active": True,
+    # Sent away (Ctrl+Shift+click, /hermeschan off) while the Hermes process showing her runs.
+    # The next process to take her over clears it, so a restart or plugin reload brings her back.
+    "away": False,
     "mischief": False,
     "watch": False,
     "sleeping": False,
@@ -43,9 +44,16 @@ class SettingsStore:
             value = self._data.get(key, default)
             return list(value) if key == "decision_times" and isinstance(value, list) else value
 
+    def refresh(self) -> "SettingsStore":
+        """Re-read the file: every Hermes process of this profile writes it."""
+        with self._lock:
+            self._data = self._load()
+        return self
+
     def update(self, **changes: Any) -> dict[str, Any]:
         with self._lock:
-            merged = dict(self._data)
+            # Read-modify-write, so a stale copy here never undoes another process's change.
+            merged = self._load()
             for key, value in changes.items():
                 if key not in _DEFAULTS:
                     raise KeyError(f"unknown Hermes-chan setting: {key}")
@@ -58,6 +66,7 @@ class SettingsStore:
         """Atomically consume one persisted autonomy decision slot."""
         now = time.time()
         with self._lock:
+            self._data = self._load()
             recent = [stamp for stamp in self._data.get("decision_times", [])
                       if isinstance(stamp, (int, float)) and now - window_seconds < stamp <= now + 5.0]
             if len(recent) >= limit:
@@ -80,7 +89,7 @@ class SettingsStore:
     @staticmethod
     def _validated(raw: dict[str, Any]) -> dict[str, Any]:
         data = dict(_DEFAULTS)
-        for key in ("active", "mischief", "watch", "sleeping", "heartbeat_enabled"):
+        for key in ("away", "mischief", "watch", "sleeping", "heartbeat_enabled"):
             if isinstance(raw.get(key), bool):
                 data[key] = raw[key]
         interval = raw.get("heartbeat_interval")

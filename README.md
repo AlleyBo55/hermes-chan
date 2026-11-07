@@ -159,10 +159,10 @@ instead.
 
 | How | What happens |
 | --- | --- |
-| **Ctrl+Shift+click** on her | She is switched off: her process ends and she disappears, and she stays off across restarts |
-| `/hermeschan off` · `/hermeschan on` | The same switch from any Hermes chat; `on` brings her straight back |
+| **Ctrl+Shift+click** on her | She leaves: her process ends and she disappears. She comes back with `/hermeschan on`, when you switch the plugin off and on, or when Hermes restarts |
+| `/hermeschan off` · `/hermeschan on` | The same from any Hermes chat; `on` brings her straight back |
 | Closing her window (Alt+F4 on Windows and Linux) | Same as Ctrl+Shift+click |
-| `hermes plugins disable hermes-chan` · `enable` | Unloads or loads the whole plugin (tools, hooks and her body). The Plugins switch in Hermes Desktop and the `hermes plugins` picker do the same |
+| `hermes plugins disable hermes-chan` · `enable` | Unloads or loads the whole plugin (tools, hooks and her body). This is the switch that lasts: to keep her off, turn the plugin off. The Plugins switch in Hermes Desktop and the `hermes plugins` picker do the same |
 
 Hermes plugins are opt-in: a fresh install is off until you enable it (`--enable` in the install
 command does that). The 📌 button above her head switches between **follow** (she perches by the
@@ -259,7 +259,7 @@ and she runs inside that gateway ([details](INSTALL.md#5-grant-permissions-macos
 | Symptom | Fix |
 | --- | --- |
 | She doesn't appear | `/hermeschan status` shows the reason; check `build.log` and `overlay.log` in `<Hermes home>/hermes-chan/` |
-| `/hermeschan status` says she is off | `/hermeschan on` (Ctrl+Shift+click switched her off) |
+| `/hermeschan status` says she is away | `/hermeschan on`, or switch the plugin off and on (Ctrl+Shift+click sent her away) |
 | The plugin doesn't load at all | `hermes plugins enable hermes-chan`, then start a new session |
 | Linux: black box instead of a transparent window | run a compositor (most desktops do); on some GPU drivers set `WEBKIT_DISABLE_DMABUF_RENDERER=1` |
 | Linux: "no graphical display" | Hermes' gateway runs without your session's display, usually as a systemd service: `systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XAUTHORITY`, then `hermes gateway restart` |
@@ -284,7 +284,7 @@ Measured on a 1512×982 MacBook screen while building these features:
 On Linux (X11 with openbox and picom) the same end-to-end run connects her, follows the active
 window, roams, climbs the screen edge and stands on a window's top edge; XTest clicks, typing (a
 shell command typed into xterm ran), key combos and scrolling all land; Ctrl+Shift+click ends her
-process and keeps her off; `/hermeschan on`, `off` and plugin unload behave as documented.
+process; `/hermeschan on`, `off` and plugin unload behave as documented.
 
 ## Open source
 
