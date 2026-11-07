@@ -1113,6 +1113,7 @@ pub fn self_grab(
         .ok_or_else(|| "no active window to grab".to_string())?;
     let side = if direction < 0 { -1 } else { 1 };
     let lock = controller.action_lock.clone();
+    let reporter = controller.inner().clone();
     let overlay_pid = std::process::id();
     thread::spawn(move || {
         // One window action at a time, shared with the agent's own window actions.
@@ -1127,9 +1128,16 @@ pub fn self_grab(
                 .map(|_| Some((target.x + 220 * side, target.y + 140))),
             _ => winctl::pull_window(&target, 90, overlay_pid).map(|_| Some((target.x, target.y + 90))),
         };
-        if let Ok(Some(moved_to)) = moved {
-            thread::sleep(SELF_GRAB_RESTORE);
-            let _ = winctl::restore_window(&target, moved_to, overlay_pid);
+        match moved {
+            Ok(Some(moved_to)) => {
+                thread::sleep(SELF_GRAB_RESTORE);
+                let _ = winctl::restore_window(&target, moved_to, overlay_pid);
+            }
+            // The window stayed put; say (once) which switch moving it needs.
+            Err(error) if matches!(error.kind, ErrorKind::Permission) => {
+                reporter.emit_winctl_error(&app, "window_action", &error);
+            }
+            _ => {}
         }
     });
     Ok(())
@@ -1139,12 +1147,29 @@ pub fn self_grab(
 /// picture to the effect window. Her cast starts only after this, so the collapse can then
 /// fire on her effect frame like every other prank. The app itself is never touched.
 #[tauri::command]
-pub async fn prepare_break_ui(window_id: u32, window: WebviewWindow, app: AppHandle) -> Result<(), String> {
+pub async fn prepare_break_ui(
+    window_id: u32,
+    window: WebviewWindow,
+    app: AppHandle,
+    controller: State<'_, OverlayController>,
+) -> Result<(), String> {
     require_window(&window, MAIN_WINDOW)?;
-    let snapshot = tauri::async_runtime::spawn_blocking(move || winctl::capture_window_id(window_id))
+    let captured = tauri::async_runtime::spawn_blocking(move || winctl::capture_window_id(window_id))
         .await
-        .map_err(|error| error.to_string())?
         .map_err(|error| error.to_string())?;
+    let snapshot = match captured {
+        Ok(snapshot) => {
+            controller.emit_ready(&app, "window_snapshot");
+            snapshot
+        }
+        Err(error) => {
+            // She does another prank instead; say (once) which switch the real one needs.
+            if matches!(error.kind, ErrorKind::Permission) {
+                controller.emit_winctl_error(&app, "window_snapshot", &error);
+            }
+            return Err(error.to_string());
+        }
+    };
     let effect = app
         .get_webview_window(EFFECT_WINDOW)
         .ok_or_else(|| "effect window is missing".to_string())?;
