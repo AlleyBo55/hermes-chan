@@ -55,6 +55,10 @@ function sendToPlugin(payload) {
 }
 
 // `copy`: a command this message tells you to run; clicking the message copies it.
+// For her rest reminder: while Hermes works (or she acts for it) the card waits.
+window.HermesChanBusy = () => Boolean(activeAction || pendingAction)
+  || ["thinking", "working", "blocked", "listening"].includes(currentState);
+
 function setStatus(text, kind = "", copy = "") {
   statusMessage.textContent = text && copy ? `${text}\n(click here to copy the command)` : text || "";
   statusMessage.dataset.kind = kind;

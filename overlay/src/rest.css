@@ -25,7 +25,7 @@
   inset: -6%;
   background:
     radial-gradient(circle, rgba(255, 255, 255, 0.55) 2px, transparent 2.5px) 0 0 / 34px 34px,
-    radial-gradient(circle at 50% 42%, rgba(255, 244, 250, 0.96), rgba(255, 210, 233, 0.94) 48%,
+    radial-gradient(circle at 50% 42%, rgba(255, 244, 250, 0.985), rgba(255, 210, 233, 0.965) 48%,
       rgba(207, 199, 255, 0.95) 100%);
   opacity: 0;
 }

@@ -60,10 +60,9 @@
   let enabled = true;
   const state = load();
 
-  function show(hours, test) {
+  function show(hours) {
     if (!core?.invoke) return;
-    window.dispatchEvent(new CustomEvent("hermeschan-rest", { detail: { hours } }));
-    core.invoke("show_rest_reminder", { hours, test: Boolean(test) })
+    core.invoke("show_rest_reminder", { hours })
       .catch((error) => console.warn("Hermes-chan could not show her rest reminder", error));
   }
 
@@ -78,9 +77,16 @@
     // null: this desktop can't tell how long you've been away, so she can't see your
     // breaks either. Better quiet than nagging you while you rest.
     if (typeof idle !== "number" || !Number.isFinite(idle)) return;
+    const before = state.reminded;
     const due = step(state, idle, Date.now());
+    if (due && enabled && window.HermesChanBusy?.()) {
+      // Hermes is working (maybe clicking through her): the card would catch its clicks.
+      // Ask on a later tick, once she is free.
+      state.reminded = before;
+    } else if (due && enabled) {
+      show(due);
+    }
     save(state);
-    if (due && enabled) show(due, false);
   }
 
   if (typeof module !== "undefined") {
@@ -95,7 +101,7 @@
     },
     test(hours) {
       const value = Math.round(Number(hours));
-      show(Number.isFinite(value) ? Math.max(1, Math.min(99, value)) : EVERY_HOURS, true);
+      show(Number.isFinite(value) ? Math.max(1, Math.min(99, value)) : EVERY_HOURS);
     },
   };
   setTimeout(tick, 5000);
