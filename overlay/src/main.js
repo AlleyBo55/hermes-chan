@@ -323,16 +323,76 @@ const REACT_EMOTION = {
   browser: "neutral", art: "love", code: "proud", data: "neutral", hands: "surprised",
 };
 
-// The agent used a tool: mumble a themed line, like Maido-chan reacting to her task. Never
-// over a real reply, a chat, sleep, a drag, or a pose she is mid-way through.
+// The glow colour and floating glyph per category (style.css animates them).
+const REACT_FX = {
+  mail: { color: "#ffd27f", glyph: "✉️" },
+  social: { color: "#ff9ec4", glyph: "💬" },
+  memory: { color: "#c9a7ff", glyph: "📝" },
+  web: { color: "#7fd1c4", glyph: "🔎" },
+  browser: { color: "#9ec8ff", glyph: "🖱️" },
+  art: { color: "#ff8ad8", glyph: "🎨" },
+  code: { color: "#9be29b", glyph: "⚙️" },
+  data: { color: "#7fe0e0", glyph: "🔢" },
+  hands: { color: "#ffb38a", glyph: "🖐️" },
+};
+const reactFx = document.getElementById("react-fx");
+const reactGlyph = document.getElementById("react-glyph");
+let reactFxTimer = null;
+
+// The light: a themed glow behind her and the tool's glyph floating up over her head.
+function playReactFx(category) {
+  const fx = REACT_FX[category];
+  if (!fx || !reactFx || !reactGlyph) return;
+  reactFx.style.setProperty("--react-color", fx.color);
+  reactGlyph.textContent = fx.glyph;
+  reactFx.classList.remove("playing");
+  void reactFx.offsetWidth; // restart the CSS animation from the top
+  reactFx.classList.add("playing");
+  if (reactFxTimer) clearTimeout(reactFxTimer);
+  reactFxTimer = setTimeout(() => reactFx.classList.remove("playing"), 1300);
+}
+
+// The agent used a tool: a themed light + glyph, and she mumbles a line, like Maido-chan
+// reacting to her task. Never over a real reply, a chat, sleep, a drag, or a pose mid-way.
 function handleReaction(msg) {
   const category = typeof msg.category === "string" ? msg.category : "";
   if (!category || !manifest || sleeping || chatOpen || pendingChat
       || activeAction || transient || draggingPet) return;
   if (window.HermesRestTakeover?.isActive?.()) return;
   if (!bubble.classList.contains("hidden") && bubble.dataset.speaker !== "mumble") return;
+  playReactFx(category);
   const line = nextLine(`react_${category}`);
   if (line) showBubble(line, REACT_EMOTION[category] || "happy", "mumble");
+}
+
+// Reaction choreography (overlay/REACTIONS.md A-D): a pose + a click-through effect over
+// the active window + a spoken line, for a desktop event the plugin sends as
+// {type:"reaction", id, text?, emotion?}. The effect names are allowed in play_effect.
+const REACTIONS = {
+  email:     { effect: "mail",   clip: "action/point", emotion: "happy",     text: "📬 New email!" },
+  message:   { effect: "ping",   clip: "back/peek",    emotion: "surprised", text: "💬 New message!" },
+  reminder:  { effect: "ping",   clip: "action/point", emotion: "neutral",   text: "⏰ Reminder" },
+  affection: { effect: "hearts", clip: "emotion/love", emotion: "love",      text: "welcome back ♥" },
+};
+
+function handleReactionFx(msg) {
+  const spec = REACTIONS[typeof msg.id === "string" ? msg.id : ""];
+  if (!spec || !manifest || sleeping || chatOpen || pendingChat
+      || activeAction || transient || draggingPet) return;
+  if (window.HermesRestTakeover?.isActive?.()) return;
+  const emotion = msg.emotion || spec.emotion;
+  // Say the line. "mumble" speaker, so it does not trigger the assistant "done" follow-up.
+  showBubble(msg.text || spec.text, emotion, "mumble");
+  // Strike the pose; wander (when roaming) yields to it the way it does for an emote.
+  const clip = manifest.clips[spec.clip] ? spec.clip
+    : (manifest.emotions[emotion] || manifest.states.idle);
+  if (clip) sprites.play(clip, spec.clip.indexOf("action/") === 0 ? { loop: false } : {});
+  // Decorate the active window with her reaction effect.
+  const win = latestActiveWindow;
+  if (win && Number.isFinite(win.x) && Number.isFinite(win.w) && win.w >= 40 && win.h >= 40) {
+    invokeNative("play_effect", { effect: spec.effect, x: win.x, y: win.y, w: win.w, h: win.h })
+      .catch(() => {});
+  }
 }
 
 function handlePoint(msg) {
@@ -478,6 +538,9 @@ function handle(msg) {
       break;
     case "react":
       handleReaction(msg);
+      break;
+    case "reaction":
+      handleReactionFx(msg);
       break;
     case "chat_result":
       handleChatResult(msg);
