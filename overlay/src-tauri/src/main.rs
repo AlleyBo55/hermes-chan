@@ -48,7 +48,8 @@ fn main() {
             overlay::list_windows,
             overlay::play_effect,
             overlay::self_grab,
-            overlay::prepare_break_ui
+            overlay::prepare_break_ui,
+            overlay::open_privacy_settings
         ])
         .setup(|app| {
             // Dockless desktop companion: Accessory keeps her out of the Dock

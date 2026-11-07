@@ -59,7 +59,14 @@ Install the Hermes-chan desktop companion plugin from https://github.com/AlleyBo
 5. Ask me whether her chat box may post what I type into it to my Hermes chats.
    If I say yes, run:
    hermes config set plugins.entries.hermes-chan.allow_gateway_injection true
-6. Tell me when it's done. She appears in my next session, or right away with /hermeschan on.
+6. macOS only: tell me her window pranks need Screen Recording and Accessibility for
+   osascript (the program that runs Hermes in the background; if I run Hermes in a
+   terminal, that terminal app instead). Offer to open the first page. If I say yes, run:
+   open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"
+   open -R /usr/bin/osascript
+   and tell me to drag osascript from the Finder window into the list and switch it on,
+   then do the same on the Accessibility page (Privacy_Accessibility).
+7. Tell me when it's done. She appears in my next session, or right away with /hermeschan on.
 ```
 
 The first build compiles the Rust crates and takes a few minutes; later builds take seconds.
@@ -249,6 +256,14 @@ stands), `build.log`, `overlay.log`, the tidy journal, and on Windows `bridge.js
 If anything is missing she fails cleanly and keeps animating. On macOS the entry to turn on is
 usually **`osascript`**, because Hermes starts its background gateway through `/usr/bin/osascript`
 and she runs inside that gateway ([details](INSTALL.md#5-grant-permissions-macos-only)).
+
+When a prank needs one of these, her bubble says so. Click it: she opens the right settings page
+and selects the program in Finder. Drag it into the list and switch it on. `osascript` is not in
+the list until someone adds it, and the **+** button may refuse it, so drag it. By hand:
+
+```bash
+open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"; open -R /usr/bin/osascript
+```
 
 ## Safety and privacy
 

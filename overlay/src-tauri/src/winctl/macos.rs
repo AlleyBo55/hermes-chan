@@ -21,6 +21,67 @@ const SCREEN_RECORDING_HELP: &str = "To break your window for real and spot vide
 const AUTOMATION_HELP: &str = "Allow osascript (Hermes' gateway) or your terminal to control \
      System Events: System Settings ▸ Privacy & Security ▸ Automation.";
 
+/// The System Settings page a permission hint above points at.
+pub(super) fn privacy_pane(message: &str) -> Option<&'static str> {
+    match message {
+        SCREEN_RECORDING_HELP => Some("screen_recording"),
+        ACCESSIBILITY_HELP => Some("accessibility"),
+        AUTOMATION_HELP => Some("automation"),
+        _ => None,
+    }
+}
+
+/// Open one Privacy & Security page, then select in Finder the program macOS asks about, so
+/// it can be dragged into the list. That list leaves out a command-line tool such as
+/// `osascript` until someone adds it, and its + button may refuse one. Returns its name.
+pub(super) fn open_privacy_settings(pane: &str) -> Result<Option<String>, WindowControlError> {
+    let anchor = match pane {
+        "screen_recording" => "Privacy_ScreenCapture",
+        "accessibility" => "Privacy_Accessibility",
+        "automation" => "Privacy_Automation",
+        _ => return Err(WindowControlError::other(format!("unknown settings page {pane}"))),
+    };
+    let opened = Command::new("open")
+        .arg(format!("x-apple.systempreferences:com.apple.preference.security?{anchor}"))
+        .status()
+        .map_err(|error| WindowControlError::other(format!("could not open System Settings: {error}")))?;
+    if !opened.success() {
+        return Err(WindowControlError::other("could not open System Settings"));
+    }
+    let Some(program) = responsible_program() else {
+        return Ok(None);
+    };
+    let _ = Command::new("open").arg("-R").arg(&program).status();
+    Ok(std::path::Path::new(&program)
+        .file_stem()
+        .map(|name| name.to_string_lossy().into_owned()))
+}
+
+/// What macOS checks her permissions against: the ancestor launchd started. That is
+/// `/usr/bin/osascript` for Hermes' background gateway, or the app whose terminal runs Hermes.
+fn responsible_program() -> Option<String> {
+    let mut pid = std::process::id();
+    for _ in 0..16 {
+        let output = Command::new("ps")
+            .args(["-ww", "-o", "ppid=,comm=", "-p", &pid.to_string()])
+            .output()
+            .ok()?;
+        let line = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        let (parent, path) = line.split_once(char::is_whitespace)?;
+        let parent: u32 = parent.trim().parse().ok()?;
+        if parent <= 1 {
+            let path = path.trim();
+            // An app runs from Foo.app/Contents/MacOS/…; the list wants Foo.app itself.
+            return Some(match path.find(".app/Contents/MacOS/") {
+                Some(end) => path[..end + 4].to_string(),
+                None => path.to_string(),
+            });
+        }
+        pid = parent;
+    }
+    None
+}
+
 fn osascript(script: &str) -> Result<String, WindowControlError> {
     let output = Command::new("osascript")
         .arg("-e")

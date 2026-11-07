@@ -127,6 +127,27 @@ pub fn user_idle_seconds_if_known() -> Option<f64> {
     imp::user_idle_seconds_if_known()
 }
 
+/// The System Settings page a permission error points at: "screen_recording",
+/// "accessibility" or "automation". macOS only; elsewhere there is nothing to switch on.
+#[cfg(target_os = "macos")]
+pub fn privacy_pane(error: &WindowControlError) -> Option<&'static str> {
+    imp::privacy_pane(&error.message)
+}
+#[cfg(not(target_os = "macos"))]
+pub fn privacy_pane(_error: &WindowControlError) -> Option<&'static str> {
+    None
+}
+
+/// Open that page and select, in Finder, the program to switch on; its name when known.
+#[cfg(target_os = "macos")]
+pub fn open_privacy_settings(pane: &str) -> Result<Option<String>, WindowControlError> {
+    imp::open_privacy_settings(pane)
+}
+#[cfg(not(target_os = "macos"))]
+pub fn open_privacy_settings(_pane: &str) -> Result<Option<String>, WindowControlError> {
+    Err(WindowControlError::other("this system has no permission switches for her"))
+}
+
 /// PNG base64 of one validated window rectangle, for an opt-in sample or computer use.
 pub fn capture_window(target: &ActiveWindow) -> Result<String, WindowControlError> {
     imp::capture_window(target)
