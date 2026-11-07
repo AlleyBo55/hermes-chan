@@ -293,6 +293,11 @@ class Bridge:
     def say(self, text: str, emotion: str = "neutral", **extra: Any) -> None:
         self.send({"type": "say", "text": text, "emotion": emotion, **extra})
 
+    def react(self, category: str) -> None:
+        """Her own quick reaction to the tool the agent just used: the overlay picks a line
+        for this category and mumbles it. Local, no model call."""
+        self.send({"type": "react", "category": category})
+
     def emote(self, emotion: str) -> None:
         self.send({"type": "emote", "emotion": emotion})
 

@@ -3,14 +3,15 @@ from __future__ import annotations
 
 import logging
 
-from . import states
+from . import reactions, states
 
 log = logging.getLogger("hermes-chan.hooks")
 
 
 def register(ctx, bridge, settings) -> None:
+    gate = reactions.ReactionGate()
     for hook_name, state in states.HOOK_STATE.items():
-        ctx.register_hook(hook_name, _state_setter(bridge, settings, hook_name, state))
+        ctx.register_hook(hook_name, _state_setter(bridge, settings, gate, hook_name, state))
     log.info("hermes-chan: registered %d lifecycle hooks", len(states.HOOK_STATE))
 
 
@@ -35,7 +36,7 @@ def _remember_chat(bridge, payload) -> None:
     bridge.remember_session(bound_session_key())
 
 
-def _state_setter(bridge, settings, hook_name, state):
+def _state_setter(bridge, settings, gate, hook_name, state):
     def _cb(**payload):
         try:
             if hook_name == "pre_llm_call":
@@ -47,7 +48,7 @@ def _state_setter(bridge, settings, hook_name, state):
                 bridge.set_agent_busy(False)
 
             if hook_name == "post_tool_call":
-                _on_post_tool(bridge, payload)
+                _on_post_tool(bridge, settings, gate, payload)
                 return
             if hook_name == "post_llm_call":
                 _on_post_llm(bridge, settings, payload)
@@ -79,7 +80,7 @@ def _on_post_llm(bridge, settings, payload) -> None:
         bridge.set_state(states.SPEAKING)
 
 
-def _on_post_tool(bridge, payload) -> None:
+def _on_post_tool(bridge, settings, gate, payload) -> None:
     status = payload.get("status")
     if isinstance(status, str):
         ok = status == "ok"
@@ -88,11 +89,24 @@ def _on_post_tool(bridge, payload) -> None:
     tool = payload.get("tool_name") or payload.get("tool") or ""
     if not ok:
         bridge.set_state(states.FAILED)
-    elif tool == "computer_use":
+        return
+    if tool == "computer_use":
         # The backend waits for action_complete before this observer can replace the clip.
         bridge.set_state(states.PEEK)
     else:
         bridge.set_state(states.WORKING)
+    _react_to_tool(bridge, settings, gate, tool)
+
+
+def _react_to_tool(bridge, settings, gate, tool) -> None:
+    """A themed one-liner about the tool the agent just used, like Maido-chan reacting to
+    her current task. Her own antics, so it rides the mischief switch; quiet while asleep,
+    and rate-limited so a burst of tool calls earns one line."""
+    if not settings.get("mischief", True) or settings.get("sleeping", False):
+        return
+    category = reactions.category_for(tool)
+    if category and gate.allow():
+        bridge.react(category)
 
 
 def _plan_finished(payload) -> bool:

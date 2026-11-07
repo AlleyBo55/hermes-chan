@@ -317,6 +317,24 @@ function handleConfig(msg) {
   if (typeof msg.rest_reminder === "boolean") window.HermesRest?.setEnabled(msg.rest_reminder);
 }
 
+// Her mood per tool category (reactions.py decides the category; this picks the face).
+const REACT_EMOTION = {
+  mail: "happy", social: "surprised", memory: "proud", web: "neutral",
+  browser: "neutral", art: "love", code: "proud", data: "neutral", hands: "surprised",
+};
+
+// The agent used a tool: mumble a themed line, like Maido-chan reacting to her task. Never
+// over a real reply, a chat, sleep, a drag, or a pose she is mid-way through.
+function handleReaction(msg) {
+  const category = typeof msg.category === "string" ? msg.category : "";
+  if (!category || !manifest || sleeping || chatOpen || pendingChat
+      || activeAction || transient || draggingPet) return;
+  if (window.HermesRestTakeover?.isActive?.()) return;
+  if (!bubble.classList.contains("hidden") && bubble.dataset.speaker !== "mumble") return;
+  const line = nextLine(`react_${category}`);
+  if (line) showBubble(line, REACT_EMOTION[category] || "happy", "mumble");
+}
+
 function handlePoint(msg) {
   if (!manifest) return;
   if (activeAction) {
@@ -457,6 +475,9 @@ function handle(msg) {
       break;
     case "config":
       handleConfig(msg);
+      break;
+    case "react":
+      handleReaction(msg);
       break;
     case "chat_result":
       handleChatResult(msg);
