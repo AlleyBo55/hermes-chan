@@ -56,7 +56,10 @@ Install the Hermes-chan desktop companion plugin from https://github.com/AlleyBo
    (~/.hermes on macOS and Linux, %LOCALAPPDATA%\hermes on Windows).
 4. Optional: run `hermes config set computer_use.backend hermes-chan` so she
    performs your computer-use clicks and typing.
-5. Tell me when it's done. She appears in my next session, or right away with /hermeschan on.
+5. Ask me whether her chat box may post what I type into it to my Hermes chats.
+   If I say yes, run:
+   hermes config set plugins.entries.hermes-chan.allow_gateway_injection true
+6. Tell me when it's done. She appears in my next session, or right away with /hermeschan on.
 ```
 
 The first build compiles the Rust crates and takes a few minutes; later builds take seconds.
