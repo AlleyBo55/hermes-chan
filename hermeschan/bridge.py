@@ -45,8 +45,8 @@ _CHAT_SETTING = "plugins.entries.hermes-chan.allow_gateway_injection"
 # Hermes refuses plugin messages into your chats until you allow it for this plugin.
 _INJECT_BLOCKED = ("Hermes blocks her chat box until you allow it. In a terminal run: "
                    f"hermes config set {_CHAT_SETTING} true")
-_INJECT_REFUSED = ("Hermes did not take the message. Send any /hermeschan command in the chat "
-                   "you want her to talk to, then try again.")
+_INJECT_REFUSED = ("Hermes did not take the message. Send any message to Hermes in the chat "
+                   "I should talk to, then try again here.")
 
 
 def _default_socket_path() -> str:
@@ -184,6 +184,8 @@ class Bridge:
         # Called once this process owns the bridge (it may have waited for another one).
         self.on_acquired: Optional[Callable[[], None]] = None
         self.chat_setting = _CHAT_SETTING
+        # Called each time her body connects (after the hello handshake).
+        self.on_connected: Optional[Callable[[], None]] = None
         self._socket_identity: Optional[tuple[int, int]] = None
         self._actions: "OrderedDict[str, _PendingAction]" = OrderedDict()
         self._actions_lock = threading.Lock()
@@ -247,9 +249,19 @@ class Bridge:
             self._agent_busy.clear()
 
     def remember_session(self, session_key: Optional[str]) -> None:
-        value = (session_key or "").strip()
-        if value:
+        value = session_key.strip() if isinstance(session_key, str) else ""
+        if value and value != self._session_key:
             self._session_key = value
+            log.info("hermes-chan: her chat box now talks to the chat you used last (%s…)", value[:20])
+
+    def chat_steps(self) -> list[str]:
+        """What is still missing before her chat box can post into your chat, in order."""
+        steps = []
+        if self.chat_allowed() is False:
+            steps.append(f"Allow it once, in a terminal: hermes config set {_CHAT_SETTING} true")
+        if not self._session_key:
+            steps.append("Send any message to Hermes in the chat I should talk to")
+        return steps
 
     # -- outbound -------------------------------------------------------
     def send(self, obj: dict[str, Any]) -> bool:
@@ -657,6 +669,11 @@ class Bridge:
         if config:
             self.send({"type": "config", **config})
         self.set_state("idle", **({"corner": True} if config.get("sleeping") else {}))
+        if self.on_connected is not None:
+            try:
+                self.on_connected()
+            except Exception:  # noqa: BLE001 - a greeting must never drop the connection
+                log.exception("hermes-chan: on_connected failed")
 
     def _read_loop(self, conn: socket.socket, initial: bytes = b"") -> None:
         # A bytearray searched only past what was already searched: a multi-MB screenshot
@@ -698,6 +715,9 @@ class Bridge:
         kind = msg.get("type")
         if kind == "chat":
             self._inject(msg.get("text", ""), msg.get("session_key"), msg.get("chat_id"))
+        elif kind == "chat_check":
+            # Her chat box just opened: tell her what (if anything) you still have to do.
+            self.send({"type": "chat_status", "steps": self.chat_steps()})
         elif kind == "action_event":
             self._mark_action_event(msg.get("action_id"), msg.get("event"))
         elif kind == "action_complete":

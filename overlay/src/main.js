@@ -299,9 +299,25 @@ function setChatOpen(open) {
   chatOpen = Boolean(open);
   input.classList.toggle("hidden", !chatOpen);
   body.dataset.chat = chatOpen ? "open" : "closed";
-  if (chatOpen) input.focus();
-  else input.blur();
+  if (chatOpen) {
+    input.focus();
+    // Ask the plugin what is still missing before typing here can reach your chat.
+    sendToPlugin({ type: "chat_check" }).catch(() => {});
+  } else {
+    input.blur();
+  }
   scheduleHitRegions();
+}
+
+function handleChatStatus(msg) {
+  const steps = Array.isArray(msg.steps)
+    ? msg.steps.filter((step) => typeof step === "string" && step.trim())
+    : [];
+  if (!chatOpen || steps.length === 0 || pendingChat) return;
+  const text = steps.length === 1
+    ? `To chat with me: ${steps[0]}.`
+    : `To chat with me:\n${steps.map((step, i) => `${i + 1}. ${step}`).join("\n")}`;
+  setStatus(text, "warning");
 }
 
 function toggleChat() {
@@ -378,6 +394,9 @@ function handle(msg) {
       break;
     case "chat_result":
       handleChatResult(msg);
+      break;
+    case "chat_status":
+      handleChatStatus(msg);
       break;
     case "action_result":
       if (activeAction && msg.action_id === activeAction.actionId && msg.ok === false) {

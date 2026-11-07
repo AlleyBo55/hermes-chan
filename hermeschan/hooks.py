@@ -14,9 +14,32 @@ def register(ctx, bridge, settings) -> None:
     log.info("hermes-chan: registered %d lifecycle hooks", len(states.HOOK_STATE))
 
 
+# Where her bubble lives: the classic CLI, the TUI and the Desktop app. Messaging chats
+# (Telegram, Discord, ...) are left alone.
+_LOCAL_PLATFORMS = {"cli", "tui", "desktop", "local"}
+
+
+def _remember_chat(bridge, payload) -> None:
+    """Each turn in a local chat names its chat, so her chat box talks to the one you used last.
+
+    Hooks carry the session id, not the route key inject_message needs, so read the key Hermes
+    binds for the turn; it is the one it uses itself to route a plugin's message to "this
+    session". Only the key is kept, never the message text.
+    """
+    if str(payload.get("platform") or "") not in _LOCAL_PLATFORMS:
+        return
+    try:
+        from gateway.session_context import bound_session_key
+    except ImportError:  # an older Hermes: /hermeschan in a chat still teaches her
+        return
+    bridge.remember_session(bound_session_key())
+
+
 def _state_setter(bridge, settings, hook_name, state):
     def _cb(**payload):
         try:
+            if hook_name == "pre_llm_call":
+                _remember_chat(bridge, payload)
             if hook_name in ("pre_llm_call", "pre_tool_call", "pre_approval_request",
                              "on_human_input_request"):
                 bridge.set_agent_busy(True)

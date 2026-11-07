@@ -215,7 +215,7 @@ own; Ctrl+Shift+click her to quit.
 | Setting | Default | Meaning |
 | --- | --- | --- |
 | `computer_use.backend: hermes-chan` | off | she performs the agent's computer-use actions |
-| `plugins.entries.hermes-chan.allow_gateway_injection: true` | off | lets what you type into her bubble reach your chat (CLI, TUI or Desktop app); run any `/hermeschan` command in the chat you want her to talk to first |
+| `plugins.entries.hermes-chan.allow_gateway_injection: true` | off | lets what you type into her bubble reach your chat (CLI, TUI or Desktop app). It goes to the local chat you last sent a message in; she remembers only which chat, never its text. Opening her chat box lists anything still missing |
 | `HERMESCHAN_AUTOSTART` | `1` | `0` keeps her body from starting at all |
 | `HERMESCHAN_BUILD` | `1` | `0` stops her from building her body when no fresh build exists |
 | `HERMESCHAN_OVERLAY_BIN` | unset | use this overlay binary instead of the plugin's own build |
@@ -268,7 +268,7 @@ and she runs inside that gateway ([details](INSTALL.md#5-grant-permissions-macos
 | Linux: black box instead of a transparent window | run a compositor (most desktops do); on some GPU drivers set `WEBKIT_DISABLE_DMABUF_RENDERER=1` |
 | Linux: "no graphical display" | Hermes' gateway runs without your session's display, usually as a systemd service: `systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XAUTHORITY`, then `hermes gateway restart` |
 | Chat bubble says Hermes blocks her chat box | `hermes config set plugins.entries.hermes-chan.allow_gateway_injection true`; it works on the next message, no restart |
-| Chat bubble says Hermes did not take the message | send any `/hermeschan` command in the chat you want her to talk to, then try again |
+| Chat bubble says Hermes did not take the message | send any message to Hermes in the chat you want her to talk to, then try again |
 | She is stuck, lost off screen or acting odd | `/hermeschan resummon` |
 | Windows: she can't touch one app | that app runs as administrator; Windows blocks input from normal apps into it |
 
