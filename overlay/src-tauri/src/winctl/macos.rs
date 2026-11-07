@@ -15,6 +15,9 @@ const FIELD_SEPARATOR: char = '\u{1f}';
 // for the background gateway (Hermes starts it through /usr/bin/osascript), else the terminal.
 const ACCESSIBILITY_HELP: &str = "Turn on Accessibility for osascript (Hermes' gateway) or your \
      terminal: System Settings ▸ Privacy & Security.";
+const SCREEN_RECORDING_HELP: &str = "To break your window for real I need its picture. Turn on \
+     Screen Recording for osascript (Hermes' gateway) or your terminal: System Settings ▸ \
+     Privacy & Security ▸ Screen & System Audio Recording.";
 const AUTOMATION_HELP: &str = "Allow osascript (Hermes' gateway) or your terminal to control \
      System Events: System Settings ▸ Privacy & Security ▸ Automation.";
 
@@ -266,7 +269,7 @@ pub(super) fn capture_window_id(window_id: u32) -> Result<String, WindowControlE
         }
         _ => Err(WindowControlError {
             kind: ErrorKind::Permission,
-            message: "window snapshot failed; Screen Recording permission may be required".to_string(),
+            message: SCREEN_RECORDING_HELP.to_string(),
         }),
     }
 }
