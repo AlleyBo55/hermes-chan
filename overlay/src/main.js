@@ -740,19 +740,25 @@ function listenNative(name, listener) {
     if (registration?.catch) {
       registration.catch((error) => console.warn(`Unable to listen for ${name} events`, error));
     }
+    return registration;
   } catch (error) {
     console.warn(`Unable to listen for ${name} events`, error);
+    return null;
   }
 }
 
 if (event?.listen) {
-  listenNative("from-plugin", (e) => {
+  const fromPlugin = listenNative("from-plugin", (e) => {
     try {
       handle(parsePayload(e.payload));
     } catch (error) {
       console.warn("Ignored malformed plugin message", error);
     }
   });
+  // The plugin sends her settings (mischief on/off, asleep…) the moment her body connects,
+  // usually before this page listens. Once it does, ask for them again.
+  const askForSettings = () => sendToPlugin({ type: "ready" }).catch(() => {});
+  Promise.resolve(fromPlugin).then(askForSettings, askForSettings);
   listenNative("active-window", (e) => handleActiveWindow(e.payload));
   // Her rest reminder closed: happy if you clicked it, a little sulky if it timed out.
   listenNative("rest-done", (e) => (e.payload === true

@@ -135,6 +135,7 @@ app, so the app itself never changes and looks normal again a moment later.
 | Break font | the window's text shatters into flying glyphs |
 | Collapse | a snapshot of the window cracks and falls apart into a dark void, then the real app is back |
 | Tear | the window rips open |
+| Hijack | the app around her hand glitches out: its own pixels slip sideways, split into colour fringes and break into blocks, then it switches back like an old screen |
 | Ripple, pixel dissolve, lightning | ripples, pixels and bolts burst from her hand |
 | Glitch, bend | scanlines, colour split and blocks, or the window's border bends |
 
@@ -210,7 +211,7 @@ own; Ctrl+Shift+click her to quit.
 ```text
 /hermeschan status | on | off | come | sleep | wake | hide | say <text>
 /hermeschan resummon        # stuck or lost? restart her fresh (keeps mischief/watch/heartbeat)
-/hermeschan effect <name>   # crack, portal, text_shatter, ripple, pixel_dissolve, lightning, tear, glitch, bend
+/hermeschan effect <name>   # crack, portal, text_shatter, ripple, pixel_dissolve, lightning, tear, glitch, bend, hijack
 /hermeschan mischief on|off # her own pranks, effects and window moves
 /hermeschan watch on|off | react
 /hermeschan heartbeat on|off|status [interval]
@@ -240,7 +241,7 @@ stands), `build.log`, `overlay.log`, the tidy journal, and on Windows `bridge.js
 | System | What she asks for | Without it |
 | --- | --- | --- |
 | macOS | **Accessibility** (read and move the active window, native input) | she still roams, but can't perch, follow or move windows |
-| macOS | **Screen Recording** (the collapse snapshot, the heartbeat's optional glance) | she does a different prank instead |
+| macOS | **Screen Recording** (the collapse and hijack snapshots, the heartbeat's optional glance) | she does a different prank instead of the collapse; the hijack glitches without the app's own pixels |
 | macOS | **Automation** for System Events and Finder (window titles, real `tidy_desktop` moves) | no app-aware reactions; tidying stays a plan |
 | Windows | nothing | apps running as administrator are off limits (Windows UIPI) |
 | Linux | nothing; an X11 display (XWayland counts) | native Wayland apps are invisible to her |

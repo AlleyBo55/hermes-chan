@@ -552,7 +552,12 @@ impl OverlayController {
             return;
         }
 
-        let Some(target) = self.resolve_target(handle, "action_target") else {
+        // A visual effect only needs to know where the front window is. Without Accessibility
+        // (macOS wants it to read the active window) the plain window list still says.
+        let target = self.resolve_target(handle, "action_target").or_else(|| {
+            (verb == "glitch").then(front_window_on_screen).flatten()
+        });
+        let Some(target) = target else {
             return;
         };
         if !target_matches(message.get("target"), &target) {
@@ -582,10 +587,17 @@ impl OverlayController {
                 Some("pixel_dissolve") => ("pixel_dissolve", 1600),
                 Some("lightning") => ("lightning", 1300),
                 Some("tear") => ("tear", 1700),
+                Some("hijack") => ("hijack", 2000),
                 _ => {
                     self.emit_status(handle, "error", "effect", "unsupported visual effect");
                     return;
                 }
+            };
+            let intensity = if effect == "hijack" {
+                self.send_window_snapshot(handle, &target);
+                1.0
+            } else {
+                intensity
             };
             self.show_effect(handle, effect, verb, None, &target, intensity, duration_ms);
             return;
@@ -654,6 +666,28 @@ impl OverlayController {
                 self.emit_winctl_error(handle, operation, &error);
                 None
             }
+        }
+    }
+
+    /// The hijack glitches the window's own pixels: hand a snapshot of the target window to
+    /// the effect window first. Without Screen Recording it glitches without them.
+    fn send_window_snapshot(&self, handle: &AppHandle, target: &ActiveWindow) {
+        let windows = winctl::visible_windows(std::process::id());
+        let same_app: Vec<&winctl::WindowFrame> =
+            windows.iter().filter(|win| win.pid == target.pid).collect();
+        let near = |a: f64, b: i32| (a - b as f64).abs() <= 2.0;
+        let Some(id) = same_app
+            .iter()
+            .find(|win| near(win.x, target.x) && near(win.y, target.y) && near(win.w, target.w) && near(win.h, target.h))
+            .or_else(|| same_app.first())
+            .map(|win| win.id)
+        else {
+            return;
+        };
+        if let (Ok(snapshot), Some(effect)) =
+            (winctl::capture_window_id(id), handle.get_webview_window(EFFECT_WINDOW))
+        {
+            let _ = effect.emit("effect-image", snapshot);
         }
     }
 
@@ -1135,7 +1169,7 @@ pub fn play_effect(
 ) -> Result<(), String> {
     require_window(&window, MAIN_WINDOW)?;
     if !matches!(effect.as_str(), "glitch" | "bend" | "crack" | "portal"
-        | "text_shatter" | "ripple" | "pixel_dissolve" | "lightning" | "tear" | "collapse") {
+        | "text_shatter" | "ripple" | "pixel_dissolve" | "lightning" | "tear" | "collapse" | "hijack") {
         return Err(format!("unknown effect {effect}"));
     }
     if ![x, y, w, h].iter().all(|value| value.is_finite()) || w < 40.0 || h < 40.0 {
@@ -1160,13 +1194,16 @@ pub fn play_effect(
         "lightning" => 1300,
         "tear" => 1700,
         "collapse" => 2600,
+        "hijack" => 2000,
         _ => 1200,
     };
     let hand = match (hand_x, hand_y) {
         (Some(hx), Some(hy)) if hx.is_finite() && hy.is_finite() => Some((hx, hy)),
         _ => None,
     };
-    controller.show_effect_at(&app, &effect, "mischief", None, &target, 0.7, duration_ms, hand);
+    // The hijack is the window's own pixels, glitched: opaque, so the real app can't show through.
+    let intensity = if effect == "hijack" { 1.0 } else { 0.7 };
+    controller.show_effect_at(&app, &effect, "mischief", None, &target, intensity, duration_ms, hand);
     Ok(())
 }
 
@@ -1318,6 +1355,21 @@ fn require_window(window: &WebviewWindow, expected: &str) -> Result<(), String> 
             "command is only available to the {expected} window"
         ))
     }
+}
+
+/// The frontmost app window from the window list, which needs no permission (no title).
+fn front_window_on_screen() -> Option<ActiveWindow> {
+    let win = winctl::visible_windows(std::process::id()).into_iter().next()?;
+    Some(ActiveWindow {
+        pid: win.pid,
+        app: win.app,
+        title: String::new(),
+        x: win.x.round() as i32,
+        y: win.y.round() as i32,
+        w: win.w.round() as i32,
+        h: win.h.round() as i32,
+        handle: 0,
+    })
 }
 
 fn target_matches(target: Option<&serde_json::Value>, active: &ActiveWindow) -> bool {
