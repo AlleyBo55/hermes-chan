@@ -30,7 +30,7 @@ canvas in the system webview (WebKit on macOS, WebView2 on Windows, WebKitGTK on
 | --- | --- |
 | drag | pick her up; let go and she falls |
 | Ctrl+click / right-click | open or close the chat box |
-| Ctrl+Shift+click | switch her off: the plugin remembers it and her process ends |
+| Ctrl+Shift+click | send her away: her process ends until `/hermeschan on`, a plugin off/on or a Hermes restart |
 | 📌 button | follow the active window, or roam |
 
 ## Build

@@ -78,8 +78,8 @@ She appears a couple of seconds after the session starts. In the session:
 /hermeschan mischief on     # allow her own pranks
 ```
 
-Ctrl+click her to open the chat box, Ctrl+Shift+click her to switch her off, `/hermeschan on` to
-bring her back.
+Ctrl+click her to open the chat box, Ctrl+Shift+click her to send her away, `/hermeschan on` to
+bring her back. To keep her off, switch the plugin off in Hermes.
 
 ## 5. Grant permissions (macOS only)
 
@@ -114,7 +114,7 @@ It needs `mischief` or `watch` on. See `hermeschan/autonomy.py`.
 | Symptom | Fix |
 | --- | --- |
 | No sprite appears | `/hermeschan status`; then `build.log` / `overlay.log` in `<Hermes home>/hermes-chan/` |
-| Status says she is off | `/hermeschan on` |
+| Status says she is away | `/hermeschan on`, or switch the plugin off and on |
 | She appears but doesn't move windows (macOS) | grant Accessibility (step 5) |
 | Linux: black box around her | run a compositor; on some GPU drivers set `WEBKIT_DISABLE_DMABUF_RENDERER=1` |
 | Linux: "no graphical display" | the gateway runs without your session's display (a systemd service): `systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XAUTHORITY`, then `hermes gateway restart` |

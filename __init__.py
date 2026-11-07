@@ -81,6 +81,7 @@ def register(ctx):
     body = Body(ctx, bridge, runner, settings, autonomy)
     bridge.body = body
     bridge.deactivate_handler = body.switched_off_from_overlay
+    bridge.on_acquired = body.took_over
 
     # 1. Computer-use driver: the character's body performs real actions. Current Hermes loads it
     #    through _register_provider_only; older releases offered the registrar here.
@@ -101,11 +102,9 @@ def register(ctx):
     # 4. Slash command (including /hermeschan on|off).
     _command.register(ctx, bridge, settings, autonomy, body)
 
-    # 5. The bridge (overlay -> inject_message) and the visible body, when switched on.
-    if current["active"]:
-        body.start_soon()
-    else:
-        log.info("hermes-chan: switched off; /hermeschan on brings her back")
+    # 5. The bridge (overlay -> inject_message) and the visible body. Loading the plugin is
+    #    a fresh start: whoever takes the bridge shows her (see body.py).
+    body.start_soon()
 
     # PluginContext currently has no public heartbeat callback, so use the
     # persisted, opt-in daemon controller and stop it on plugin unload.

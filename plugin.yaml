@@ -9,14 +9,9 @@ author: AlleyBo55
 license: MIT
 homepage: https://github.com/AlleyBo55/hermes-chan
 description: >-
-  A living desktop companion for Hermes on macOS, Windows and Linux. Hermes-chan
-  is an original chibi character who walks, climbs and hops around your screen,
-  faces whatever you are doing, reacts to agent activity, and acts on the real
-  desktop through the public computer-use provider API. Click, drag, scroll, key
-  and type operations synchronize with her sprite contact frames. Switch her off
-  with /hermeschan off or Ctrl+Shift+click on her. Desktop cleanup is
-  confirmation-gated, journaled, and reversible. Opt-in idle autonomy is limited
-  to bounded visual reactions.
+  A chibi companion who lives on your desktop: she walks around your screen,
+  reacts to what Hermes is doing, and can do its clicks and typing for it.
+  Ctrl+Shift+click her to send her away.
 
 optional_env:
   - name: HERMESCHAN_SOCKET
