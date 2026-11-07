@@ -1304,7 +1304,8 @@ fn set_effect_level(window: &WebviewWindow, over_menu_bar: bool) {
     ns_window.setCollectionBehavior(
         NSWindowCollectionBehavior::CanJoinAllSpaces | NSWindowCollectionBehavior::FullScreenAuxiliary,
     );
-    ns_window.setLevel(if over_menu_bar { NSStatusWindowLevel } else { NSFloatingWindowLevel });
+    // One level above her body (which sits at the status level), so the card covers her too.
+    ns_window.setLevel(if over_menu_bar { NSStatusWindowLevel + 1 } else { NSFloatingWindowLevel });
 }
 
 fn require_window(window: &WebviewWindow, expected: &str) -> Result<(), String> {
