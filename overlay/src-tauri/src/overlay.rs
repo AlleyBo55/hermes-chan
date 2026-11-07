@@ -1171,13 +1171,15 @@ pub fn play_effect(
 }
 
 #[tauri::command]
-pub fn hide_effect(window: WebviewWindow, app: AppHandle) -> Result<(), String> {
+pub fn hide_effect(window: WebviewWindow, app: AppHandle, promised: Option<bool>) -> Result<(), String> {
     require_window(&window, EFFECT_WINDOW)?;
     let hidden = hide_shown_window(&window).map_err(|error| format!("could not hide effect window: {error}"));
     if REST_SHOWING.swap(false, Ordering::Relaxed) {
         release_rest(&window);
-        // Let her react to your promise to rest.
-        let _ = app.emit_to(MAIN_WINDOW, "rest-done", ());
+        // Her reaction: `true` you clicked the card to promise a rest, `false` it timed out.
+        if let Some(promised) = promised {
+            let _ = app.emit_to(MAIN_WINDOW, "rest-done", promised);
+        }
     }
     hidden
 }

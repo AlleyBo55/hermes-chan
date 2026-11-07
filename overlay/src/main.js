@@ -754,8 +754,10 @@ if (event?.listen) {
     }
   });
   listenNative("active-window", (e) => handleActiveWindow(e.payload));
-  // You closed her rest reminder: she is happy about it.
-  listenNative("rest-done", () => showBubble("Yay ♡ Rest your eyes a little, I'll keep watch!", "love"));
+  // Her rest reminder closed: happy if you clicked it, a little sulky if it timed out.
+  listenNative("rest-done", (e) => (e.payload === true
+    ? showBubble("Yay ♡ Rest your eyes a little, I'll keep watch!", "love")
+    : showBubble("Hmph… at least stretch a little? (｡•́︿•̀｡)", "neutral")));
   listenNative("window-control-status", (e) => handlePermissionStatus(e.payload));
   listenNative("permission-status", (e) => handlePermissionStatus(e.payload));
 }

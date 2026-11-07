@@ -190,10 +190,11 @@
     parts.hint.textContent = "";
     player?.play(promised ? "core/celebrate" : "emotion/sulk", { loop: !promised });
     later(BYE_MS - 380, () => root.classList.add("rest-out"));
-    later(BYE_MS, finish);
+    later(BYE_MS, () => finish(promised));
   }
 
-  function finish() {
+  // `promised`: you clicked (true) or it timed out (false); unset when the card failed.
+  function finish(promised) {
     clearTimers();
     active = false;
     closing = false;
@@ -203,7 +204,8 @@
     delete root.dataset.phase;
     root.textContent = "";
     try {
-      const pending = tauri.core?.invoke?.("hide_effect");
+      const pending = tauri.core?.invoke?.("hide_effect",
+        typeof promised === "boolean" ? { promised } : {});
       if (pending && typeof pending.catch === "function") pending.catch(() => {});
     } catch (_) {
       // Nothing left to clean up if the bridge is gone.
