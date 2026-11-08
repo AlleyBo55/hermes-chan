@@ -470,7 +470,7 @@
   // an old screen. Without a fresh snapshot (no Screen Recording) it gets drawn-on
   // corruption instead of the window's pixels.
   const HIJACK_STEP_MS = 70;
-  const HIJACK_LABEL = "HERMES-CHAN TAKEOVER (^_~)";
+  const HIJACK_LABEL = "HIJACKED BY HERMES-CHAN (^_~)";
   const NEON = ["#ff2bd6", "#28f0ff", "#7dff5a", "#ffe14d", "#120018"];
   const scratch = document.createElement("canvas");
   const sctx = scratch.getContext("2d");
@@ -679,7 +679,8 @@
   }
 
   function drawMail(fx, progress) {
-    const w = fx.w;
+    const mail = fx.mail;
+    const w = mail.w;
     const h = w * 0.64;
     const appear = easeOut(clamp(progress / 0.16, 0, 1));
     const pop = 1 + 0.12 * Math.sin(clamp(progress / 0.16, 0, 1) * Math.PI);
@@ -742,7 +743,7 @@
       ctx.restore();
     }
 
-    for (const s of fx.sparks) {
+    for (const s of mail.sparks) {
       const t = clamp((progress - s.delay) / 0.34, 0, 1);
       if (t <= 0 || t >= 1) continue;
       ctx.globalAlpha = fade * (1 - t);
