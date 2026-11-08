@@ -52,7 +52,16 @@
     rip: "tear",
     collapse: "collapse",
     "ui-break": "collapse",
-    hijack: "hijack"
+    hijack: "hijack",
+    mail: "mail",
+    email: "mail",
+    envelope: "mail",
+    ping: "ping",
+    message: "ping",
+    notify: "ping",
+    reminder: "ping",
+    hearts: "hearts",
+    affection: "hearts"
   };
 
   var DEFAULT_DURATION_MS = 1200;
@@ -200,7 +209,8 @@
     if (cfg.keys.block) root.setAttribute("data-block", "1");
     if (cfg.keys.bend) root.setAttribute("data-bend", "1");
     var canvasEffect = ["portal", "crack", "text_shatter", "ripple",
-                        "pixel_dissolve", "lightning", "tear", "collapse", "hijack"]
+                        "pixel_dissolve", "lightning", "tear", "collapse", "hijack",
+                        "mail", "ping", "hearts"]
       .find(function (name) { return cfg.keys[name]; });
     if (canvasEffect) root.setAttribute("data-canvas", canvasEffect);
     root.style.setProperty("--fx-intensity", String(hasAny ? cfg.intensity : 0));

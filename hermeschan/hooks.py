@@ -19,6 +19,9 @@ def register(ctx, bridge, settings) -> None:
 # (Telegram, Discord, ...) are left alone.
 _LOCAL_PLATFORMS = {"cli", "tui", "desktop", "local"}
 
+# A warm hello fires at most this often, so reopening sessions does not spam hearts.
+_GREET_GATE = reactions.ReactionGate(gap=1800.0)
+
 
 def _remember_chat(bridge, payload) -> None:
     """Each turn in a local chat names its chat, so her chat box talks to the one you used last.
@@ -46,6 +49,8 @@ def _state_setter(bridge, settings, gate, hook_name, state):
                 bridge.set_agent_busy(True)
             elif hook_name in ("on_session_start", "on_session_end"):
                 bridge.set_agent_busy(False)
+                if hook_name == "on_session_start":
+                    _greet(bridge, settings, payload)
 
             if hook_name == "post_tool_call":
                 _on_post_tool(bridge, settings, gate, payload)
@@ -105,8 +110,28 @@ def _react_to_tool(bridge, settings, gate, tool) -> None:
     if not settings.get("mischief", True) or settings.get("sleeping", False):
         return
     category = reactions.category_for(tool)
-    if category and gate.allow():
+    if not category or not gate.allow():
+        return
+    # Mail and messaging tools earn the full reaction (pose + effect + line); the rest
+    # stay a themed mumble. See overlay/REACTIONS.md A (email) and B (message).
+    if category == "mail":
+        bridge.reaction("email", emotion="happy")
+    elif category == "social":
+        bridge.reaction("message", emotion="surprised")
+    else:
         bridge.react(category)
+
+
+def _greet(bridge, settings, payload) -> None:
+    """A warm hello (hearts + a line) when a session begins on a local surface. Her own
+    antics, so it rides the mischief switch, stays quiet while asleep, and is rate-limited.
+    See overlay/REACTIONS.md D (affection)."""
+    if not settings.get("mischief", True) or settings.get("sleeping", False):
+        return
+    if str(payload.get("platform") or "local") not in _LOCAL_PLATFORMS:
+        return
+    if _GREET_GATE.allow():
+        bridge.reaction("affection", text="welcome back ♥", emotion="love")
 
 
 def _plan_finished(payload) -> bool:

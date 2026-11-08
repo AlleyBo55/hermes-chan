@@ -601,7 +601,7 @@
       this.phase = "rest";
       this.looking = "prank";
       this.beatEnd = now + this.prankLength(prank);
-      const area = FROM_HAND.has(prank.effect) ? this.areaAround(hand) : frame;
+      const area = FROM_HAND.has(prank.effect) ? this.areaAround(hand, prank.effect) : frame;
       this.prank = { ...prank, frame: area, event: prank.event || (prank.effect === "bend" ? "bend_peak" : "effect_start") };
       this.show(this.sprites.manifest?.clips[prank.clip] ? prank.clip : LOOKS.prank.clip, { loop: false });
       return true;
@@ -645,7 +645,7 @@
       this.phase = "rest";
       this.looking = "prank";
       this.beatEnd = performance.now() + this.prankLength(prank);
-      const area = FROM_HAND.has(prank.effect) ? this.areaAround(this.handPoint()) : frame;
+      const area = FROM_HAND.has(prank.effect) ? this.areaAround(this.handPoint(), prank.effect) : frame;
       this.prank = { ...prank, frame: area, event: prank.event || (prank.effect === "bend" ? "bend_peak" : "effect_start") };
       this.show(clip ? prank.clip : LOOKS.prank.clip, { loop: false });
     }
@@ -656,10 +656,10 @@
       return { x: this.x + this.canvasLeft + 75, y: this.y + this.canvasTop + 53 };
     }
 
-    // A 640x420 patch of screen centred on her hand, kept on the display.
-    areaAround(hand) {
-      const w = 640;
-      const h = 420;
+    // A 640x420 patch of screen centred on her hand (bigger for the pixel scatter), kept on the display.
+    areaAround(hand, effect) {
+      const w = effect === "pixel_dissolve" ? 960 : 640;
+      const h = effect === "pixel_dissolve" ? 640 : 420;
       const x = Math.min(this.screen.right - w, Math.max(this.screen.left, hand.x - w / 2));
       const y = Math.min(this.screen.bottom - h, Math.max(this.displayTop, hand.y - h / 2));
       return { x, y, w, h };

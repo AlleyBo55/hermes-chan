@@ -1229,7 +1229,8 @@ pub fn play_effect(
 ) -> Result<(), String> {
     require_window(&window, MAIN_WINDOW)?;
     if !matches!(effect.as_str(), "glitch" | "bend" | "crack" | "portal"
-        | "text_shatter" | "ripple" | "pixel_dissolve" | "lightning" | "tear" | "collapse" | "hijack") {
+        | "text_shatter" | "ripple" | "pixel_dissolve" | "lightning" | "tear" | "collapse" | "hijack"
+        | "mail" | "ping" | "hearts") {
         return Err(format!("unknown effect {effect}"));
     }
     if ![x, y, w, h].iter().all(|value| value.is_finite()) || w < 40.0 || h < 40.0 {
@@ -1255,6 +1256,8 @@ pub fn play_effect(
         "tear" => 1700,
         "collapse" => 2600,
         "hijack" => 2000,
+        "mail" | "hearts" => 2200,
+        "ping" => 1500,
         _ => 1200,
     };
     let hand = match (hand_x, hand_y) {

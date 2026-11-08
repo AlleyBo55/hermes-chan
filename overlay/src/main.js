@@ -349,7 +349,7 @@ function playReactFx(category) {
   void reactFx.offsetWidth; // restart the CSS animation from the top
   reactFx.classList.add("playing");
   if (reactFxTimer) clearTimeout(reactFxTimer);
-  reactFxTimer = setTimeout(() => reactFx.classList.remove("playing"), 1300);
+  reactFxTimer = setTimeout(() => reactFx.classList.remove("playing"), 1500);
 }
 
 // The agent used a tool: a themed light + glyph, and she mumbles a line, like Maido-chan
