@@ -278,16 +278,16 @@
   function makePixels(cx, cy) {
     const rand = random(Math.round(cx * 43 + cy * 61));
     const pixels = [];
-    for (let row = -7; row <= 7; row += 1) {
-      for (let column = -10; column <= 10; column += 1) {
+    for (let row = -9; row <= 9; row += 1) {
+      for (let column = -14; column <= 14; column += 1) {
         if (rand() < 0.27) continue;
-        const x = cx + column * 15;
-        const y = cy + row * 15;
-        const distance = Math.hypot(column / 10, row / 7);
+        const x = cx + column * 30;
+        const y = cy + row * 30;
+        const distance = Math.hypot(column / 14, row / 9);
         pixels.push({
-          x, y, size: 7 + rand() * 9,
-          dx: column * (5 + rand() * 7) + (rand() - 0.5) * 35,
-          dy: row * (5 + rand() * 7) - rand() * 28,
+          x, y, size: 14 + rand() * 18,
+          dx: column * (9 + rand() * 12) + (rand() - 0.5) * 70,
+          dy: row * (9 + rand() * 12) - rand() * 56,
           delay: distance * 0.18 + rand() * 0.12,
           color: ["#a7ebff", "#6eaeff", "#b395ff", "#122445"][Math.floor(rand() * 4)],
         });
