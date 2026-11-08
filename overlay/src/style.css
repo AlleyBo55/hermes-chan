@@ -176,3 +176,74 @@ body[data-emotion="love"] #bubble[data-speaker="assistant"] {
 #chatinput::placeholder {
   color: #8fb0b2;
 }
+
+/* Task reaction: when the agent uses a tool she mumbles a line (lines.js) and this plays —
+   a soft glow in the tool's colour behind her, and the tool's glyph floating up over her
+   head. Purely decorative, never takes a click. Colour/glyph set from main.js. */
+#react-fx {
+  position: absolute;
+  left: 50%;
+  bottom: 60px;
+  width: 150px;
+  height: 150px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 0; /* behind the sprite canvas, so the glow reads as an aura around her */
+}
+
+#react-fx::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    var(--react-color, var(--teal-soft)) 0%,
+    color-mix(in srgb, var(--react-color, var(--teal-soft)) 40%, transparent) 42%,
+    transparent 70%);
+  opacity: 0;
+}
+
+#react-glyph {
+  position: absolute;
+  left: 50%;
+  top: 2px;
+  font-size: 22px;
+  line-height: 1;
+  opacity: 0;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
+}
+
+#react-fx.playing::before {
+  animation: react-glow 1s ease-out both;
+}
+
+#react-fx.playing #react-glyph {
+  animation: react-glyph-float 1.25s ease-out both;
+}
+
+@keyframes react-glow {
+  0% { opacity: 0; transform: scale(0.55); }
+  28% { opacity: 0.8; transform: scale(1.05); }
+  100% { opacity: 0; transform: scale(1.3); }
+}
+
+@keyframes react-glyph-float {
+  0% { opacity: 0; transform: translate(-50%, 8px) scale(0.6); }
+  22% { opacity: 1; transform: translate(-50%, -6px) scale(1.12); }
+  70% { opacity: 1; transform: translate(-50%, -26px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -40px) scale(0.96); }
+}
+
+/* Keep it gentle when the OS asks for less motion: a quiet fade, no bounce or drift. */
+@media (prefers-reduced-motion: reduce) {
+  #react-fx.playing::before { animation: react-glow-soft 0.6s ease-out both; }
+  #react-fx.playing #react-glyph { animation: react-glyph-soft 0.7s ease-out both; }
+  @keyframes react-glow-soft {
+    0% { opacity: 0; } 35% { opacity: 0.7; } 100% { opacity: 0; }
+  }
+  @keyframes react-glyph-soft {
+    0% { opacity: 0; transform: translate(-50%, 0); }
+    35% { opacity: 1; transform: translate(-50%, -16px); }
+    100% { opacity: 0; transform: translate(-50%, -16px); }
+  }
+}
