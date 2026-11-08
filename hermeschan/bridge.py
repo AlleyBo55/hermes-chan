@@ -298,6 +298,17 @@ class Bridge:
         for this category and mumbles it. Local, no model call."""
         self.send({"type": "react", "category": category})
 
+    def reaction(self, reaction_id: str, text: str = "", emotion: str = "") -> None:
+        """A full desktop-event reaction (pose + click-through effect + spoken line).
+        The overlay owns the choreography (overlay/REACTIONS.md A-D); this names which one.
+        Known ids: email, message, reminder, affection."""
+        payload = {"type": "reaction", "id": str(reaction_id)}
+        if text:
+            payload["text"] = str(text)[:160]
+        if emotion:
+            payload["emotion"] = str(emotion)
+        self.send(payload)
+
     def emote(self, emotion: str) -> None:
         self.send({"type": "emote", "emotion": emotion})
 

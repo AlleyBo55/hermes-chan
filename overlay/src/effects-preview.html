@@ -3,17 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hermes-chan · Window effects</title>
+  <title>Hermes-chan · Effects & reactions</title>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; padding: 28px; background: #101523; color: #eaf1ff; font: 15px/1.5 system-ui, sans-serif; }
     main { max-width: 1000px; margin: auto; }
     h1 { margin: 0 0 6px; font-size: 28px; }
-    p { margin: 0 0 18px; color: #9dabc9; }
-    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
-    button { padding: 10px 17px; border: 1px solid #7c8da9; border-radius: 9px; background: #252f47; color: white; font: inherit; cursor: pointer; }
+    h2 { margin: 18px 0 8px; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: #8294b4; }
+    p { margin: 0 0 10px; color: #9dabc9; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; }
+    button { padding: 9px 15px; border: 1px solid #7c8da9; border-radius: 9px; background: #252f47; color: white; font: inherit; cursor: pointer; }
     button:hover { background: #394963; }
-    .window { position: relative; overflow: hidden; height: min(62vh, 560px); min-height: 320px; border: 1px solid #7d89a4; border-radius: 15px; background: #f8f9fc; color: #273347; box-shadow: 0 20px 65px #050a1699; }
+    button.react { border-color: #5fb0a4; background: #1f3b3a; }
+    button.react:hover { background: #295351; }
+    .window { position: relative; overflow: hidden; margin-top: 16px; height: min(60vh, 540px); min-height: 320px; border: 1px solid #7d89a4; border-radius: 15px; background: #f8f9fc; color: #273347; box-shadow: 0 20px 65px #050a1699; }
     .bar { height: 43px; padding: 11px 16px; border-bottom: 1px solid #d7dce8; background: #e9edf5; font-weight: 650; }
     .dots { float: right; color: #8594ad; letter-spacing: 4px; }
     .content { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; height: calc(100% - 43px); padding: 22px; }
@@ -25,25 +28,39 @@
     .line.short { width: 48%; }
     iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; pointer-events: none; }
     #chara { position: absolute; left: 22%; bottom: 4%; width: 96px; height: 104px; pointer-events: none; image-rendering: auto; }
+    #bubble { position: absolute; left: 22%; bottom: calc(4% + 108px); transform: translateX(-28%); max-width: 230px; padding: 8px 13px; border-radius: 14px; background: #fff; color: #20464c; font-size: 14px; line-height: 1.3; box-shadow: 0 4px 14px #0003; opacity: 0; transition: opacity .18s; }
+    #bubble::after { content: ""; position: absolute; left: 34%; bottom: -7px; border: 7px solid transparent; border-top-color: #fff; }
+    #bubble.show { opacity: 1; }
     #cue { display: inline-block; min-width: 180px; color: #b6ddff; }
     @media (max-width: 640px) { .content { grid-template-columns: 1fr; }.cards { display: none; } }
   </style>
 </head>
 <body>
 <main>
-  <h1>Hermes-chan window effects</h1>
-  <p>Choose an action. Hermes-chan's impact frame starts its matching click-through window effect. <span id="cue"></span></p>
+  <h1>Hermes-chan effects &amp; reactions</h1>
+  <p>Her impact frame starts the matching click-through effect. <span id="cue"></span></p>
+
+  <h2>Reactions (A–D)</h2>
   <div class="controls">
-    <button data-effect="crack">Crack screen</button>
-    <button data-effect="portal">Open portal</button>
-    <button data-effect="glitch">Glitch</button>
-    <button data-effect="bend">Bend</button>
-    <button data-effect="text_shatter">Break font</button>
-    <button data-effect="ripple">Ripple</button>
-    <button data-effect="pixel_dissolve">Pixel dissolve</button>
-    <button data-effect="lightning">Lightning</button>
-    <button data-effect="tear">Tear</button>
+    <button class="react" data-fx="mail"   data-clip="action/point"   data-bubble="📬 New email from Nous!">A · New email</button>
+    <button class="react" data-fx="ping"   data-clip="back/peek"      data-bubble="💬 New message!">B · New message</button>
+    <button class="react" data-fx="ping"   data-clip="action/point"   data-bubble="⏰ Stand-up in 5 min">C · Reminder</button>
+    <button class="react" data-fx="hearts" data-clip="emotion/love"   data-bubble="I like working with you ♥">D · Affection</button>
   </div>
+
+  <h2>Pranks (F–H)</h2>
+  <div class="controls">
+    <button data-fx="crack">Crack screen</button>
+    <button data-fx="portal">Open portal</button>
+    <button data-fx="glitch">Glitch</button>
+    <button data-fx="bend">Bend</button>
+    <button data-fx="text_shatter">Break font</button>
+    <button data-fx="ripple">Ripple</button>
+    <button data-fx="pixel_dissolve">Pixel dissolve</button>
+    <button data-fx="lightning">Lightning</button>
+    <button data-fx="tear">Tear</button>
+  </div>
+
   <div class="window">
     <div class="bar">Active app preview <span class="dots">● ● ●</span></div>
     <div class="content">
@@ -55,6 +72,7 @@
     </div>
     <iframe id="fx" src="effect.html" title="Visual effect overlay"></iframe>
     <canvas id="chara" aria-label="Hermes-chan sprite"></canvas>
+    <div id="bubble"></div>
   </div>
 </main>
 <script src="sprite-player.js"></script>
@@ -62,42 +80,80 @@
 const frame = document.getElementById('fx');
 const chara = document.getElementById('chara');
 const windowFrame = document.querySelector('.window');
+const bubble = document.getElementById('bubble');
 const cue = document.getElementById('cue');
 const sprites = new HermesSpritePlayer(chara, 'hermeschan/');
-const durations = {
+
+// Pranks fire on the casting clip's impact contact frame.
+const PRANK = {
   crack: 1400, portal: 2200, glitch: 1200, bend: 1100,
-  text_shatter: 1650, ripple: 1400, pixel_dissolve: 1600,
-  lightning: 1300, tear: 1700,
+  text_shatter: 1650, ripple: 1400, pixel_dissolve: 1600, lightning: 1300, tear: 1700,
 };
+// Reactions have no dedicated casting clip, so they fire shortly after the pose starts.
+const REACT = { mail: 2200, ping: 1500, hearts: 2200 };
 const anchors = {
-  crack: [151, 105], portal: [151, 108], text_shatter: [145, 109],
-  ripple: [150, 107], pixel_dissolve: [154, 102], lightning: [153, 105],
-  tear: [148, 110], glitch: [151, 105], bend: [148, 110],
+  crack: [151, 105], portal: [151, 108], text_shatter: [145, 109], ripple: [150, 107],
+  pixel_dissolve: [154, 102], lightning: [153, 105], tear: [148, 110], glitch: [151, 105], bend: [148, 110],
+  mail: [150, 104], ping: [150, 100], hearts: [96, 66],
 };
+
 let selected = null;
-chara.addEventListener('spriteframe', (event) => {
-  if (!selected) return;
-  const impact = selected === 'bend' ? 'bend_peak' : 'effect_start';
-  if (event.detail.contact !== impact) return;
+
+function originFor(fx) {
   const spriteRect = chara.getBoundingClientRect();
   const windowRect = windowFrame.getBoundingClientRect();
-  const [handX, handY] = anchors[selected];
-  const originX = (spriteRect.left + handX / 2 - windowRect.left) / windowRect.width;
-  const originY = (spriteRect.top + handY / 2 - windowRect.top) / windowRect.height;
-  cue.textContent = `${selected} · impact frame ${event.detail.index}`;
+  const [handX, handY] = anchors[fx] || [96, 104];
+  return {
+    x: (spriteRect.left + handX / 2 - windowRect.left) / windowRect.width,
+    y: (spriteRect.top + handY / 2 - windowRect.top) / windowRect.height,
+  };
+}
+
+function fire(fx, durationMs) {
+  const origin = originFor(fx);
   frame.contentWindow.HermesEffects.play({
-    effect: selected, intensity: 0.9, duration_ms: durations[selected],
-    origin_x: originX, origin_y: originY, title: 'ACTIVE APP',
+    effect: fx, intensity: 0.9, duration_ms: durationMs,
+    origin_x: origin.x, origin_y: origin.y, title: 'ACTIVE APP',
   });
+}
+
+function showBubble(text) {
+  if (!text) return;
+  bubble.textContent = text;
+  bubble.classList.add('show');
+  clearTimeout(showBubble.t);
+  showBubble.t = setTimeout(() => bubble.classList.remove('show'), 3200);
+}
+
+// Prank path: the effect starts on the casting clip's impact frame.
+chara.addEventListener('spriteframe', (event) => {
+  if (!selected || !(selected in PRANK)) return;
+  const impact = selected === 'bend' ? 'bend_peak' : 'effect_start';
+  if (event.detail.contact !== impact) return;
+  cue.textContent = `${selected} · impact frame ${event.detail.index}`;
+  fire(selected, PRANK[selected]);
 });
-document.querySelectorAll('[data-effect]').forEach(button => {
+
+document.querySelectorAll('[data-fx]').forEach((button) => {
   button.addEventListener('click', async () => {
     await sprites.ready;
-    selected = button.dataset.effect;
-    cue.textContent = `${selected} · winding up`;
+    const fx = button.dataset.fx;
+    selected = fx;
     frame.contentWindow.HermesEffects.stop();
-    const clip = selected === 'bend' ? 'action/grab_window_bend' : `action/${selected}`;
+    bubble.classList.remove('show');
+
+    if (fx in PRANK) {
+      cue.textContent = `${fx} · winding up`;
+      const clip = fx === 'bend' ? 'action/grab_window_bend' : `action/${fx}`;
+      sprites.play(clip, { loop: false });
+      return;
+    }
+    // Reaction: play the pose, fire the effect, say the line.
+    cue.textContent = `${fx} · reacting`;
+    const clip = button.dataset.clip || 'core/idle';
     sprites.play(clip, { loop: false });
+    setTimeout(() => fire(fx, REACT[fx] || 1600), 180);
+    setTimeout(() => showBubble(button.dataset.bubble), 260);
   });
 });
 </script>

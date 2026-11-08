@@ -470,7 +470,7 @@
   // an old screen. Without a fresh snapshot (no Screen Recording) it gets drawn-on
   // corruption instead of the window's pixels.
   const HIJACK_STEP_MS = 70;
-  const HIJACK_LABEL = "HIJACKED BY HERMES-CHAN (^_~)";
+  const HIJACK_LABEL = "HERMES-CHAN TAKEOVER (^_~)";
   const NEON = ["#ff2bd6", "#28f0ff", "#7dff5a", "#ffe14d", "#120018"];
   const scratch = document.createElement("canvas");
   const sctx = scratch.getContext("2d");
@@ -643,6 +643,191 @@
     }
   }
 
+  // ---- Reaction effects (labelled in overlay/REACTIONS.md) -----------------
+  // Friendlier, warm-palette animations for her non-prank reactions. Same contract:
+  // one draw(fx, progress) per frame, progress 0..1 over the effect's duration, drawn
+  // only on this transparent click-through layer.
+
+  function roundRect(x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  }
+
+  function heartPath(cx, cy, s) {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + s * 0.9);
+    ctx.bezierCurveTo(cx - s * 1.3, cy - s * 0.2, cx - s * 0.55, cy - s * 1.0, cx, cy - s * 0.3);
+    ctx.bezierCurveTo(cx + s * 0.55, cy - s * 1.0, cx + s * 1.3, cy - s * 0.2, cx, cy + s * 0.9);
+    ctx.closePath();
+  }
+
+  // A — new email: an envelope pops in, its flap lifts, the letter rises with a "1" badge.
+  function makeMail(cx, cy) {
+    const rand = random(Math.round(cx * 17 + cy * 41 + width));
+    const sparks = [];
+    for (let i = 0; i < 9; i += 1) {
+      sparks.push({ a: rand() * TAU, dist: 36 + rand() * 60,
+        delay: 0.42 + rand() * 0.26, size: 1.6 + rand() * 2.6, warm: rand() < 0.5 });
+    }
+    return { sparks, w: clamp(Math.min(width, height) * 0.22, 120, 230) };
+  }
+
+  function drawMail(fx, progress) {
+    const w = fx.w;
+    const h = w * 0.64;
+    const appear = easeOut(clamp(progress / 0.16, 0, 1));
+    const pop = 1 + 0.12 * Math.sin(clamp(progress / 0.16, 0, 1) * Math.PI);
+    const fade = clamp((1 - progress) / 0.18, 0, 1);
+    const flap = easeOut(clamp((progress - 0.2) / 0.26, 0, 1));
+    const letter = easeOut(clamp((progress - 0.4) / 0.34, 0, 1));
+    const badge = clamp((progress - 0.52) / 0.16, 0, 1);
+    ctx.save();
+    ctx.globalAlpha = fade;
+    ctx.translate(fx.cx, fx.cy);
+    ctx.scale(appear * pop, appear * pop);
+
+    const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, w);
+    glow.addColorStop(0, "rgba(255,243,210,0.55)");
+    glow.addColorStop(1, "rgba(255,243,210,0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(0, 0, w, 0, TAU); ctx.fill();
+
+    if (letter > 0) {
+      ctx.save();
+      ctx.translate(0, -h * 0.1 - letter * h * 0.6);
+      roundRect(-w * 0.38, -h * 0.4, w * 0.76, h * 0.8, 5);
+      ctx.fillStyle = "#fffdf6"; ctx.fill();
+      ctx.strokeStyle = "rgba(47,93,100,0.3)"; ctx.lineWidth = 1.4; ctx.stroke();
+      ctx.fillStyle = "rgba(47,93,100,0.32)";
+      for (let i = 0; i < 3; i += 1) {
+        ctx.fillRect(-w * 0.26, -h * 0.26 + i * h * 0.2, (i === 2 ? 0.46 : 0.62) * w, h * 0.055);
+      }
+      ctx.restore();
+    }
+
+    roundRect(-w / 2, -h / 2, w, h, 8);
+    ctx.fillStyle = "#ece1c8"; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = "#2f5d64"; ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(-w / 2, h / 2); ctx.lineTo(-w * 0.04, -h * 0.02);
+    ctx.moveTo(w / 2, h / 2); ctx.lineTo(w * 0.04, -h * 0.02);
+    ctx.strokeStyle = "rgba(47,93,100,0.35)"; ctx.lineWidth = 1.3; ctx.stroke();
+
+    const apexY = -h / 2 + h * 0.62 * (1 - flap);
+    ctx.beginPath();
+    ctx.moveTo(-w / 2, -h / 2); ctx.lineTo(w / 2, -h / 2); ctx.lineTo(0, apexY); ctx.closePath();
+    ctx.fillStyle = flap < 0.5 ? "#e4d8ba" : "#d6c8a2";
+    ctx.fill(); ctx.strokeStyle = "#2f5d64"; ctx.lineWidth = 2; ctx.stroke();
+
+    if (badge > 0) {
+      const bs = (0.5 + 0.5 * easeOut(badge)) * w * 0.2;
+      const bpop = 1 + 0.3 * Math.sin(badge * Math.PI);
+      ctx.save();
+      ctx.translate(w * 0.42, -h * 0.46);
+      ctx.scale(bpop, bpop);
+      ctx.beginPath(); ctx.arc(0, 0, bs, 0, TAU);
+      ctx.fillStyle = "#ff5a6a"; ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = "#fff";
+      ctx.font = `700 ${Math.round(bs * 1.25)}px system-ui, sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("1", 0, bs * 0.08);
+      ctx.restore();
+    }
+
+    for (const s of fx.sparks) {
+      const t = clamp((progress - s.delay) / 0.34, 0, 1);
+      if (t <= 0 || t >= 1) continue;
+      ctx.globalAlpha = fade * (1 - t);
+      ctx.fillStyle = s.warm ? "#ffd76a" : "#7fd1c4";
+      ctx.beginPath();
+      ctx.arc(Math.cos(s.a) * s.dist * easeOut(t), Math.sin(s.a) * s.dist * easeOut(t) - h * 0.1,
+              s.size * (1 - t * 0.5), 0, TAU);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // B / C — new message or reminder: a notification chip pops with sound-wave rings.
+  function drawPing(fx, progress) {
+    const base = clamp(Math.min(width, height) * 0.2, 90, 200);
+    const fade = clamp((1 - progress) / 0.2, 0, 1);
+    ctx.save();
+    ctx.globalAlpha = fade;
+    for (let i = 0; i < 3; i += 1) {
+      const ph = clamp(progress * 1.3 - i * 0.16, 0, 1);
+      if (ph <= 0 || ph >= 1) continue;
+      ctx.beginPath();
+      ctx.arc(fx.cx, fx.cy, base * (0.5 + easeOut(ph) * 1.1), 0, TAU);
+      ctx.strokeStyle = `rgba(127,209,196,${(1 - ph) * 0.8})`;
+      ctx.lineWidth = 2 + (1 - ph) * 5;
+      ctx.stroke();
+    }
+    const grow = easeOut(clamp(progress / 0.2, 0, 1));
+    const shrink = progress > 0.82 ? clamp((1 - progress) / 0.18, 0, 1) : 1;
+    const over = 1 + 0.18 * Math.sin(clamp(progress / 0.2, 0, 1) * Math.PI);
+    const r = base * 0.5 * grow * shrink * over;
+    if (r > 1) {
+      ctx.save();
+      ctx.translate(fx.cx, fx.cy);
+      const grad = ctx.createLinearGradient(0, -r, 0, r);
+      grad.addColorStop(0, "#5fe0d0");
+      grad.addColorStop(1, "#2f9d8f");
+      roundRect(-r, -r * 0.8, r * 2, r * 1.6, r * 0.4);
+      ctx.fillStyle = grad; ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.35, r * 0.75); ctx.lineTo(-r * 0.05, r * 0.75); ctx.lineTo(-r * 0.5, r * 1.15);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.9)"; ctx.lineWidth = 2;
+      roundRect(-r, -r * 0.8, r * 2, r * 1.6, r * 0.4); ctx.stroke();
+      ctx.fillStyle = "#fffdf7";
+      for (let i = -1; i <= 1; i += 1) {
+        const dot = clamp((progress - 0.24 - (i + 1) * 0.07) / 0.1, 0, 1);
+        ctx.globalAlpha = fade * dot;
+        ctx.beginPath(); ctx.arc(i * r * 0.44, 0, r * 0.14, 0, TAU); ctx.fill();
+      }
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // D — affection / greeting: hearts drift up and fade.
+  function makeHearts(cx, cy) {
+    const rand = random(Math.round(cx * 29 + cy * 53 + width));
+    const hearts = [];
+    for (let i = 0; i < 7; i += 1) {
+      hearts.push({ x: (rand() - 0.5) * 80, delay: i * 0.08 + rand() * 0.05,
+        rise: 120 + rand() * 90, sway: (rand() - 0.5) * 42, size: 10 + rand() * 12,
+        hue: ["#ff8fb0", "#ff6f91", "#ffa7c4"][Math.floor(rand() * 3)] });
+    }
+    return hearts;
+  }
+
+  function drawHearts(fx, progress) {
+    ctx.save();
+    for (const hr of fx.hearts) {
+      const t = clamp((progress - hr.delay) / (1 - hr.delay), 0, 1);
+      if (t <= 0) continue;
+      const y = fx.cy - easeOut(t) * hr.rise;
+      const x = fx.cx + hr.x + Math.sin(t * 6 + hr.delay * 10) * hr.sway;
+      const scale = t < 0.2 ? easeOut(t / 0.2) : 1;
+      ctx.globalAlpha = t > 0.7 ? (1 - t) / 0.3 : 1;
+      ctx.fillStyle = hr.hue;
+      ctx.shadowColor = "rgba(255,120,160,0.6)";
+      ctx.shadowBlur = 8;
+      heartPath(x, y, hr.size * scale);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
   function tick(now) {
     if (!active) return;
     const progress = clamp((now - active.started) / active.duration, 0, 1);
@@ -656,6 +841,9 @@
     else if (active.kind === "tear") drawTear(active, progress);
     else if (active.kind === "collapse") drawCollapse(active, progress);
     else if (active.kind === "hijack") drawHijack(active, progress, now);
+    else if (active.kind === "mail") drawMail(active, progress);
+    else if (active.kind === "ping") drawPing(active, progress);
+    else if (active.kind === "hearts") drawHearts(active, progress);
     if (progress < 1) animationFrame = requestAnimationFrame(tick);
     else animationFrame = 0;
   }
@@ -688,6 +876,8 @@
       bolts: kind === "lightning" ? makeLightning(cx, cy) : null,
       tear: kind === "tear" ? makeTear(cx, cy) : null,
       hijack: kind === "hijack" ? makeHijack(cx, cy) : null,
+      mail: kind === "mail" ? makeMail(cx, cy) : null,
+      hearts: kind === "hearts" ? makeHearts(cx, cy) : null,
       title: config.title,
       started: performance.now(),
       duration: config.duration,

@@ -14,8 +14,13 @@
       <div id="status-message" class="hidden" role="status" aria-live="polite"></div>
       <input id="chatinput" class="hidden" type="text" placeholder="talk to Hermes-chan…" />
     </form>
-    <!-- Task-reaction light: a themed glow behind her + a glyph that floats up (main.js). -->
-    <div id="react-fx" aria-hidden="true"><span id="react-glyph"></span></div>
+    <!-- Task-reaction light: a themed glow + expanding ring + sparkle burst + a glyph that
+         floats up (main.js sets the colour and glyph; style.css animates it). -->
+    <div id="react-fx" aria-hidden="true">
+      <div id="react-ring"></div>
+      <div id="react-burst"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <span id="react-glyph"></span>
+    </div>
     <canvas id="chara" width="192" height="208" role="img" aria-label="Hermes-chan desktop companion"></canvas>
     <div id="state-tag">idle</div>
   </div>

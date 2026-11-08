@@ -18,6 +18,7 @@ _USAGE = (
     "  say <text>                     make her speak a line\n"
     "  effect <name>                  play an effect on the active app\n"
     "    crack portal text_shatter ripple pixel_dissolve lightning tear glitch bend hijack collapse\n"
+    "  reaction <id> [text]           play a reaction: email | message | reminder | affection\n"
     "  hide                           stop the visible body\n"
     "  mischief on|off                allow/stop autonomous antics\n"
     "  watch on|off                   allow/stop one screenshot per decision\n"
@@ -155,7 +156,7 @@ def register(ctx, bridge, settings, autonomy, body) -> None:
             body.switch_off()
             return ("Hermes-chan left. /hermeschan on brings her back, and so does a Hermes restart; "
                     "to keep her off, switch the plugin off in Hermes.")
-        if settings.refresh().get("away", False) and sub in ("come", "wake", "effect", "react"):
+        if settings.refresh().get("away", False) and sub in ("come", "wake", "effect", "react", "reaction"):
             return "Hermes-chan is away; /hermeschan on brings her back."
         if sub == "come":
             if settings.get("sleeping", False):
@@ -192,6 +193,16 @@ def register(ctx, bridge, settings, autonomy, body) -> None:
             bridge.wait_for_action_complete(action_id, timeout=0.9)
             bridge.finish_action(action_id)
             return f"Hermes-chan plays {effect} over the active app."
+        if sub == "reaction":
+            parts = rest.strip().split(maxsplit=1)
+            name = parts[0].lower() if parts else ""
+            text = parts[1] if len(parts) > 1 else ""
+            if name not in {"email", "message", "reminder", "affection"}:
+                return "Usage: /hermeschan reaction email|message|reminder|affection [text]"
+            if not bridge.is_connected:
+                return "Hermes-chan's overlay is not connected."
+            bridge.reaction(name, text=text)
+            return f"Hermes-chan reacts: {name}."
         if sub == "wake":
             settings.update(sleeping=False)
             bridge.update_config(sleeping=False)
@@ -260,6 +271,6 @@ def register(ctx, bridge, settings, autonomy, body) -> None:
         name="hermeschan",
         handler=_handler,
         description="Control the Hermes-chan desktop companion",
-        args_hint="status | on | off | come | sleep | wake | hide | say <text> | effect <name> | mischief on|off | watch on|off | react | heartbeat on|off|status [interval]",
+        args_hint="status | on | off | come | sleep | wake | hide | say <text> | effect <name> | reaction <id> [text] | mischief on|off | watch on|off | react | heartbeat on|off|status [interval]",
     )
     log.info("hermes-chan: registered /hermeschan command")

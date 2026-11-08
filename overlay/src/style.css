@@ -207,18 +207,90 @@ body[data-emotion="love"] #bubble[data-speaker="assistant"] {
   position: absolute;
   left: 50%;
   top: 2px;
-  font-size: 22px;
+  font-size: 26px;
   line-height: 1;
   opacity: 0;
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
 }
+
+/* Expanding ring, in the tool's colour, pulsing out from behind her. */
+#react-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  border: 3px solid var(--react-color, var(--teal-soft));
+  opacity: 0;
+}
+
+/* Eight sparkles flying outward. Each wrapper is rotated to its angle; the inner dot
+   animates straight "up" along that rotated axis, so the dots scatter radially. */
+#react-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+#react-burst i {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+#react-burst i:nth-child(1) { transform: rotate(0deg); }
+#react-burst i:nth-child(2) { transform: rotate(45deg); }
+#react-burst i:nth-child(3) { transform: rotate(90deg); }
+#react-burst i:nth-child(4) { transform: rotate(135deg); }
+#react-burst i:nth-child(5) { transform: rotate(180deg); }
+#react-burst i:nth-child(6) { transform: rotate(225deg); }
+#react-burst i:nth-child(7) { transform: rotate(270deg); }
+#react-burst i:nth-child(8) { transform: rotate(315deg); }
+#react-burst i::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--react-color, var(--teal-soft));
+  box-shadow: 0 0 7px var(--react-color, var(--teal-soft));
+  opacity: 0;
+}
+#react-burst i:nth-child(even)::before { width: 4px; height: 4px; }
 
 #react-fx.playing::before {
   animation: react-glow 1s ease-out both;
 }
 
 #react-fx.playing #react-glyph {
-  animation: react-glyph-float 1.25s ease-out both;
+  animation: react-glyph-float 1.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+#react-fx.playing #react-ring {
+  animation: react-ring 0.9s ease-out both;
+}
+
+#react-fx.playing #react-burst i::before {
+  animation: react-spark 1s ease-out both;
+}
+/* Stagger the sparkles a touch so the burst feels alive, not mechanical. */
+#react-fx.playing #react-burst i:nth-child(even)::before { animation-delay: 0.06s; }
+#react-fx.playing #react-burst i:nth-child(3n)::before { animation-delay: 0.1s; }
+
+@keyframes react-ring {
+  0% { opacity: 0; transform: scale(0.3); border-width: 4px; }
+  25% { opacity: 0.85; }
+  100% { opacity: 0; transform: scale(2.7); border-width: 1px; }
+}
+
+@keyframes react-spark {
+  0% { opacity: 0; transform: translateY(-2px) scale(0.5); }
+  20% { opacity: 1; transform: translateY(-16px) scale(1); }
+  100% { opacity: 0; transform: translateY(-60px) scale(0.3); }
 }
 
 @keyframes react-glow {
@@ -228,16 +300,19 @@ body[data-emotion="love"] #bubble[data-speaker="assistant"] {
 }
 
 @keyframes react-glyph-float {
-  0% { opacity: 0; transform: translate(-50%, 8px) scale(0.6); }
-  22% { opacity: 1; transform: translate(-50%, -6px) scale(1.12); }
-  70% { opacity: 1; transform: translate(-50%, -26px) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -40px) scale(0.96); }
+  0% { opacity: 0; transform: translate(-50%, 10px) scale(0.5) rotate(-12deg); }
+  18% { opacity: 1; transform: translate(-50%, -6px) scale(1.28) rotate(9deg); }
+  36% { transform: translate(-50%, -13px) scale(1.04) rotate(-5deg); }
+  70% { opacity: 1; transform: translate(-50%, -28px) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(-50%, -46px) scale(0.95) rotate(0deg); }
 }
 
-/* Keep it gentle when the OS asks for less motion: a quiet fade, no bounce or drift. */
+/* Keep it gentle when the OS asks for less motion: a quiet fade, no ring, sparkles or drift. */
 @media (prefers-reduced-motion: reduce) {
   #react-fx.playing::before { animation: react-glow-soft 0.6s ease-out both; }
   #react-fx.playing #react-glyph { animation: react-glyph-soft 0.7s ease-out both; }
+  #react-fx.playing #react-ring,
+  #react-fx.playing #react-burst i::before { animation: none; opacity: 0; }
   @keyframes react-glow-soft {
     0% { opacity: 0; } 35% { opacity: 0.7; } 100% { opacity: 0; }
   }
