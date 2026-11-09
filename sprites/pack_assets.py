@@ -15,6 +15,8 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "output/imagegen/hermeschan-chibi/raw"
 DEST = ROOT / "sprites/hermeschan-v1"
+# The atlases and runtime manifest live only here: her body embeds this folder.
+RUNTIME = ROOT / "overlay/src/hermeschan"
 PLAN = ROOT / "sprites/production-plan/manifest.planned.json"
 CELL = (192, 208)
 
@@ -79,8 +81,9 @@ def main():
     missing = [Path(f["path"]).name for f in plan["frames"] if not (RAW / Path(f["path"]).name).is_file()]
     if missing:
         raise SystemExit(f"Waiting for {len(missing)} / {len(plan['frames'])} source frames; first: {missing[0]}")
-    for directory in ("frames", "atlases", "contact-sheets"):
+    for directory in ("frames", "contact-sheets"):
         (DEST / directory).mkdir(parents=True, exist_ok=True)
+    (RUNTIME / "atlases").mkdir(parents=True, exist_ok=True)
 
     master = clean_alpha(Image.open(RAW / "core__idle__00.png"))
     master_box = master.getchannel("A").point(lambda a: 255 if a >= 32 else 0).getbbox()
@@ -126,7 +129,7 @@ def main():
         frames.append(info)
     for name, image in atlases.items():
         file = plan["atlases"][name]["file"]
-        image.save(DEST / "atlases" / file)
+        image.save(RUNTIME / "atlases" / file)
         runtime["atlases"][name] = f"atlases/{file}"
     indexed = {frame["id"]: frame for frame in frames}
     for name, animation in plan["animations"].items():
@@ -136,7 +139,7 @@ def main():
                         "rect": indexed[f]["atlas"]["rect_px"],
                         "duration": indexed[f]["duration_ms"],
                         "event": indexed[f]["contact_event"]} for f in animation["frames"]]}
-    (DEST / "manifest.json").write_text(json.dumps(runtime, indent=2)+"\n")
+    (RUNTIME / "manifest.json").write_text(json.dumps(runtime, indent=2)+"\n")
     shutil.copy2(ROOT / "overlay/src/sprite-player.js", DEST / "sprite-player.js")
     (DEST / "frames.json").write_text(json.dumps(frames, indent=2)+"\n")
     (DEST / "hand-anchor-estimates.json").write_text(json.dumps(anchors, indent=2)+"\n")
@@ -200,11 +203,6 @@ def main():
               "hand_anchors": "Estimates only; not suitable for exact OS targeting without review",
               "visual_review": "pending"}
     (DEST / "validation.json").write_text(json.dumps(report, indent=2)+"\n")
-    overlay = ROOT / "overlay/src/hermeschan"
-    (overlay / "atlases").mkdir(parents=True, exist_ok=True)
-    shutil.copy2(DEST / "manifest.json", overlay / "manifest.json")
-    for file in (DEST / "atlases").glob("*.png"):
-        shutil.copy2(file, overlay / "atlases" / file.name)
     # Keep the seven hand-timed effect clips attached when the base 254-frame
     # collection is regenerated.
     from build_effect_sprites import main as build_effect_sprites

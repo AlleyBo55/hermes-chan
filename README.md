@@ -273,9 +273,13 @@ open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapt
   and she puts it back. `/hermeschan mischief off`, or the Mischief switch in Hermes' plugin
   settings, stops all her pranks.
 - As the `computer_use` backend she acts only through Hermes' approval system and adds no bypass.
-- `tidy_desktop` is plan-first: running it needs a short-lived plan token plus `confirm=true`,
-  journals each move first, never overwrites a file, skips hidden and system files, and can be
-  undone.
+- `tidy_desktop` is plan-first: running it needs a short-lived plan token, and every run and
+  every undo waits for you to approve it in Hermes' own approval prompt (the model's
+  `confirm=true` is never taken as your yes). It journals each move first, never overwrites a
+  file, skips hidden and system files, and can be undone.
+- Her first-run `cargo build` and her body get a minimal environment (PATH, HOME, the Rust
+  toolchain, your desktop session's display variables and her own bridge settings), never a copy
+  of Hermes' environment with your API keys.
 - The bridge between Hermes and her body is local only: an owner-only socket on macOS and Linux,
   and on Windows a `127.0.0.1` port that accepts only the random token of the body Hermes started.
 - She makes no network calls of her own, sends no telemetry and never reads credentials. Window
@@ -291,8 +295,7 @@ open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapt
 | The plugin doesn't load at all | `hermes plugins enable hermes-chan`, then start a new session |
 | Linux: black box instead of a transparent window | run a compositor (most desktops do); on some GPU drivers set `WEBKIT_DISABLE_DMABUF_RENDERER=1` |
 | Linux: "no graphical display" | Hermes' gateway runs without your session's display, usually as a systemd service: `systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XAUTHORITY`, then `hermes gateway restart` |
-| Chat bubble says Hermes blocks her chat box | `hermes config set plugins.entries.hermes-chan.allow_gateway_injection true`; it works on the next message, no restart |
-| Chat bubble says Hermes did not take the message | send any message to Hermes in the chat you want her to talk to, then try again |
+| Chat bubble says Hermes did not take the message | if you have not allowed her chat box yet: `hermes config set plugins.entries.hermes-chan.allow_gateway_injection true` (works on the next message, no restart); otherwise send any message to Hermes in the chat you want her to talk to, then try again |
 | She is stuck, lost off screen or acting odd | `/hermeschan resummon` |
 | Windows: she can't touch one app | that app runs as administrator; Windows blocks input from normal apps into it |
 

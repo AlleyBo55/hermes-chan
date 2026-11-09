@@ -63,8 +63,8 @@ individual movement sources are preserved under `output/imagegen/hermeschan-chib
   hovers while held, then plays `movement/land` when released.
 - Individual PNGs are canonical. Five atlases, a playback manifest, contact
   sheets and the interactive preview are additional packaging.
-- Runtime image assets are copied into `overlay/src/hermeschan/`; the desktop
-  overlay uses the same canvas player as the review page.
+- The atlases and runtime manifest live only in `overlay/src/hermeschan/`, which
+  her body embeds; the review page loads them from there with the same canvas player.
 - Hands point to or hold empty space. Windows, icons, speech bubbles and UI
   effects remain separate runtime objects.
 

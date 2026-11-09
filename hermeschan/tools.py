@@ -5,14 +5,20 @@ import json
 import logging
 import math
 
-from .desktop_cleanup import CleanupError, DesktopTidier
+from .desktop_cleanup import _TIDY_ROOT, CleanupError, DesktopTidier
 
 log = logging.getLogger("hermes-chan.tools")
 
 TOOLSET = "hermeschan"
+_TIDY_TOOL = "hermeschan_tidy_desktop"
+_UNDO_TOOL = "hermeschan_undo_tidy"
 _EMOTIONS = ["neutral", "happy", "shy", "surprised", "sulk", "sleepy", "proud", "panic", "love"]
 _VISUAL_EFFECTS = ["glitch", "crack", "portal", "bend", "text_shatter",
                    "ripple", "pixel_dissolve", "lightning", "tear", "hijack", "collapse"]
+
+
+def _files(count: int) -> str:
+    return f"{count} Desktop file" + ("" if count == 1 else "s")
 
 
 def _intensity(value, default: float) -> float:
@@ -106,6 +112,30 @@ def register(ctx, bridge, tidier=None) -> None:
             result = {"ok": False, "error": str(exc)}
         return json.dumps(result, ensure_ascii=False)
 
+    def _approve_file_moves(tool_name="", args=None, **_):
+        """pre_tool_call: every call that moves Desktop files goes through Hermes' own approval
+        prompt. The model can set confirm=true itself, so that flag is not a human yes. Never
+        raises: Hermes skips a hook that raises, which would let the call run unapproved."""
+        if tool_name not in (_TIDY_TOOL, _UNDO_TOOL):
+            return None
+        args = args if isinstance(args, dict) else {}
+        # Hermes may coerce a "true" string to True after this hook, so match both.
+        if tool_name == _TIDY_TOOL and str(args.get("execute")).strip().lower() != "true":
+            return None  # planning moves nothing
+        token = str(args.get("token") or "")
+        try:
+            if tool_name == _TIDY_TOOL:
+                count = tidier.planned_moves(token)
+                if count is None:
+                    return {"action": "block", "message": "unknown or expired tidy token; request a new plan"}
+                return {"action": "approve", "message": f"moves {_files(count)} into '{_TIDY_ROOT}'"}
+            count = tidier.journaled_moves(token)
+            if not count:
+                return {"action": "block", "message": "no journaled tidy moves found for that token"}
+            return {"action": "approve", "message": f"moves {_files(count)} back to where they were"}
+        except Exception as exc:  # noqa: BLE001 - fail closed
+            return {"action": "block", "message": f"could not check this tidy request ({exc})"}
+
     tools = [
         ("hermeschan_say", "Speak a short line in Hermes-chan's speech bubble.",
          {"type": "object",
@@ -134,8 +164,9 @@ def register(ctx, bridge, tidier=None) -> None:
                          "app": {"type": "string"},
                          "intensity": {"type": "number", "minimum": 0, "maximum": 1}},
           "required": ["effect"]}, _visual_effect),
-        ("hermeschan_tidy_desktop",
-         "Plan desktop tidying by default. Execution needs the returned token and confirm=true.",
+        (_TIDY_TOOL,
+         "Plan desktop tidying by default. Execution needs the returned token and confirm=true, "
+         "then the user approves the moves in Hermes' approval prompt.",
          {"type": "object",
           "properties": {
               "rule": {"type": "string", "enum": ["by-type", "by-date", "into-one-folder"]},
@@ -143,7 +174,8 @@ def register(ctx, bridge, tidier=None) -> None:
               "token": {"type": "string", "description": "Token from the current in-process plan"},
               "confirm": {"type": "boolean", "default": False},
           }}, _tidy),
-        ("hermeschan_undo_tidy", "Undo one journaled tidy batch; requires its token and confirm=true.",
+        (_UNDO_TOOL, "Undo one journaled tidy batch; requires its token and confirm=true, "
+         "then the user approves it in Hermes' approval prompt.",
          {"type": "object",
           "properties": {
               "token": {"type": "string", "description": "Token returned by tidy execution"},
@@ -156,4 +188,5 @@ def register(ctx, bridge, tidier=None) -> None:
         schema = dict(schema)
         schema.setdefault("description", description)
         ctx.register_tool(name=name, toolset=TOOLSET, schema=schema, handler=handler)
+    ctx.register_hook("pre_tool_call", _approve_file_moves)
     log.info("hermes-chan: registered %d tools", len(tools))

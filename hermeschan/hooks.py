@@ -26,17 +26,17 @@ _GREET_GATE = reactions.ReactionGate(gap=1800.0)
 def _remember_chat(bridge, payload) -> None:
     """Each turn in a local chat names its chat, so her chat box talks to the one you used last.
 
-    Hooks carry the session id, not the route key inject_message needs, so read the key Hermes
-    binds for the turn; it is the one it uses itself to route a plugin's message to "this
-    session". Only the key is kept, never the message text.
+    Hooks carry the session id, not the route key inject_message needs, so read the turn's
+    HERMES_SESSION_KEY through Hermes' public session accessor. Only the key is kept, never
+    the message text.
     """
     if str(payload.get("platform") or "") not in _LOCAL_PLATFORMS:
         return
     try:
-        from gateway.session_context import bound_session_key
+        from gateway.session_context import get_session_env
     except ImportError:  # an older Hermes: /hermeschan in a chat still teaches her
         return
-    bridge.remember_session(bound_session_key())
+    bridge.remember_session(get_session_env("HERMES_SESSION_KEY"))
 
 
 def _state_setter(bridge, settings, gate, hook_name, state):

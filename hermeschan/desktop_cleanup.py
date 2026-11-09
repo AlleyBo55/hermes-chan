@@ -178,6 +178,21 @@ class DesktopTidier:
                     "moved": moved, "skipped": skipped,
                     "undo_requires": {"token": plan.token, "confirm": True}}
 
+    def planned_moves(self, token: str) -> Optional[int]:
+        """How many files a live plan would move; None when the token is unknown or expired."""
+        with self._lock:
+            self._expire_plans_locked()
+            plan = self._plans.get((token or "").strip())
+            return None if plan is None else len(plan.moves)
+
+    def journaled_moves(self, token: str) -> int:
+        """How many journaled moves undo would put back for a tidy batch."""
+        token = (token or "").strip()
+        if not token:
+            return 0
+        with self._lock:
+            return len(self._move_records(token))
+
     def undo(self, token: str, *, confirm: bool) -> dict[str, Any]:
         if confirm is not True:
             raise CleanupError("undo requires confirm=true")

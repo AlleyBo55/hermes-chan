@@ -2,13 +2,13 @@
 
 The character pixels come from the existing 192x208 sprites. Only the small
 hand-attached effect marks are drawn here, so her identity stays consistent.
-Run after pack_assets.py; the script also refreshes the overlay's sprite copy.
+Run after pack_assets.py. Frames go to sprites/hermeschan-v1/frames; the atlas and
+manifest live in overlay/src/hermeschan, which her body embeds.
 """
 from __future__ import annotations
 
 import json
 import math
-import shutil
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -152,11 +152,11 @@ def draw_frame(source: Image.Image, effect: str, frame: int, anchor):
     return result
 
 
-def build(destination: Path):
-    manifest_path = destination / "manifest.json"
+def build():
+    manifest_path = OVERLAY / "manifest.json"
     manifest = json.loads(manifest_path.read_text())
     atlas = Image.new("RGBA", (CELL[0] * 5, CELL[1] * len(EFFECTS)))
-    frames_dir = destination / "frames"
+    frames_dir = SPRITES / "frames"
     frames_dir.mkdir(exist_ok=True)
     for row, (effect, spec) in enumerate(EFFECTS.items()):
         duration = spec["duration"]
@@ -179,18 +179,13 @@ def build(destination: Path):
             "loop": False, "after": "core/idle", "frames": clip_frames,
         }
     manifest["atlases"]["effect_action"] = "atlases/hermeschan-effect-actions.png"
-    (destination / "atlases").mkdir(exist_ok=True)
-    atlas.save(destination / manifest["atlases"]["effect_action"])
+    (OVERLAY / "atlases").mkdir(parents=True, exist_ok=True)
+    atlas.save(OVERLAY / manifest["atlases"]["effect_action"])
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
-    return atlas
 
 
 def main():
-    atlas = build(SPRITES)
-    OVERLAY.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(SPRITES / "manifest.json", OVERLAY / "manifest.json")
-    (OVERLAY / "atlases").mkdir(exist_ok=True)
-    atlas.save(OVERLAY / "atlases/hermeschan-effect-actions.png")
+    build()
 
     preview = Image.new("RGB", (CELL[0] * 5, (CELL[1] + 28) * len(EFFECTS)), "#ece8e0")
     draw = ImageDraw.Draw(preview)

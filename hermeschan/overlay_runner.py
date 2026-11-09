@@ -43,6 +43,46 @@ _MAX_RESTARTS = 5
 _RESTART_WINDOW_S = 60.0
 _MAX_LOG_BYTES = 5 * 1024 * 1024
 
+# Hermes' environment holds every provider API key. The build and her body never get a copy
+# of it: each gets only these names (matched case-insensitively, as Windows does) plus the
+# HERMESCHAN_* / HERMES_HOME values the plugin sets itself.
+_ENV_SHARED = frozenset({
+    "PATH", "HOME", "USER", "LOGNAME", "LANG", "LANGUAGE", "TZ", "TMPDIR", "TEMP", "TMP",
+    "RUST_LOG", "RUST_BACKTRACE",
+    # Windows
+    "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "COMSPEC", "PATHEXT", "OS", "USERNAME", "USERPROFILE",
+    "HOMEDRIVE", "HOMEPATH", "APPDATA", "LOCALAPPDATA", "PROGRAMDATA", "ALLUSERSPROFILE",
+    "PROGRAMFILES", "PROGRAMFILES(X86)", "PROGRAMW6432", "COMMONPROGRAMFILES",
+    "COMMONPROGRAMFILES(X86)", "COMMONPROGRAMW6432", "NUMBER_OF_PROCESSORS", "PROCESSOR_ARCHITECTURE",
+})
+_ENV_SHARED_PREFIXES = ("LC_",)
+# `cargo build`: the Rust toolchain, the C toolchain and pkg-config its build scripts use,
+# and the proxy / CA settings it needs to download the crates pinned in Cargo.lock.
+_ENV_BUILD = frozenset({
+    "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN", "CARGO_HTTP_CAINFO",
+    "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "SSL_CERT_FILE", "SSL_CERT_DIR",
+    "CC", "CXX", "AR", "PKG_CONFIG", "PKG_CONFIG_PATH", "PKG_CONFIG_LIBDIR", "PKG_CONFIG_SYSROOT_DIR",
+    "SDKROOT", "DEVELOPER_DIR", "MACOSX_DEPLOYMENT_TARGET",
+    # A Visual Studio developer prompt
+    "INCLUDE", "LIB", "LIBPATH", "VSINSTALLDIR", "VCINSTALLDIR", "VCTOOLSINSTALLDIR",
+    "WINDOWSSDKDIR", "WINDOWSSDKVERSION", "UNIVERSALCRTSDKDIR", "UCRTVERSION",
+})
+# Her body: the desktop session she draws on (X11/XWayland, GTK and WebKitGTK on Linux;
+# WebView2 on Windows), including the input method her chat box types through.
+_ENV_BODY = frozenset({
+    "DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY", "DBUS_SESSION_BUS_ADDRESS", "XMODIFIERS",
+    "LD_LIBRARY_PATH",
+})
+_ENV_BODY_PREFIXES = ("XDG_", "GDK_", "GTK_", "WEBKIT_", "WEBVIEW2_")
+
+
+def _minimal_env(names: frozenset[str], prefixes: tuple[str, ...] = ()) -> dict[str, str]:
+    """The allowlisted part of this process's environment, nothing else."""
+    allowed = _ENV_SHARED | names
+    allowed_prefixes = _ENV_SHARED_PREFIXES + prefixes
+    return {key: value for key, value in os.environ.items()
+            if key.upper() in allowed or key.upper().startswith(allowed_prefixes)}
+
 
 def _truthy(name: str, default: str = "1") -> bool:
     return os.environ.get(name, default).strip().lower() not in ("0", "false", "no", "")
@@ -236,13 +276,11 @@ class OverlayRunner:
         roots = [
             _OVERLAY_DIR / "src",
             _SRC_TAURI / "src",
-            _PLUGIN_ROOT / "sprites" / "hermeschan-v1" / "atlases",
         ]
         files = [
             _SRC_TAURI / "Cargo.toml",
             _SRC_TAURI / "build.rs",
             _SRC_TAURI / "tauri.conf.json",
-            _PLUGIN_ROOT / "sprites" / "hermeschan-v1" / "manifest.json",
         ]
         for root in roots:
             if root.exists():
@@ -276,6 +314,7 @@ class OverlayRunner:
                 result = subprocess.run(
                     command,
                     cwd=str(_SRC_TAURI),
+                    env=_minimal_env(_ENV_BUILD),
                     stdin=subprocess.DEVNULL,
                     stdout=output,
                     stderr=subprocess.STDOUT,
@@ -295,7 +334,7 @@ class OverlayRunner:
         return self._locate_binary()
 
     def _spawn_supervised(self, binary: Path) -> None:
-        env = dict(os.environ)
+        env = _minimal_env(_ENV_BODY, _ENV_BODY_PREFIXES)
         env.update(self._bridge.overlay_env())
         env["HERMESCHAN_PARENT_PID"] = str(os.getpid())
         env["HERMESCHAN_STATE_DIR"] = str(state_dir())
