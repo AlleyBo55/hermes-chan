@@ -1,0 +1,42 @@
+# Temporary: runs the plugin's own build-and-start path on all three systems.
+name: platform-smoke
+on:
+  push:
+    branches: [ci/platform-smoke]
+permissions:
+  contents: read
+jobs:
+  smoke:
+    name: smoke (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Linux build dependencies and a virtual display
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev xvfb dbus imagemagick
+      - name: Rust stable
+        run: rustup update stable && rustup default stable
+      - name: Smoke test (Linux, X11 display + session bus)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a -s "-screen 0 1280x800x24" dbus-run-session -- python3 ci-smoke/run.py
+      - name: Smoke test (macOS)
+        if: runner.os == 'macOS'
+        run: python3 ci-smoke/run.py
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        run: python ci-smoke/run.py
+      - name: Upload screenshot and logs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: smoke-${{ matrix.os }}
+          path: smoke-out/
+          if-no-files-found: warn
