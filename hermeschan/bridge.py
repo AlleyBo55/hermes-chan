@@ -43,10 +43,11 @@ _ACCEPT_POLL_SECONDS = 0.5
 _HELLO_TIMEOUT_SECONDS = 5.0
 _CHAT_SETTING = "plugins.entries.hermes-chan.allow_gateway_injection"
 _CHAT_COMMAND = f"hermes config set {_CHAT_SETTING} true"
-# Hermes refuses plugin messages into your chats until you allow it for this plugin.
-_INJECT_BLOCKED = f"Hermes blocks her chat box until you allow it. In a terminal run: {_CHAT_COMMAND}"
-_INJECT_REFUSED = ("Hermes did not take the message. Send any message to Hermes in the chat "
-                   "I should talk to, then try again here.")
+# Hermes refuses plugin messages into your chats until you allow it for this plugin, and it
+# does not say which reason applied, so the refusal names both.
+_INJECT_REFUSED = ("Hermes did not take the message. If you have not allowed her chat box yet, "
+                   f"run in a terminal: {_CHAT_COMMAND}\nOtherwise send any message to Hermes in "
+                   "the chat I should talk to, then try again here.")
 
 
 def _default_socket_path() -> str:
@@ -257,8 +258,6 @@ class Bridge:
     def chat_steps(self) -> list[str]:
         """What is still missing before her chat box can post into your chat, in order."""
         steps = []
-        if self.chat_allowed() is False:
-            steps.append(f"Allow it once, in a terminal: {_CHAT_COMMAND}")
         if not self._session_key:
             steps.append("Send any message to Hermes in the chat I should talk to")
         return steps
@@ -741,9 +740,7 @@ class Bridge:
             self._inject(msg.get("text", ""), msg.get("session_key"), msg.get("chat_id"))
         elif kind == "chat_check":
             # Her chat box just opened: tell her what (if anything) you still have to do.
-            blocked = self.chat_allowed() is False
-            self.send({"type": "chat_status", "steps": self.chat_steps(),
-                       "copy": _CHAT_COMMAND if blocked else ""})
+            self.send({"type": "chat_status", "steps": self.chat_steps()})
         elif kind == "action_event":
             self._mark_action_event(msg.get("action_id"), msg.get("event"))
         elif kind == "action_complete":
@@ -845,10 +842,7 @@ class Bridge:
             else:
                 accepted = ctx.inject_message(text, role="user")
             if accepted is False:
-                if self.chat_allowed() is False:
-                    self._chat_result(chat_id, False, _INJECT_BLOCKED, copy=_CHAT_COMMAND)
-                else:
-                    self._chat_result(chat_id, False, _INJECT_REFUSED)
+                self._chat_result(chat_id, False, _INJECT_REFUSED, copy=_CHAT_COMMAND)
                 return
             self.set_state("listening")
             self._chat_result(chat_id, True)
@@ -885,13 +879,3 @@ class Bridge:
         self._agent_busy.clear()
         with self._config_lock:
             self._config["sleeping"] = False
-
-    def chat_allowed(self) -> Optional[bool]:
-        """Whether Hermes lets her chat box post into your chats; None when Hermes can't say."""
-        check = getattr(self._ctx, "_gateway_injection_allowed", None)
-        if not callable(check):
-            return None
-        try:
-            return bool(check())
-        except Exception:  # noqa: BLE001 - a status helper, never fatal
-            return None
