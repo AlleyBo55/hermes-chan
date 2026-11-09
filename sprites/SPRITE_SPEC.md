@@ -60,9 +60,9 @@ Provide `hermeschan-anchors.json` after measuring final pixels:
 
 ## Drop-in checklist
 
-1. Export `hermeschan.png` (front atlas), `hermeschan-back.png`, other atlases,
-   254 base PNGs plus 35 effect-action PNGs, and the runtime manifest into
-   `hermeschan-v1/`.
+1. Export `hermeschan.png` (front atlas), `hermeschan-back.png`, the other atlases
+   and the runtime manifest into `overlay/src/hermeschan/`, and the 254 base PNGs
+   plus 35 effect-action PNGs into `sprites/hermeschan-v1/frames/`.
 2. Keep the 192×208 cell size and row order above.
 3. The overlay reads row index by state name from `states.py`.
 

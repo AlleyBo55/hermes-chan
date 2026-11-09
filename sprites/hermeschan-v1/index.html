@@ -31,7 +31,7 @@
       <div class="control"><label for="zoom">Inspect size</label><select id="zoom"><option value="0.5">Half size · 96 × 104</option><option value="1">Native · 192 × 208</option><option value="2" selected>2× · 384 × 416</option></select></div>
       <label>Background</label><div class="buttons"><button data-bg="checker" aria-pressed="true">Grid</button><button data-bg="#ffffff" aria-pressed="false">Light</button><button data-bg="#252832" aria-pressed="false">Dark</button></div>
       <div class="control"><label>Compact desktop size</label><p class="small">96 × 104 CSS px. The image keeps its full alpha canvas.</p><div class="size-view"><canvas id="actual" width="192" height="208" aria-label="Compact sprite preview"></canvas></div></div>
-      <div class="control small"><a href="preview.png">Collection overview</a> · <a href="walk-preview.gif">Walk loop</a> · <a href="climb-preview.gif">Climb loop</a> · <a href="dragged-preview.png">Dragged sequence</a> · <a href="manifest.json">Animation manifest</a></div>
+      <div class="control small"><a href="preview.png">Collection overview</a> · <a href="walk-preview.gif">Walk loop</a> · <a href="climb-preview.gif">Climb loop</a> · <a href="dragged-preview.png">Dragged sequence</a> · <a href="../../overlay/src/hermeschan/manifest.json">Animation manifest</a></div>
     </aside>
     <section class="panel">
       <div class="stage" id="stage"><canvas id="character" width="192" height="208" aria-label="Animated Hermes-chan"></canvas></div>
@@ -46,7 +46,7 @@
 <script src="sprite-player.js"></script>
 <script>
 const canvas=document.getElementById('character');
-const player=new HermesSpritePlayer(canvas,'./');
+const player=new HermesSpritePlayer(canvas,'../../overlay/src/hermeschan/');
 const actual=document.getElementById('actual').getContext('2d');
 const select=document.getElementById('animation');
 const scrub=document.getElementById('scrub');
@@ -74,7 +74,7 @@ player.ready.then(()=>{
     const b=document.createElement('button');b.className='clip';b.append(thumbnail(clip.frames[0]));const span=document.createElement('span');span.textContent=category;b.append(span,document.createTextNode(nice(label)));b.onclick=()=>{choose(name);document.getElementById('stage').scrollIntoView({behavior:'smooth',block:'center'})};document.getElementById('gallery').append(b);
   }
   select.disabled=false;select.onchange=()=>choose(select.value);choose('core/idle');
-}).catch(error=>{document.getElementById('clipname').textContent='Could not load sprites. Open through a local HTTP server.';console.error(error)});
+}).catch(error=>{document.getElementById('clipname').textContent='Could not load sprites. Open through a local HTTP server started in the repo root.';console.error(error)});
 play.onclick=()=>{player.paused=!player.paused;play.textContent=player.paused?'Play':'Pause'};
 document.getElementById('restart').onclick=()=>choose(select.value);
 scrub.oninput=()=>{player.paused=true;play.textContent='Play';player.seek(Number(scrub.value))};

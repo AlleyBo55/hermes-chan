@@ -276,13 +276,11 @@ class OverlayRunner:
         roots = [
             _OVERLAY_DIR / "src",
             _SRC_TAURI / "src",
-            _PLUGIN_ROOT / "sprites" / "hermeschan-v1" / "atlases",
         ]
         files = [
             _SRC_TAURI / "Cargo.toml",
             _SRC_TAURI / "build.rs",
             _SRC_TAURI / "tauri.conf.json",
-            _PLUGIN_ROOT / "sprites" / "hermeschan-v1" / "manifest.json",
         ]
         for root in roots:
             if root.exists():
